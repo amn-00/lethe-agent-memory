@@ -8,8 +8,8 @@ def retention_score(m: MemoryRecord, turn: int, cfg: PolicyConfig) -> dict:
     """Higher = keep. Returns the full breakdown so every eviction is explainable."""
     age = max(0, turn - m.last_access_turn)
     recency = 0.5 ** (age / cfg.half_life_turns)
-        # counts USES, not retrievals: being pulled in and ignored must never raise a score
-    frequency = 1 - 1 / (1 + m.used_count)                
+    # counts USES, not retrievals: being pulled in and ignored must never raise a score
+    frequency = 1 - 1 / (1 + m.used_count)
     used_rate = (m.used_count + 1) / (m.retrieved_count + 2)   # Laplace-smoothed, 0.5 prior
     score = cfg.w_recency * recency + cfg.w_frequency * frequency + cfg.w_used * used_rate
     return {

@@ -2,7 +2,7 @@
 
 Long-horizon memory for LLM agents. Decides what to **retain**, **evict**, and **reload** across a conversation, and tracks which retrieved memories the answer actually **used**.
 
-> Weekend 1 build: core library + API. Eval harness, UI, and benchmark numbers come next.
+> Status: core library, API, and eval harness built. Benchmark numbers in `evals/results/latest.md`.
 
 ## How it works
 
@@ -39,12 +39,35 @@ export $(cat .env | xargs)
 uvicorn lethe.api:build_default_app --factory --reload
 ```
 
+Config via env vars: `LETHE_BUDGET` (active memory cap, default 40), `LETHE_GRACE` (default 3), `GROQ_MODEL` (default `openai/gpt-oss-20b`), `GROQ_MIN_INTERVAL` (seconds between calls, default 2.2 for the free tier).
+
 ```bash
 curl -X POST localhost:8000/sessions/demo/chat -H "Content-Type: application/json" \
   -d '{"message": "my sister lives in pune"}'
 curl localhost:8000/sessions/demo/memories   # tiers + score breakdowns
 curl localhost:8000/sessions/demo/ops        # add / retrieve / used / ignored / evict / reload log
 ```
+
+## Eval
+
+Scripted multi-turn conversations: facts planted early, buried under filler chatter, then asked about later. Four conditions on the same conversations:
+
+| condition | what the model sees |
+|---|---|
+| `no_memory` | last 4 messages only |
+| `full_history` | the entire conversation (accuracy ceiling, most tokens) |
+| `naive_rag` | similarity retrieval over every message, nothing ever evicted |
+| `lethe` | same retrieval, but active memory capped by the retain/evict/reload policy |
+
+Task categories: single recall, multi-fact recall, distractors (similar but wrong facts), updates (a fact changes), long gaps. Scoring is deterministic regex matching against expected answers.
+
+```bash
+python -m evals.run --dry-run                 # offline pipeline check
+python -m evals.run                           # real run, ~64 Groq calls, a few minutes
+python -m evals.run --budget 4 --reload-threshold 0.65   # try other settings
+```
+
+Only question turns call the LLM; filler turns get a canned reply so a full run fits Groq's free tier (`--llm-every-turn` for full fidelity).
 
 ## Tests
 

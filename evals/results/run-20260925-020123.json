@@ -1,0 +1,225 @@
+{
+  "meta": {
+    "timestamp": "2026-09-25 02:01",
+    "model": "openai/gpt-oss-20b",
+    "budget": 6,
+    "grace": 2,
+    "tasks": 12,
+    "probes_per_condition": 16,
+    "dry_run": false,
+    "llm_every_turn": false,
+    "overrides": {
+      "reload_threshold": 0.55
+    }
+  },
+  "summary": {
+    "lethe": {
+      "accuracy": 1.0,
+      "by_category": {
+        "distractor": 1.0,
+        "long_gap": 1.0,
+        "multi_recall": 1.0,
+        "single_recall": 1.0,
+        "update": 1.0
+      },
+      "avg_prompt_tokens": 181.8,
+      "avg_memories_injected": 2.44,
+      "avg_active_memories": 6.6,
+      "probes": 16
+    }
+  },
+  "rows": [
+    {
+      "task": "t01",
+      "category": "single_recall",
+      "condition": "lethe",
+      "question": "where does my sister live?",
+      "answer": "Your sister lives in Pune.",
+      "correct": true,
+      "prompt_tokens": 166,
+      "memories_injected": 1,
+      "reloaded": 1,
+      "active_memories": 6
+    },
+    {
+      "task": "t02",
+      "category": "single_recall",
+      "condition": "lethe",
+      "question": "what's my dog called?",
+      "answer": "Your dog\u2019s name is Bruno.",
+      "correct": true,
+      "prompt_tokens": 169,
+      "memories_injected": 1,
+      "reloaded": 1,
+      "active_memories": 6
+    },
+    {
+      "task": "t03",
+      "category": "single_recall",
+      "condition": "lethe",
+      "question": "which food do i refuse to eat?",
+      "answer": "You refuse to eat mushrooms.",
+      "correct": true,
+      "prompt_tokens": 172,
+      "memories_injected": 1,
+      "reloaded": 1,
+      "active_memories": 6
+    },
+    {
+      "task": "t04",
+      "category": "single_recall",
+      "condition": "lethe",
+      "question": "what laptop do i use for work?",
+      "answer": "You use a ThinkPad\u202fX1 for work.",
+      "correct": true,
+      "prompt_tokens": 171,
+      "memories_injected": 1,
+      "reloaded": 1,
+      "active_memories": 6
+    },
+    {
+      "task": "t05",
+      "category": "multi_recall",
+      "condition": "lethe",
+      "question": "what's my favourite club?",
+      "answer": "Your favourite club is Barcelona.",
+      "correct": true,
+      "prompt_tokens": 168,
+      "memories_injected": 1,
+      "reloaded": 1,
+      "active_memories": 6
+    },
+    {
+      "task": "t05",
+      "category": "multi_recall",
+      "condition": "lethe",
+      "question": "which day do i play football?",
+      "answer": "You play football every Sunday.",
+      "correct": true,
+      "prompt_tokens": 186,
+      "memories_injected": 3,
+      "reloaded": 3,
+      "active_memories": 6
+    },
+    {
+      "task": "t05",
+      "category": "multi_recall",
+      "condition": "lethe",
+      "question": "what's my coach's name?",
+      "answer": "Your coach\u2019s name is Ravi.",
+      "correct": true,
+      "prompt_tokens": 179,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "active_memories": 6
+    },
+    {
+      "task": "t06",
+      "category": "multi_recall",
+      "condition": "lethe",
+      "question": "when is my exam?",
+      "answer": "Your exam is on **14\u202fNovember**.",
+      "correct": true,
+      "prompt_tokens": 184,
+      "memories_injected": 4,
+      "reloaded": 3,
+      "active_memories": 8
+    },
+    {
+      "task": "t06",
+      "category": "multi_recall",
+      "condition": "lethe",
+      "question": "which exam am i preparing for?",
+      "answer": "You\u2019re preparing for the **GATE exam for Computer Science**.",
+      "correct": true,
+      "prompt_tokens": 205,
+      "memories_injected": 5,
+      "reloaded": 1,
+      "active_memories": 6
+    },
+    {
+      "task": "t06",
+      "category": "multi_recall",
+      "condition": "lethe",
+      "question": "who is my study partner?",
+      "answer": "Your study partner is **Neha**.",
+      "correct": true,
+      "prompt_tokens": 213,
+      "memories_injected": 4,
+      "reloaded": 1,
+      "active_memories": 6
+    },
+    {
+      "task": "t07",
+      "category": "distractor",
+      "condition": "lethe",
+      "question": "which city does my own sister live in?",
+      "answer": "Your sister lives in Pune.",
+      "correct": true,
+      "prompt_tokens": 187,
+      "memories_injected": 3,
+      "reloaded": 3,
+      "active_memories": 7
+    },
+    {
+      "task": "t08",
+      "category": "distractor",
+      "condition": "lethe",
+      "question": "who is my current manager?",
+      "answer": "Your current manager is Priya.",
+      "correct": true,
+      "prompt_tokens": 185,
+      "memories_injected": 3,
+      "reloaded": 3,
+      "active_memories": 8
+    },
+    {
+      "task": "t09",
+      "category": "update",
+      "condition": "lethe",
+      "question": "which company do i work at now?",
+      "answer": "You\u2019re currently working at Zoho.",
+      "correct": true,
+      "prompt_tokens": 187,
+      "memories_injected": 3,
+      "reloaded": 3,
+      "active_memories": 8
+    },
+    {
+      "task": "t10",
+      "category": "update",
+      "condition": "lethe",
+      "question": "which city do i live in now?",
+      "answer": "You\u2019re currently living in Bangalore.",
+      "correct": true,
+      "prompt_tokens": 185,
+      "memories_injected": 3,
+      "reloaded": 3,
+      "active_memories": 7
+    },
+    {
+      "task": "t11",
+      "category": "long_gap",
+      "condition": "lethe",
+      "question": "what bike do i ride?",
+      "answer": "You ride a Royal Enfield Classic 350.",
+      "correct": true,
+      "prompt_tokens": 179,
+      "memories_injected": 3,
+      "reloaded": 3,
+      "active_memories": 7
+    },
+    {
+      "task": "t12",
+      "category": "long_gap",
+      "condition": "lethe",
+      "question": "when is my mom's birthday?",
+      "answer": "Your mom\u2019s birthday is on **March\u202f3**.",
+      "correct": true,
+      "prompt_tokens": 173,
+      "memories_injected": 2,
+      "reloaded": 2,
+      "active_memories": 7
+    }
+  ]
+}

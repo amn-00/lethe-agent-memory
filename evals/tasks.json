@@ -1,0 +1,102 @@
+{
+  "filler": [
+    "lol ok", "the weather is nice today", "haha that's funny", "i'm so tired today",
+    "what a long day", "brb getting coffee", "ok cool", "nice", "that makes sense",
+    "hmm interesting", "random thought, cats are funny", "i had pasta for lunch",
+    "traffic was crazy this morning", "just finished a meeting", "need to do laundry later",
+    "watching a show tonight", "it's raining a bit", "my phone battery is low",
+    "listening to some music", "can't decide what to eat", "the wifi is slow again",
+    "had a nice walk earlier", "so many emails today", "it's really hot outside",
+    "thinking of ordering food", "just woke up from a nap", "my tea got cold",
+    "the neighbours are noisy", "cleaned my desk finally", "long queue at the store",
+    "watched a funny video", "need more sleep honestly", "the movie was okay",
+    "busy week ahead", "forgot my umbrella", "trying a new playlist",
+    "the bus was late", "made some coffee", "good morning", "anyway"
+  ],
+  "tasks": [
+    {"id": "t01", "category": "single_recall", "script": [
+      {"say": "my sister lives in pune"},
+      {"filler": 12},
+      {"ask": "where does my sister live?", "expect": ["\\bpune\\b"]}
+    ]},
+    {"id": "t02", "category": "single_recall", "script": [
+      {"say": "my dog's name is bruno"},
+      {"filler": 14},
+      {"ask": "what's my dog called?", "expect": ["\\bbruno\\b"]}
+    ]},
+    {"id": "t03", "category": "single_recall", "script": [
+      {"say": "i never eat mushrooms, i can't stand them"},
+      {"filler": 16},
+      {"ask": "which food do i refuse to eat?", "expect": ["mushroom"]}
+    ]},
+    {"id": "t04", "category": "single_recall", "script": [
+      {"say": "i use a thinkpad x1 for work"},
+      {"filler": 18},
+      {"ask": "what laptop do i use for work?", "expect": ["thinkpad"]}
+    ]},
+    {"id": "t05", "category": "multi_recall", "script": [
+      {"say": "my favourite club is barcelona"},
+      {"filler": 4},
+      {"say": "i play football every sunday"},
+      {"filler": 4},
+      {"say": "my football coach is called ravi"},
+      {"filler": 8},
+      {"ask": "what's my favourite club?", "expect": ["\\bbarcelona\\b"]},
+      {"ask": "which day do i play football?", "expect": ["\\bsunday"]},
+      {"ask": "what's my coach's name?", "expect": ["\\bravi\\b"]}
+    ]},
+    {"id": "t06", "category": "multi_recall", "script": [
+      {"say": "my big exam is on 14 november"},
+      {"filler": 3},
+      {"say": "the exam is gate for computer science"},
+      {"filler": 3},
+      {"say": "my study partner is neha"},
+      {"filler": 10},
+      {"ask": "when is my exam?", "expect": ["\\b14(th)?\\s+nov", "nov\\w*\\s+14"]},
+      {"ask": "which exam am i preparing for?", "expect": ["\\bgate\\b"]},
+      {"ask": "who is my study partner?", "expect": ["\\bneha\\b"]}
+    ]},
+    {"id": "t07", "category": "distractor", "script": [
+      {"say": "my sister lives in pune"},
+      {"filler": 3},
+      {"say": "my friend's sister lives in chennai"},
+      {"filler": 3},
+      {"say": "my cousin lives in jaipur"},
+      {"filler": 10},
+      {"ask": "which city does my own sister live in?", "expect": ["\\bpune\\b"]}
+    ]},
+    {"id": "t08", "category": "distractor", "script": [
+      {"say": "my manager at work is priya"},
+      {"filler": 3},
+      {"say": "priyanka is my gym trainer"},
+      {"filler": 3},
+      {"say": "my old manager at my last job was arjun"},
+      {"filler": 10},
+      {"ask": "who is my current manager?", "expect": ["\\bpriya\\b"]}
+    ]},
+    {"id": "t09", "category": "update", "script": [
+      {"say": "i work at infosys"},
+      {"filler": 6},
+      {"say": "big news, i switched jobs and now work at zoho"},
+      {"filler": 8},
+      {"ask": "which company do i work at now?", "expect": ["\\bzoho\\b"]}
+    ]},
+    {"id": "t10", "category": "update", "script": [
+      {"say": "i live in noida"},
+      {"filler": 6},
+      {"say": "i moved to bangalore last week"},
+      {"filler": 8},
+      {"ask": "which city do i live in now?", "expect": ["bangalore|bengaluru"]}
+    ]},
+    {"id": "t11", "category": "long_gap", "script": [
+      {"say": "i ride a royal enfield classic 350"},
+      {"filler": 26},
+      {"ask": "what bike do i ride?", "expect": ["enfield"]}
+    ]},
+    {"id": "t12", "category": "long_gap", "script": [
+      {"say": "my mom's birthday is on 3 march"},
+      {"filler": 26},
+      {"ask": "when is my mom's birthday?", "expect": ["\\b3(rd)?\\s+march", "march\\s+3"]}
+    ]}
+  ]
+}

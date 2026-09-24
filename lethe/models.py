@@ -15,7 +15,7 @@ class PolicyConfig:
     top_k: int = 5                  # memories returned per recall
     archive_k: int = 3              # archive candidates checked for reload
     min_similarity: float = 0.6     # active hits below this are ignored (bge scores unrelated text ~0.4-0.5)
-    reload_threshold: float = 0.75  # archive hits above this get pulled back to active
+    reload_threshold: float = 0.65  # archive hits above this get pulled back to active (tuned by eval sweep)
     used_threshold: float = 0.2     # lexical overlap needed to count a memory as "used"
     recent_window: int = 4          # raw recent messages sent alongside memories
 

@@ -136,6 +136,8 @@ def test_retrieval_alone_does_not_keep_memory_alive():
     evicted = mem.maintain("s")
     assert [e["memory_id"] for e in evicted] == [noise.id]
     assert mem.store.get(fact.id).tier == "active"
+
+
 def test_ignored_retrieval_lowers_score():
     """Regression: a retrieved-but-ignored memory must score below a never-retrieved one (live-run bug)."""
     from lethe.models import MemoryRecord
