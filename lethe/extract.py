@@ -16,7 +16,7 @@ from .agent import estimate_tokens
 
 EXTRACT_PROMPT = """You extract durable personal facts from a user's chat messages, for a long-term memory.
 
-Messages, each tagged with its turn:
+{known}Messages, each tagged with its turn:
 {messages}
 
 Rules:
@@ -24,7 +24,8 @@ Rules:
 - Skip small talk, moods, passing remarks about the moment (weather, snacks, tiredness), and questions.
 - Write each fact as a short first-person sentence that stands on its own, e.g. "My sister lives in Pune."
 - Keep names, numbers and codes exactly as given.
-- If a message changes an earlier fact, state the new situation and what it replaced, e.g. "I now live in Hyderabad (moved from Indore)."
+- If a message changes an earlier fact (including one of the already-known facts), state the new situation and what it replaced, using the same wording as the question someone would ask, e.g. "I now live in Hyderabad (moved from Indore)." or "I'm now reading Dune (finished Neuromancer)."
+- Don't repeat already-known facts that haven't changed.
 - Tag each fact with the turn of the message it came from.
 
 Return only JSON, no other text: {{"facts": [{{"turn": 3, "fact": "My sister lives in Pune."}}]}}
@@ -65,11 +66,16 @@ class FactExtractor:
         self.tokens = 0
         self.failures = 0
 
-    async def extract(self, batch: list[tuple[int, str]]) -> list[tuple[int, str]]:
-        """batch: [(turn, message)] -> [(turn, fact)]. On unparseable output, falls back to the raw messages
-        so nothing is silently lost."""
+    async def extract(self, batch: list[tuple[int, str]], known: list[str] | None = None) -> list[tuple[int, str]]:
+        """batch: [(turn, message)] -> [(turn, fact)]. `known`: related facts already in memory, so updates
+        that span batches ("finished dune" in one batch, "started a new book" in the next) are recognised.
+        On unparseable output, falls back to the raw messages so nothing is silently lost."""
         lines = "\n".join(f"[t{turn}] {text}" for turn, text in batch)
-        messages = [{"role": "user", "content": EXTRACT_PROMPT.format(messages=lines)}]
+        known_block = ""
+        if known:
+            known_block = "Facts already in memory (context only):\n" + "\n".join(f"- {k}" for k in known) + "\n\n"
+        prompt = EXTRACT_PROMPT.format(messages=lines, known=known_block)
+        messages = [{"role": "user", "content": prompt}]
         reply = await self.llm.chat(messages)
         usage = getattr(self.llm, "last_usage", None) or {}
         self.calls += 1

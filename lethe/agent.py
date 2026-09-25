@@ -53,7 +53,12 @@ class MemoryAgent:
         batch = self.pending.pop(session_id, [])
         if not batch or self.extractor is None:
             return []
-        facts = await self.extractor.extract(batch)
+        known: list[str] = []
+        for _, text in batch:  # related existing facts, so cross-batch updates are recognised as updates
+            for m in self.memory.search(session_id, text, min_similarity=self.memory.cfg.context_similarity):
+                if m.text not in known:
+                    known.append(m.text)
+        facts = await self.extractor.extract(batch, known=known[:8])
         for turn, fact in facts:
             self.memory.add(session_id, fact, turn=turn)
         self.memory.store.log(

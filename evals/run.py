@@ -11,6 +11,7 @@ Groq's free tier. Pass --llm-every-turn for full fidelity (much slower, far more
 
 import argparse
 import asyncio
+import hashlib
 import json
 import random
 import re
@@ -112,13 +113,14 @@ def make_agent(
 
 async def run_task(condition, task, filler, llm, embedder, budget, grace, every_turn, overrides=None, ordered=True):
     agent, memory = make_agent(condition, llm, embedder, budget, grace, overrides, ordered)
-    sid, results = task["id"], []
+    sid, results, facts = task["id"], [], []
     for turn in expand(task, filler):
         is_probe = "ask" in turn
         text = turn["ask"] if is_probe else turn["say"]
         respond = is_probe or every_turn
         if memory is not None:
             out = await agent.chat(sid, text, respond=respond)
+            facts += out.get("extracted", [])
         else:
             out = await agent.chat(text, respond=respond)
         if is_probe:
@@ -137,6 +139,7 @@ async def run_task(condition, task, filler, llm, embedder, budget, grace, every_
         r["task_extract_calls"] = ex.calls if ex else 0
         r["task_extract_tokens"] = ex.tokens if ex else 0
         r["task_extract_failures"] = ex.failures if ex else 0
+        r["task_facts"] = facts if ex else []
     return results
 
 
@@ -208,6 +211,47 @@ def to_markdown(summary: dict, meta: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def checkpoint_path(args, model: str, overrides: dict) -> Path:
+    """One checkpoint per exact configuration, so --resume can never mix results from different settings."""
+    sig = json.dumps({
+        "split": args.split, "model": model, "budget": args.budget, "grace": args.grace, "overrides": overrides,
+        "memory_format": args.memory_format, "every_turn": args.llm_every_turn, "dry_run": args.dry_run,
+    }, sort_keys=True)
+    return HERE / "results" / f"checkpoint-{args.split}-{hashlib.sha1(sig.encode()).hexdigest()[:10]}.jsonl"
+
+
+async def run_all(conditions, tasks, filler, llm, embedder, args, overrides, ckpt: Path, resume: bool) -> list[dict]:
+    """Runs every (condition, task) pair, appending each finished pair to a checkpoint file.
+    With resume=True, pairs already in the checkpoint are skipped."""
+    done: dict[tuple[str, str], list[dict]] = {}
+    if resume and ckpt.exists():
+        for line in ckpt.read_text(encoding="utf-8").splitlines():
+            rec = json.loads(line)
+            done[(rec["condition"], rec["task"])] = rec["rows"]
+        print(f"resuming: {len(done)} finished task runs loaded from {ckpt.name}")
+    elif ckpt.exists():
+        ckpt.unlink()
+    ckpt.parent.mkdir(exist_ok=True)
+
+    rows = []
+    for cond in conditions:
+        for task in tasks:
+            if (cond, task["id"]) in done:
+                rows += done[(cond, task["id"])]
+                continue
+            t0 = time.time()
+            res = await run_task(
+                cond, task, filler, llm, embedder, args.budget, args.grace, args.llm_every_turn, overrides,
+                ordered=args.memory_format == "ordered",
+            )
+            with ckpt.open("a", encoding="utf-8") as f:
+                f.write(json.dumps({"condition": cond, "task": task["id"], "rows": res}) + "\n")
+            rows += res
+            ok = sum(r["correct"] for r in res)
+            print(f"[{cond:>12}] {task['id']} {task['category']:<13} {ok}/{len(res)} correct  ({time.time() - t0:.1f}s)")
+    return rows
+
+
 async def main(args):
     data = json.loads((HERE / SPLITS[args.split]).read_text(encoding="utf-8"))
     tasks = data["tasks"][: args.limit] if args.limit else data["tasks"]
@@ -231,17 +275,18 @@ async def main(args):
     if args.reload_threshold is not None:
         overrides["reload_threshold"] = args.reload_threshold
 
-    rows = []
-    for cond in args.conditions:
-        for task in tasks:
-            t0 = time.time()
-            res = await run_task(
-                cond, task, data["filler"], llm, embedder, args.budget, args.grace, args.llm_every_turn, overrides,
-                ordered=args.memory_format == "ordered",
-            )
-            rows += res
-            ok = sum(r["correct"] for r in res)
-            print(f"[{cond:>12}] {task['id']} {task['category']:<13} {ok}/{len(res)} correct  ({time.time() - t0:.1f}s)")
+    from lethe.llm import DailyLimitError
+
+    ckpt = checkpoint_path(args, model, overrides)
+    try:
+        rows = await run_all(args.conditions, tasks, data["filler"], llm, embedder, args, overrides, ckpt, args.resume)
+    except DailyLimitError as e:
+        saved = len(ckpt.read_text(encoding="utf-8").splitlines()) if ckpt.exists() else 0
+        total = len(args.conditions) * len(tasks)
+        raise SystemExit(
+            f"\nStopped: {e}\nProgress saved ({saved}/{total} task runs). "
+            f"After the quota resets, rerun the same command with --resume."
+        )
 
     judge_llm, judge_model = None, None
     if args.judge and not args.dry_run:
@@ -250,7 +295,13 @@ async def main(args):
         judge_model = args.judge_model
         judge_llm = GroqLLM(model=judge_model, temperature=0.0)
         print(f"\njudging {len(rows)} answers with {judge_model} ...")
-    scoring = await score_rows(rows, judge_llm)
+    try:
+        scoring = await score_rows(rows, judge_llm)
+    except DailyLimitError as e:
+        raise SystemExit(
+            f"\nStopped while judging: {e}\nAll answers are saved; rerun the same command with --resume "
+            f"after the quota resets (answers are reused, only judging is redone)."
+        )
     scoring["judge_model"] = judge_model
 
     summary = summarize(rows)
@@ -266,6 +317,7 @@ async def main(args):
     (out_dir / f"run-{stamp}.json").write_text(json.dumps({"meta": meta, "summary": summary, "rows": rows}, indent=2))
     md = to_markdown(summary, meta)
     (out_dir / f"latest-{args.split}{'-dry' if args.dry_run else ''}.md").write_text(md, encoding="utf-8")
+    ckpt.unlink(missing_ok=True)  # finished cleanly; the results file is the record now
     print("\n" + md)
 
 
@@ -281,6 +333,7 @@ def cli():
     p.add_argument("--dry-run", action="store_true", help="offline: fake LLM + fake embedder")
     p.add_argument("--memory-format", default="ordered", choices=["ordered", "plain"],
                    help="ordered = oldest-first with turn tags; plain = similarity-ranked (the old behaviour)")
+    p.add_argument("--resume", action="store_true", help="continue an interrupted run with the same settings")
     p.add_argument("--judge", action="store_true", help="grade answers with an LLM judge (primary score)")
     p.add_argument("--judge-model", default="openai/gpt-oss-120b")
     p.add_argument("--min-similarity", type=float, default=None, help="override recall threshold")

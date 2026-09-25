@@ -48,6 +48,18 @@ class AgentMemory:
             hits.append(RecallHit(self.store.get(mid), round(sim, 4), from_archive))
         return hits
 
+    def search(self, session_id: str, text: str, k: int = 2, min_similarity: float = 0.5) -> list[MemoryRecord]:
+        """Side-effect-free lookup across both tiers (no counters touched, nothing logged, no reloads).
+        Used to give the fact extractor context about what's already known."""
+        emb = self.embedder.embed([text])[0]
+        found = []
+        for tier in (ACTIVE, ARCHIVE):
+            for mid, sim in self.index.query(emb, session_id, tier, k):
+                if sim >= min_similarity:
+                    found.append((sim, mid))
+        found.sort(reverse=True)
+        return [m for _, mid in found[:k] if (m := self.store.get(mid)) is not None]
+
     def mark_used(self, session_id: str, hits: list[RecallHit], answer: str, query: str = "") -> list[dict]:
         turn, out = self.store.current_turn(session_id), []
         for h in hits:

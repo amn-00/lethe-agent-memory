@@ -126,3 +126,60 @@ def test_extract_conditions_run_and_report_cost():
     assert rows and all("recalled_texts" in r for r in rows)
     s = summarize(rows)["lethe_extract"]
     assert s["extract_calls_per_task"] > 0 and s["extract_failures"] > 0
+
+
+def test_interrupted_run_resumes_without_redoing_finished_tasks(tmp_path):
+    """Regression: a daily-quota 429 mid-run used to throw away every finished task."""
+    import argparse
+
+    from evals.run import run_all
+    from lethe.llm import DailyLimitError
+
+    class QuotaLLM(MemoryEchoLLM):
+        def __init__(self, fail_after):
+            self.calls, self.fail_after = 0, fail_after
+
+        async def chat(self, messages):
+            self.calls += 1
+            if self.fail_after is not None and self.calls > self.fail_after:
+                raise DailyLimitError("tokens per day exhausted")
+            return await super().chat(messages)
+
+    args = argparse.Namespace(budget=6, grace=2, llm_every_turn=False, memory_format="ordered")
+    tasks, ckpt = DATA["tasks"][:4], tmp_path / "ckpt.jsonl"
+    try:
+        asyncio.run(run_all(["lethe"], tasks, DATA["filler"], QuotaLLM(2), FakeEmbedder(), args, FAKE_THRESHOLDS, ckpt, False))
+        raise AssertionError("should have stopped")
+    except DailyLimitError:
+        pass
+    assert len(ckpt.read_text().splitlines()) == 2  # two single-question tasks finished before the quota hit
+
+    llm = QuotaLLM(None)
+    rows = asyncio.run(run_all(["lethe"], tasks, DATA["filler"], llm, FakeEmbedder(), args, FAKE_THRESHOLDS, ckpt, True))
+    assert llm.calls == 2  # only the two unfinished tasks were run again
+    assert [r["task"] for r in rows] == ["t01", "t02", "t03", "t04"]
+
+
+def test_daily_limit_is_not_retried():
+    import httpx
+
+    from lethe.llm import DailyLimitError, GroqLLM
+
+    calls = []
+
+    def handler(request):
+        calls.append(1)
+        return httpx.Response(429, text='{"error":{"message":"Rate limit reached ... tokens per day (TPD): Limit 200000"}}')
+
+    llm = GroqLLM(api_key="x", min_interval=0)
+    transport = httpx.MockTransport(handler)
+    orig = httpx.AsyncClient
+    httpx.AsyncClient = lambda **kw: orig(transport=transport, **kw)
+    try:
+        asyncio.run(llm.chat([{"role": "user", "content": "hi"}]))
+        raise AssertionError("should have raised")
+    except DailyLimitError:
+        pass
+    finally:
+        httpx.AsyncClient = orig
+    assert len(calls) == 1  # failed fast instead of sleeping through retries

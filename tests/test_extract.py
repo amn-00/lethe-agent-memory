@@ -35,7 +35,7 @@ class ScriptedLLM:
 def make(llm, batch_size=8, **cfg):
     mem = AgentMemory(
         Store(":memory:"), VectorIndex(None, f"x-{uuid.uuid4().hex[:8]}"), FakeEmbedder(),
-        PolicyConfig(min_similarity=0.3, reload_threshold=0.3, **cfg),
+        PolicyConfig(min_similarity=0.3, reload_threshold=0.3, context_similarity=0.1, **cfg),
     )
     return MemoryAgent(mem, llm, extractor=FactExtractor(llm, batch_size=batch_size)), mem
 
@@ -80,3 +80,32 @@ def test_unparseable_extraction_falls_back_to_raw_messages():
     asyncio.run(agent.chat("s", "lol ok", respond=False))
     assert {m.text for m in mem.store.list_memories("s")} == {"my dog is called bruno", "lol ok"}
     assert agent.extractor.failures == 1
+
+
+def test_search_has_no_side_effects():
+    llm = ScriptedLLM({})
+    agent, mem = make(llm)
+    m = mem.add("s", "my dog is called bruno")
+    before = mem.store.get(m.id)
+    assert [x.id for x in mem.search("s", "dog bruno", min_similarity=0.3)] == [m.id]
+    after = mem.store.get(m.id)
+    assert (after.retrieved_count, after.last_access_turn, after.tier) == (before.retrieved_count, before.last_access_turn, before.tier)
+    assert not any(o["op"] == "retrieve" for o in mem.store.ops("s"))
+
+
+def test_extractor_sees_related_known_facts_across_batches():
+    """Dev t16: 'started a new book' landed in a later batch than 'now reading project hail mary',
+    so the extractor couldn't tell it was an update. It must now see the related known fact."""
+    seen_prompts = []
+
+    class RecordingLLM(ScriptedLLM):
+        async def chat(self, messages):
+            seen_prompts.append(messages[-1]["content"])
+            return await super().chat(messages)
+
+    llm = RecordingLLM({"hail mary": "I'm now reading Project Hail Mary book.", "new book": "I'm now reading The Three Body Problem book."})
+    agent, mem = make(llm, batch_size=1)
+    asyncio.run(agent.chat("s", "finished dune, now reading project hail mary book", respond=False))
+    asyncio.run(agent.chat("s", "started a new book, the three body problem", respond=False))
+    assert "Facts already in memory" in seen_prompts[-1]
+    assert "Project Hail Mary" in seen_prompts[-1]

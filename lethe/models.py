@@ -17,6 +17,7 @@ class PolicyConfig:
     min_similarity: float = 0.6     # active hits below this are ignored (bge scores unrelated text ~0.4-0.5)
     reload_threshold: float = 0.65  # archive hits above this get pulled back to active (tuned by eval sweep)
     used_threshold: float = 0.2     # lexical overlap needed to count a memory as "used"
+    context_similarity: float = 0.5  # related-fact lookup that gives the extractor context (context only, so looser)
     recent_window: int = 4          # raw recent messages sent alongside memories
 
 

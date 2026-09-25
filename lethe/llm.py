@@ -1,5 +1,6 @@
 import asyncio
 import os
+import re
 import time
 from typing import Protocol
 
@@ -11,6 +12,10 @@ try:  # pick up GROQ_API_KEY etc. from a .env file in the working directory, if 
     load_dotenv()
 except ImportError:
     pass
+
+
+class DailyLimitError(RuntimeError):
+    """The provider's per-day quota is exhausted. Retrying won't help until it resets."""
 
 
 class LLM(Protocol):
@@ -60,7 +65,9 @@ class GroqLLM:
                 self._last_call = time.monotonic()
                 try:
                     r = await client.post(self.URL, json=self._payload(messages), headers=headers)
-                    if r.status_code == 429:  # rate limited: honour retry-after, then try again
+                    if r.status_code == 429 and re.search(r"per day|\bTPD\b|\bRPD\b", r.text):
+                        raise DailyLimitError(f"daily quota exhausted for {self.model}: {r.text[:240]}")
+                    if r.status_code == 429:  # per-minute limit: honour retry-after, then try again
                         delay = float(r.headers.get("retry-after", 2 ** attempt * 5))
                         await asyncio.sleep(min(delay, 90))
                         last_err = RuntimeError(f"429 rate limited: {r.text[:200]}")
