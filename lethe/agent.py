@@ -39,10 +39,28 @@ def estimate_tokens(messages: list[dict]) -> int:
 
 
 class MemoryAgent:
-    def __init__(self, memory: AgentMemory, llm: LLM, ordered: bool = True):
+    def __init__(self, memory: AgentMemory, llm: LLM, ordered: bool = True, extractor=None):
+        """extractor: optional FactExtractor. Without it every user message is stored as a memory;
+        with it, messages are queued and only extracted facts are stored."""
         self.memory = memory
         self.llm = llm
         self.ordered = ordered
+        self.extractor = extractor
+        self.pending: dict[str, list[tuple[int, str]]] = {}
+
+    async def flush(self, session_id: str) -> list[str]:
+        """Extract facts from queued messages and store them. Returns the facts added."""
+        batch = self.pending.pop(session_id, [])
+        if not batch or self.extractor is None:
+            return []
+        facts = await self.extractor.extract(batch)
+        for turn, fact in facts:
+            self.memory.add(session_id, fact, turn=turn)
+        self.memory.store.log(
+            session_id, self.memory.store.current_turn(session_id), "extract",
+            detail={"messages": len(batch), "facts": [f for _, f in facts]},
+        )
+        return [f for _, f in facts]
 
     def build_messages(self, session_id: str, message: str, hits) -> list[dict]:
         turn = self.memory.store.current_turn(session_id)
@@ -59,6 +77,9 @@ class MemoryAgent:
         The eval uses this for filler turns to stay inside free-tier rate limits."""
         mem = self.memory
         turn = mem.store.next_turn(session_id)
+        extracted = []
+        if self.extractor is not None and respond:
+            extracted = await self.flush(session_id)  # facts from earlier turns must be searchable before answering
         hits = mem.recall(session_id, message)
         messages = self.build_messages(session_id, message, hits)
 
@@ -73,7 +94,12 @@ class MemoryAgent:
         usage_report = mem.mark_used(session_id, hits, answer, message)
         mem.store.add_message(session_id, "user", message)
         mem.store.add_message(session_id, "assistant", answer)
-        mem.add(session_id, message)
+        if self.extractor is None:
+            mem.add(session_id, message)
+        else:
+            self.pending.setdefault(session_id, []).append((turn, message))
+            if len(self.pending[session_id]) >= self.extractor.batch_size:
+                extracted += await self.flush(session_id)
         evicted = mem.maintain(session_id)
 
         return {
@@ -85,5 +111,6 @@ class MemoryAgent:
                 for h in hits
             ],
             "usage": usage_report,
+            "extracted": extracted,
             "evicted": evicted,
         }

@@ -27,7 +27,8 @@ from lethe.models import ACTIVE
 from evals.judge import judge_correct, regex_correct
 
 HERE = Path(__file__).parent
-CONDITIONS = ["no_memory", "full_history", "naive_rag", "lethe"]
+CONDITIONS = ["no_memory", "full_history", "naive_rag", "lethe", "naive_extract", "lethe_extract"]
+DEFAULT_CONDITIONS = ["no_memory", "full_history", "naive_rag", "lethe"]
 SPLITS = {"dev": "tasks.json", "heldout": "heldout.json"}
 BASE_SYSTEM = "You are a helpful assistant. Keep answers short."
 
@@ -98,10 +99,15 @@ def make_agent(
         return WindowAgent(llm, window=None), None
     overrides = overrides or {}
     cfg = PolicyConfig(active_budget=budget, grace_turns=grace, **overrides)
-    if condition == "naive_rag":
+    if condition.startswith("naive"):
         cfg = PolicyConfig(active_budget=10**9, **overrides)  # same retrieval, never evicts
+    extractor = None
+    if condition.endswith("_extract"):
+        from lethe.extract import FactExtractor
+
+        extractor = FactExtractor(llm)
     memory = AgentMemory(Store(":memory:"), VectorIndex(None, f"eval-{uuid.uuid4().hex[:10]}"), embedder, cfg)
-    return MemoryAgent(memory, llm, ordered=ordered), memory
+    return MemoryAgent(memory, llm, ordered=ordered, extractor=extractor), memory
 
 
 async def run_task(condition, task, filler, llm, embedder, budget, grace, every_turn, overrides=None, ordered=True):
@@ -126,6 +132,11 @@ async def run_task(condition, task, filler, llm, embedder, budget, grace, every_
                 "recalled_texts": [x["text"] for x in out["recalled"]],
                 "active_memories": len(memory.store.list_memories(sid, ACTIVE)) if memory else None,
             })
+    ex = getattr(agent, "extractor", None)
+    for r in results:  # task-level extraction cost, so accuracy gains can be weighed against it
+        r["task_extract_calls"] = ex.calls if ex else 0
+        r["task_extract_tokens"] = ex.tokens if ex else 0
+        r["task_extract_failures"] = ex.failures if ex else 0
     return results
 
 
@@ -139,6 +150,7 @@ def summarize(rows: list[dict]) -> dict:
         for r in rs:
             cats[r["category"]].append(r["correct"])
         active = [r["active_memories"] for r in rs if r["active_memories"] is not None]
+        per_task = {r["task"]: r for r in rs}.values()
         summary[cond] = {
             "accuracy": round(sum(r["correct"] for r in rs) / len(rs), 3),
             "regex_accuracy": round(sum(r.get("correct_regex", r["correct"]) for r in rs) / len(rs), 3),
@@ -146,6 +158,9 @@ def summarize(rows: list[dict]) -> dict:
             "avg_prompt_tokens": round(sum(r["prompt_tokens"] for r in rs) / len(rs), 1),
             "avg_memories_injected": round(sum(r["memories_injected"] for r in rs) / len(rs), 2),
             "avg_active_memories": round(sum(active) / len(active), 1) if active else None,
+            "extract_calls_per_task": round(sum(r.get("task_extract_calls", 0) for r in per_task) / len(per_task), 1),
+            "extract_tokens_per_task": round(sum(r.get("task_extract_tokens", 0) for r in per_task) / len(per_task)),
+            "extract_failures": sum(r.get("task_extract_failures", 0) for r in per_task),
             "probes": len(rs),
         }
     return summary
@@ -172,15 +187,19 @@ def to_markdown(summary: dict, meta: dict) -> str:
             "",
         ]
     lines += [
-        "| condition | accuracy | regex accuracy | avg prompt tokens | avg memories injected | avg active memories |",
-        "|---|---|---|---|---|---|",
+        "| condition | accuracy | regex accuracy | avg prompt tokens | avg memories injected | avg active memories "
+        "| extraction calls / tokens per conversation |",
+        "|---|---|---|---|---|---|---|",
     ]
     for c in conds:
         s = summary[c]
         am = "-" if s["avg_active_memories"] is None else s["avg_active_memories"]
+        ex = "-" if not s.get("extract_calls_per_task") else f"{s['extract_calls_per_task']} / {s['extract_tokens_per_task']}"
+        if s.get("extract_failures"):
+            ex += f" ({s['extract_failures']} parse failures)"
         lines.append(
             f"| {c} | {s['accuracy']:.0%} | {s['regex_accuracy']:.0%} | {s['avg_prompt_tokens']} "
-            f"| {s['avg_memories_injected']} | {am} |"
+            f"| {s['avg_memories_injected']} | {am} | {ex} |"
         )
     lines += ["", "| category | " + " | ".join(conds) + " |", "|---|" + "---|" * len(conds)]
     for cat in cats:
@@ -253,7 +272,8 @@ async def main(args):
 def cli():
     p = argparse.ArgumentParser(description="Benchmark lethe against memory baselines.")
     p.add_argument("--split", default="dev", choices=list(SPLITS), help="dev = tune here; heldout = report here")
-    p.add_argument("--conditions", nargs="+", default=CONDITIONS, choices=CONDITIONS)
+    p.add_argument("--conditions", nargs="+", default=DEFAULT_CONDITIONS, choices=CONDITIONS,
+                   help="naive_extract / lethe_extract store LLM-extracted facts instead of raw messages")
     p.add_argument("--budget", type=int, default=6)
     p.add_argument("--grace", type=int, default=2)
     p.add_argument("--limit", type=int, default=0, help="only run the first N tasks")

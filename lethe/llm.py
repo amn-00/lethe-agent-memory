@@ -5,6 +5,13 @@ from typing import Protocol
 
 import httpx
 
+try:  # pick up GROQ_API_KEY etc. from a .env file in the working directory, if present
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:
+    pass
+
 
 class LLM(Protocol):
     async def chat(self, messages: list[dict]) -> str: ...

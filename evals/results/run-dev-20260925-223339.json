@@ -1,0 +1,1163 @@
+{
+  "meta": {
+    "timestamp": "2026-09-25 22:33",
+    "split": "dev",
+    "model": "openai/gpt-oss-20b",
+    "budget": 6,
+    "grace": 2,
+    "tasks": 16,
+    "probes_per_condition": 22,
+    "dry_run": false,
+    "llm_every_turn": false,
+    "overrides": {},
+    "scoring": {
+      "judged": 44,
+      "agreement": 1.0,
+      "judge_model": "openai/gpt-oss-120b"
+    },
+    "memory_format": "ordered"
+  },
+  "summary": {
+    "lethe": {
+      "accuracy": 0.955,
+      "regex_accuracy": 0.955,
+      "by_category": {
+        "distractor": 1.0,
+        "long_gap": 1.0,
+        "multi_recall": 1.0,
+        "single_recall": 1.0,
+        "update": 1.0,
+        "update_chain": 0.833
+      },
+      "avg_prompt_tokens": 233.2,
+      "avg_memories_injected": 2.14,
+      "avg_active_memories": 6.1,
+      "extract_calls_per_task": 0.0,
+      "extract_tokens_per_task": 0,
+      "extract_failures": 0,
+      "probes": 22
+    },
+    "lethe_extract": {
+      "accuracy": 0.955,
+      "regex_accuracy": 0.955,
+      "by_category": {
+        "distractor": 1.0,
+        "long_gap": 1.0,
+        "multi_recall": 1.0,
+        "single_recall": 1.0,
+        "update": 1.0,
+        "update_chain": 0.833
+      },
+      "avg_prompt_tokens": 230.0,
+      "avg_memories_injected": 1.73,
+      "avg_active_memories": 4.2,
+      "extract_calls_per_task": 3.2,
+      "extract_tokens_per_task": 1550,
+      "extract_failures": 0,
+      "probes": 22
+    }
+  },
+  "rows": [
+    {
+      "task": "t01",
+      "category": "single_recall",
+      "condition": "lethe",
+      "question": "where does my sister live?",
+      "answer": "She lives in Pune.",
+      "gold": "pune",
+      "expect": [
+        "\\bpune\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 210,
+      "memories_injected": 1,
+      "reloaded": 1,
+      "recalled_texts": [
+        "my sister lives in pune"
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 0,
+      "task_extract_tokens": 0,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t02",
+      "category": "single_recall",
+      "condition": "lethe",
+      "question": "what's my dog called?",
+      "answer": "Your dog\u2019s name is Bruno.",
+      "gold": "bruno",
+      "expect": [
+        "\\bbruno\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 213,
+      "memories_injected": 1,
+      "reloaded": 1,
+      "recalled_texts": [
+        "my dog's name is bruno"
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 0,
+      "task_extract_tokens": 0,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t03",
+      "category": "single_recall",
+      "condition": "lethe",
+      "question": "which food do i refuse to eat?",
+      "answer": "You don\u2019t eat mushrooms\u2014you can\u2019t stand them.",
+      "gold": "mushrooms",
+      "expect": [
+        "mushroom"
+      ],
+      "correct": true,
+      "prompt_tokens": 216,
+      "memories_injected": 1,
+      "reloaded": 1,
+      "recalled_texts": [
+        "i never eat mushrooms, i can't stand them"
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 0,
+      "task_extract_tokens": 0,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t04",
+      "category": "single_recall",
+      "condition": "lethe",
+      "question": "what laptop do i use for work?",
+      "answer": "You use a ThinkPad\u202fX1 for work.",
+      "gold": "a thinkpad x1",
+      "expect": [
+        "thinkpad"
+      ],
+      "correct": true,
+      "prompt_tokens": 215,
+      "memories_injected": 1,
+      "reloaded": 1,
+      "recalled_texts": [
+        "i use a thinkpad x1 for work"
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 0,
+      "task_extract_tokens": 0,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t05",
+      "category": "multi_recall",
+      "condition": "lethe",
+      "question": "what's my favourite club?",
+      "answer": "Barcelona.",
+      "gold": "barcelona",
+      "expect": [
+        "\\bbarcelona\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 212,
+      "memories_injected": 1,
+      "reloaded": 1,
+      "recalled_texts": [
+        "my favourite club is barcelona"
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 0,
+      "task_extract_tokens": 0,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t05",
+      "category": "multi_recall",
+      "condition": "lethe",
+      "question": "which day do i play football?",
+      "answer": "You play football every Sunday.",
+      "gold": "sunday",
+      "expect": [
+        "\\bsunday"
+      ],
+      "correct": true,
+      "prompt_tokens": 223,
+      "memories_injected": 2,
+      "reloaded": 2,
+      "recalled_texts": [
+        "i play football every sunday",
+        "busy week ahead"
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 0,
+      "task_extract_tokens": 0,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t05",
+      "category": "multi_recall",
+      "condition": "lethe",
+      "question": "what's my coach's name?",
+      "answer": "Your coach\u2019s name is Ravi.",
+      "gold": "ravi",
+      "expect": [
+        "\\bravi\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 219,
+      "memories_injected": 1,
+      "reloaded": 1,
+      "recalled_texts": [
+        "my football coach is called ravi"
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 0,
+      "task_extract_tokens": 0,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t06",
+      "category": "multi_recall",
+      "condition": "lethe",
+      "question": "when is my exam?",
+      "answer": "Your exam is scheduled for **14\u202fNovember**.",
+      "gold": "14 november",
+      "expect": [
+        "\\b14(th)?\\s+nov",
+        "nov\\w*\\s+14"
+      ],
+      "correct": true,
+      "prompt_tokens": 234,
+      "memories_injected": 3,
+      "reloaded": 2,
+      "recalled_texts": [
+        "my big exam is on 14 november",
+        "the exam is gate for computer science",
+        "busy week ahead"
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 0,
+      "task_extract_tokens": 0,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t06",
+      "category": "multi_recall",
+      "condition": "lethe",
+      "question": "which exam am i preparing for?",
+      "answer": "You\u2019re preparing for the **GATE exam in Computer Science**.",
+      "gold": "gate (computer science)",
+      "expect": [
+        "\\bgate\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 249,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "when is my exam?",
+        "my big exam is on 14 november",
+        "the exam is gate for computer science"
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 0,
+      "task_extract_tokens": 0,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t06",
+      "category": "multi_recall",
+      "condition": "lethe",
+      "question": "who is my study partner?",
+      "answer": "Your study partner is **Neha**.",
+      "gold": "neha",
+      "expect": [
+        "\\bneha\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 274,
+      "memories_injected": 4,
+      "reloaded": 1,
+      "recalled_texts": [
+        "my study partner is neha",
+        "when is my exam?",
+        "which exam am i preparing for?",
+        "my big exam is on 14 november"
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 0,
+      "task_extract_tokens": 0,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t07",
+      "category": "distractor",
+      "condition": "lethe",
+      "question": "which city does my own sister live in?",
+      "answer": "Your sister lives in Pune.",
+      "gold": "pune",
+      "expect": [
+        "\\bpune\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 228,
+      "memories_injected": 2,
+      "reloaded": 2,
+      "recalled_texts": [
+        "my sister lives in pune",
+        "my friend's sister lives in chennai"
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 0,
+      "task_extract_tokens": 0,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t08",
+      "category": "distractor",
+      "condition": "lethe",
+      "question": "who is my current manager?",
+      "answer": "Your current manager is Priya.",
+      "gold": "priya",
+      "expect": [
+        "\\bpriya\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 229,
+      "memories_injected": 2,
+      "reloaded": 2,
+      "recalled_texts": [
+        "my manager at work is priya",
+        "my old manager at my last job was arjun"
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 0,
+      "task_extract_tokens": 0,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t09",
+      "category": "update",
+      "condition": "lethe",
+      "question": "which company do i work at now?",
+      "answer": "You\u2019re currently working at Zoho.",
+      "gold": "zoho",
+      "expect": [
+        "\\bzoho\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 232,
+      "memories_injected": 2,
+      "reloaded": 2,
+      "recalled_texts": [
+        "i work at infosys",
+        "big news, i switched jobs and now work at zoho"
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 0,
+      "task_extract_tokens": 0,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t10",
+      "category": "update",
+      "condition": "lethe",
+      "question": "which city do i live in now?",
+      "answer": "You\u2019re in Bangalore now.",
+      "gold": "bangalore",
+      "expect": [
+        "bangalore|bengaluru"
+      ],
+      "correct": true,
+      "prompt_tokens": 227,
+      "memories_injected": 2,
+      "reloaded": 2,
+      "recalled_texts": [
+        "i live in noida",
+        "i moved to bangalore last week"
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 0,
+      "task_extract_tokens": 0,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t11",
+      "category": "long_gap",
+      "condition": "lethe",
+      "question": "what bike do i ride?",
+      "answer": "You ride a Royal Enfield Classic 350.",
+      "gold": "a royal enfield classic 350",
+      "expect": [
+        "enfield"
+      ],
+      "correct": true,
+      "prompt_tokens": 212,
+      "memories_injected": 1,
+      "reloaded": 1,
+      "recalled_texts": [
+        "i ride a royal enfield classic 350"
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 0,
+      "task_extract_tokens": 0,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t12",
+      "category": "long_gap",
+      "condition": "lethe",
+      "question": "when is my mom's birthday?",
+      "answer": "Your mom\u2019s birthday is on **March\u202f3**.",
+      "gold": "3 march",
+      "expect": [
+        "\\b3(rd)?\\s+march",
+        "march\\s+3"
+      ],
+      "correct": true,
+      "prompt_tokens": 212,
+      "memories_injected": 1,
+      "reloaded": 1,
+      "recalled_texts": [
+        "my mom's birthday is on 3 march"
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 0,
+      "task_extract_tokens": 0,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t13",
+      "category": "update_chain",
+      "condition": "lethe",
+      "question": "what's my favourite band these days?",
+      "answer": "Your favourite band these days is **The Local Train**.",
+      "gold": "the local train",
+      "expect": [
+        "local\\s*train"
+      ],
+      "correct": true,
+      "prompt_tokens": 245,
+      "memories_injected": 3,
+      "reloaded": 3,
+      "recalled_texts": [
+        "my favourite band is coldplay",
+        "these days my favourite band is the local train",
+        "honestly i'm more into arctic monkeys now"
+      ],
+      "active_memories": 8,
+      "task_extract_calls": 0,
+      "task_extract_tokens": 0,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t13",
+      "category": "update_chain",
+      "condition": "lethe",
+      "question": "which band did i like right before my current favourite?",
+      "answer": "Right before your current favourite (The\u202fLocal\u202fTrain), you liked **Arctic\u202fMonkeys**.",
+      "gold": "arctic monkeys (coldplay -> arctic monkeys -> the local train)",
+      "expect": [
+        "arctic\\s*monkeys"
+      ],
+      "correct": true,
+      "prompt_tokens": 275,
+      "memories_injected": 4,
+      "reloaded": 0,
+      "recalled_texts": [
+        "what's my favourite band these days?",
+        "my favourite band is coldplay",
+        "honestly i'm more into arctic monkeys now",
+        "these days my favourite band is the local train"
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 0,
+      "task_extract_tokens": 0,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t14",
+      "category": "update_chain",
+      "condition": "lethe",
+      "question": "what time is my standup now?",
+      "answer": "Your stand\u2011up is scheduled for **9:15\u202fam**.",
+      "gold": "9:15",
+      "expect": [
+        "9[:.]15"
+      ],
+      "correct": true,
+      "prompt_tokens": 252,
+      "memories_injected": 3,
+      "reloaded": 2,
+      "recalled_texts": [
+        "my daily standup is at 10am",
+        "standup moved to 11:30",
+        "standup got moved again, it's at 9:15 now"
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 0,
+      "task_extract_tokens": 0,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t15",
+      "category": "update_chain",
+      "condition": "lethe",
+      "question": "who is my landlord now?",
+      "answer": "Your current landlord is Mr.\u202fBose.",
+      "gold": "mr. bose",
+      "expect": [
+        "\\bbose\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 250,
+      "memories_injected": 3,
+      "reloaded": 3,
+      "recalled_texts": [
+        "i changed apartments, my landlord is mrs. iyer now",
+        "my landlord is mr. kapoor",
+        "moved once more, my new landlord is mr. bose"
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 0,
+      "task_extract_tokens": 0,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t15",
+      "category": "update_chain",
+      "condition": "lethe",
+      "question": "who was my landlord before the current one?",
+      "answer": "Before Mr.\u202fBose, your landlord was Mrs.\u202fIyer.",
+      "gold": "mrs. iyer (kapoor -> iyer -> bose)",
+      "expect": [
+        "\\biyer\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 275,
+      "memories_injected": 4,
+      "reloaded": 0,
+      "recalled_texts": [
+        "who is my landlord now?",
+        "i changed apartments, my landlord is mrs. iyer now",
+        "moved once more, my new landlord is mr. bose",
+        "my landlord is mr. kapoor"
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 0,
+      "task_extract_tokens": 0,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t16",
+      "category": "update_chain",
+      "condition": "lethe",
+      "question": "which book am i reading at the moment?",
+      "answer": "You\u2019re reading *Project Hail\u202fMary*.",
+      "gold": "the three body problem",
+      "expect": [
+        "three[\\s-]*body"
+      ],
+      "correct": false,
+      "prompt_tokens": 228,
+      "memories_injected": 2,
+      "reloaded": 2,
+      "recalled_texts": [
+        "i'm reading dune right now",
+        "finished dune, now reading project hail mary"
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 0,
+      "task_extract_tokens": 0,
+      "task_extract_failures": 0,
+      "correct_regex": false,
+      "correct_judge": false
+    },
+    {
+      "task": "t01",
+      "category": "single_recall",
+      "condition": "lethe_extract",
+      "question": "where does my sister live?",
+      "answer": "Your sister lives in Pune.",
+      "gold": "pune",
+      "expect": [
+        "\\bpune\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 211,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My sister lives in Pune."
+      ],
+      "active_memories": 3,
+      "task_extract_calls": 2,
+      "task_extract_tokens": 914,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t02",
+      "category": "single_recall",
+      "condition": "lethe_extract",
+      "question": "what's my dog called?",
+      "answer": "Your dog\u2019s name is Bruno.",
+      "gold": "bruno",
+      "expect": [
+        "\\bbruno\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 213,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My dog's name is Bruno."
+      ],
+      "active_memories": 1,
+      "task_extract_calls": 2,
+      "task_extract_tokens": 823,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t03",
+      "category": "single_recall",
+      "condition": "lethe_extract",
+      "question": "which food do i refuse to eat?",
+      "answer": "You don\u2019t eat mushrooms.",
+      "gold": "mushrooms",
+      "expect": [
+        "mushroom"
+      ],
+      "correct": true,
+      "prompt_tokens": 212,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "I never eat mushrooms."
+      ],
+      "active_memories": 3,
+      "task_extract_calls": 3,
+      "task_extract_tokens": 1489,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t04",
+      "category": "single_recall",
+      "condition": "lethe_extract",
+      "question": "what laptop do i use for work?",
+      "answer": "You use a ThinkPad\u202fX1 for work.",
+      "gold": "a thinkpad x1",
+      "expect": [
+        "thinkpad"
+      ],
+      "correct": true,
+      "prompt_tokens": 216,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "I use a ThinkPad X1 for work."
+      ],
+      "active_memories": 3,
+      "task_extract_calls": 3,
+      "task_extract_tokens": 1416,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t05",
+      "category": "multi_recall",
+      "condition": "lethe_extract",
+      "question": "what's my favourite club?",
+      "answer": "Your favourite club is Barcelona.",
+      "gold": "barcelona",
+      "expect": [
+        "\\bbarcelona\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 212,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My favourite club is Barcelona."
+      ],
+      "active_memories": 3,
+      "task_extract_calls": 5,
+      "task_extract_tokens": 2060,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t05",
+      "category": "multi_recall",
+      "condition": "lethe_extract",
+      "question": "which day do i play football?",
+      "answer": "You play football on Sundays.",
+      "gold": "sunday",
+      "expect": [
+        "\\bsunday"
+      ],
+      "correct": true,
+      "prompt_tokens": 218,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "I play football every Sunday."
+      ],
+      "active_memories": 3,
+      "task_extract_calls": 5,
+      "task_extract_tokens": 2060,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t05",
+      "category": "multi_recall",
+      "condition": "lethe_extract",
+      "question": "what's my coach's name?",
+      "answer": "Your coach\u2019s name is Ravi.",
+      "gold": "ravi",
+      "expect": [
+        "\\bravi\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 224,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My football coach is called Ravi."
+      ],
+      "active_memories": 3,
+      "task_extract_calls": 5,
+      "task_extract_tokens": 2060,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t06",
+      "category": "multi_recall",
+      "condition": "lethe_extract",
+      "question": "when is my exam?",
+      "answer": "Your exam is on **14\u202fNovember**.",
+      "gold": "14 november",
+      "expect": [
+        "\\b14(th)?\\s+nov",
+        "nov\\w*\\s+14"
+      ],
+      "correct": true,
+      "prompt_tokens": 239,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My big exam is on 14 November.",
+        "The exam is a gate for computer science.",
+        "I have a busy week ahead."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 5,
+      "task_extract_tokens": 2148,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t06",
+      "category": "multi_recall",
+      "condition": "lethe_extract",
+      "question": "which exam am i preparing for?",
+      "answer": "You\u2019re preparing for the **GATE (Graduate Aptitude Test in Engineering) exam in Computer Science**.",
+      "gold": "gate (computer science)",
+      "expect": [
+        "\\bgate\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 238,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My big exam is on 14 November.",
+        "The exam is a gate for computer science."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 5,
+      "task_extract_tokens": 2148,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t06",
+      "category": "multi_recall",
+      "condition": "lethe_extract",
+      "question": "who is my study partner?",
+      "answer": "Your study partner is **Neha**.",
+      "gold": "neha",
+      "expect": [
+        "\\bneha\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 242,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My study partner is Neha."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 5,
+      "task_extract_tokens": 2148,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t07",
+      "category": "distractor",
+      "condition": "lethe_extract",
+      "question": "which city does my own sister live in?",
+      "answer": "Your sister lives in Pune.",
+      "gold": "pune",
+      "expect": [
+        "\\bpune\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 228,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My sister lives in Pune.",
+        "My friend's sister lives in Chennai."
+      ],
+      "active_memories": 4,
+      "task_extract_calls": 3,
+      "task_extract_tokens": 1359,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t08",
+      "category": "distractor",
+      "condition": "lethe_extract",
+      "question": "who is my current manager?",
+      "answer": "Your current manager is Priya.",
+      "gold": "priya",
+      "expect": [
+        "\\bpriya\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 230,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My manager at work is Priya.",
+        "My old manager at my last job was Arjun."
+      ],
+      "active_memories": 3,
+      "task_extract_calls": 3,
+      "task_extract_tokens": 1394,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t09",
+      "category": "update",
+      "condition": "lethe_extract",
+      "question": "which company do i work at now?",
+      "answer": "You\u2019re currently working at Zoho.",
+      "gold": "zoho",
+      "expect": [
+        "\\bzoho\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 222,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "I now work at Zoho (replaced working at Infosys)."
+      ],
+      "active_memories": 4,
+      "task_extract_calls": 2,
+      "task_extract_tokens": 1264,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t10",
+      "category": "update",
+      "condition": "lethe_extract",
+      "question": "which city do i live in now?",
+      "answer": "You\u2019re living in Bangalore.",
+      "gold": "bangalore",
+      "expect": [
+        "bangalore|bengaluru"
+      ],
+      "correct": true,
+      "prompt_tokens": 220,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "I now live in Bangalore (moved from Noida)."
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 2,
+      "task_extract_tokens": 961,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t11",
+      "category": "long_gap",
+      "condition": "lethe_extract",
+      "question": "what bike do i ride?",
+      "answer": "You ride a Royal\u202fEnfield Classic\u202f350.",
+      "gold": "a royal enfield classic 350",
+      "expect": [
+        "enfield"
+      ],
+      "correct": true,
+      "prompt_tokens": 213,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "I ride a Royal Enfield Classic 350."
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 2002,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t12",
+      "category": "long_gap",
+      "condition": "lethe_extract",
+      "question": "when is my mom's birthday?",
+      "answer": "Your mom\u2019s birthday is on **March\u202f3**.",
+      "gold": "3 march",
+      "expect": [
+        "\\b3(rd)?\\s+march",
+        "march\\s+3"
+      ],
+      "correct": true,
+      "prompt_tokens": 213,
+      "memories_injected": 1,
+      "reloaded": 1,
+      "recalled_texts": [
+        "My mom's birthday is on 3 March."
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 2147,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t13",
+      "category": "update_chain",
+      "condition": "lethe_extract",
+      "question": "what's my favourite band these days?",
+      "answer": "Your current favourite band is **the local train**.",
+      "gold": "the local train",
+      "expect": [
+        "local\\s*train"
+      ],
+      "correct": true,
+      "prompt_tokens": 249,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My favourite band is Arctic Monkeys (moved from Coldplay).",
+        "My favourite band is Coldplay.",
+        "My favourite band is the local train."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 1832,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t13",
+      "category": "update_chain",
+      "condition": "lethe_extract",
+      "question": "which band did i like right before my current favourite?",
+      "answer": "Right before you liked **the local train**, you were into **Arctic\u202fMonkeys**.",
+      "gold": "arctic monkeys (coldplay -> arctic monkeys -> the local train)",
+      "expect": [
+        "arctic\\s*monkeys"
+      ],
+      "correct": true,
+      "prompt_tokens": 264,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My favourite band is Arctic Monkeys (moved from Coldplay).",
+        "My favourite band is Coldplay.",
+        "My favourite band is the local train."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 1832,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t14",
+      "category": "update_chain",
+      "condition": "lethe_extract",
+      "question": "what time is my standup now?",
+      "answer": "Your standup is scheduled for 9:15\u202fam.",
+      "gold": "9:15",
+      "expect": [
+        "9[:.]15"
+      ],
+      "correct": true,
+      "prompt_tokens": 259,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My daily standup is at 11:30 (moved from 10am).",
+        "My standup meeting is at 9:15.",
+        "My daily standup is at 10am."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 3,
+      "task_extract_tokens": 1526,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t15",
+      "category": "update_chain",
+      "condition": "lethe_extract",
+      "question": "who is my landlord now?",
+      "answer": "Your current landlord is Mr.\u202fBose.",
+      "gold": "mr. bose",
+      "expect": [
+        "\\bbose\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 246,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My landlord is Mrs. Iyer (replacing Mr. Kapoor).",
+        "My landlord is Mr. Kapoor.",
+        "My new landlord is Mr. Bose."
+      ],
+      "active_memories": 4,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 1901,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t15",
+      "category": "update_chain",
+      "condition": "lethe_extract",
+      "question": "who was my landlord before the current one?",
+      "answer": "Before Mr.\u202fBose, your landlord was Mrs.\u202fIyer.",
+      "gold": "mrs. iyer (kapoor -> iyer -> bose)",
+      "expect": [
+        "\\biyer\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 258,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My landlord is Mrs. Iyer (replacing Mr. Kapoor).",
+        "My landlord is Mr. Kapoor.",
+        "My new landlord is Mr. Bose."
+      ],
+      "active_memories": 4,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 1901,
+      "task_extract_failures": 0,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t16",
+      "category": "update_chain",
+      "condition": "lethe_extract",
+      "question": "which book am i reading at the moment?",
+      "answer": "You\u2019re currently reading *Project\u202fHail\u202fMary*.",
+      "gold": "the three body problem",
+      "expect": [
+        "three[\\s-]*body"
+      ],
+      "correct": false,
+      "prompt_tokens": 234,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "recalled_texts": [
+        "I am reading Dune.",
+        "I finished reading Dune and am now reading Project Hail Mary."
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 3,
+      "task_extract_tokens": 1571,
+      "task_extract_failures": 0,
+      "correct_regex": false,
+      "correct_judge": false
+    }
+  ]
+}

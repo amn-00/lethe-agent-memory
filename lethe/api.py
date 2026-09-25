@@ -12,9 +12,9 @@ class ChatIn(BaseModel):
     message: str
 
 
-def create_app(memory: AgentMemory, llm: LLM) -> FastAPI:
+def create_app(memory: AgentMemory, llm: LLM, extractor=None) -> FastAPI:
     app = FastAPI(title="lethe")
-    agent = MemoryAgent(memory, llm)
+    agent = MemoryAgent(memory, llm, extractor=extractor)
 
     @app.post("/sessions/{session_id}/chat")
     async def chat(session_id: str, body: ChatIn):
@@ -46,7 +46,8 @@ def config_from_env():
 
 def build_default_app() -> FastAPI:
     """Run with: uvicorn lethe.api:build_default_app --factory
-    Small budget for demos:  $env:LETHE_BUDGET="5"; $env:LETHE_GRACE="2" """
+    Small budget for demos:  $env:LETHE_BUDGET="5"; $env:LETHE_GRACE="2"
+    Fact extraction is on by default; $env:LETHE_EXTRACT="0" stores raw messages instead."""
     from .index import FastEmbedder, VectorIndex
     from .llm import GroqLLM
     from .store import Store
@@ -56,4 +57,10 @@ def build_default_app() -> FastAPI:
     memory = AgentMemory(
         Store(f"{data}/lethe.db"), VectorIndex(f"{data}/chroma"), FastEmbedder(), config_from_env()
     )
-    return create_app(memory, GroqLLM())
+    llm = GroqLLM()
+    extractor = None
+    if os.getenv("LETHE_EXTRACT", "1") == "1":
+        from .extract import FactExtractor
+
+        extractor = FactExtractor(llm)
+    return create_app(memory, llm, extractor)

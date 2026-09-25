@@ -118,3 +118,11 @@ def test_every_question_has_a_gold_answer():
             for step in task["script"]:
                 if "ask" in step:
                     assert step.get("gold"), f"{task['id']}: '{step['ask']}' has no reference answer"
+
+
+def test_extract_conditions_run_and_report_cost():
+    from evals.run import summarize
+    rows = _run("lethe_extract", DATA["tasks"][4])  # fake LLM can't produce JSON -> raw fallback path
+    assert rows and all("recalled_texts" in r for r in rows)
+    s = summarize(rows)["lethe_extract"]
+    assert s["extract_calls_per_task"] > 0 and s["extract_failures"] > 0

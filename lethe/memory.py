@@ -13,8 +13,9 @@ class AgentMemory:
         self.embedder = embedder
         self.cfg = cfg or PolicyConfig()
 
-    def add(self, session_id: str, text: str) -> MemoryRecord:
-        turn = self.store.current_turn(session_id)
+    def add(self, session_id: str, text: str, turn: int | None = None) -> MemoryRecord:
+        """turn: when the memory was said. Defaults to now; extracted facts pass their source turn."""
+        turn = self.store.current_turn(session_id) if turn is None else turn
         m = MemoryRecord(uuid.uuid4().hex, session_id, text, ACTIVE, turn, turn)
         self.store.insert(m)
         self.index.add(m.id, self.embedder.embed([text])[0], session_id, ACTIVE)

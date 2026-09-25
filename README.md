@@ -22,6 +22,8 @@ Retention score = weighted mix of:
 | frequency | how often it gets retrieved |
 | used_rate | how often it's used *when* retrieved (Laplace-smoothed) |
 
+**Fact extraction** (on by default in the API). Instead of storing every raw message, an LLM rewrites durable facts as standalone first-person sentences and drops chatter and questions: "started a new book, the three body problem" becomes "I'm currently reading The Three-Body Problem." That fixes two problems the eval exposed: cold start (at save time a fact and "lol ok" looked identical) and phrasing mismatch (the newest fact didn't match how the question was asked). Messages are batched, one extraction call per 8 messages or right before an answer is needed, and each fact keeps the turn it was said. If the extractor returns unparseable output, the raw messages are stored instead so nothing is lost.
+
 Recalled memories are shown to the model oldest first, tagged with the turn they were said, so when a fact changes ("moved to indore" at turn 7, "now in hyderabad" at turn 13) the model can tell which one is current. The held-out eval showed similarity-ranked lists made RAG answer update chains backwards.
 
 Memories retrieved often but never used sink fastest. Anything accessed in the last `grace_turns` is protected. Every decision is logged with its score breakdown in `ops`.
@@ -36,12 +38,11 @@ SQLite is the source of truth for text, tier, and stats; Chroma holds vectors wi
 
 ```bash
 pip install -e ".[dev]"
-cp .env.example .env   # add your GROQ_API_KEY
-export $(cat .env | xargs)
+cp .env.example .env   # add your GROQ_API_KEY; it's loaded automatically
 uvicorn lethe.api:build_default_app --factory --reload
 ```
 
-Config via env vars: `LETHE_BUDGET` (active memory cap, default 40), `LETHE_GRACE` (default 3), `GROQ_MODEL` (default `openai/gpt-oss-20b`), `GROQ_MIN_INTERVAL` (seconds between calls, default 2.2 for the free tier).
+Config via env vars or `.env`: `LETHE_EXTRACT` (1 = store extracted facts, 0 = raw messages), `LETHE_BUDGET` (active memory cap, default 40), `LETHE_GRACE` (default 3), `GROQ_MODEL` (default `openai/gpt-oss-20b`), `GROQ_MIN_INTERVAL` (seconds between calls, default 2.2 for the free tier).
 
 ```bash
 curl -X POST localhost:8000/sessions/demo/chat -H "Content-Type: application/json" \
@@ -73,6 +74,7 @@ python -m evals.run --dry-run                  # offline pipeline check
 python -m evals.run                            # dev set, ~64 Groq calls
 python -m evals.run --split heldout            # held-out set, ~136 Groq calls
 python -m evals.run --reload-threshold 0.55    # try other settings (dev only)
+python -m evals.run --conditions lethe lethe_extract --judge   # raw messages vs extracted facts
 ```
 
 **Scoring.** Every question has a reference answer. Two scorers run side by side: a deterministic regex match (free, but it can't grade ordering: "before Farah it was Omkar" contains "farah" and passes) and an LLM judge (`--judge`, `openai/gpt-oss-120b` by default) that compares each answer with the reference. When the judge runs it is the primary score, and the report shows how often the two agree. `python -m evals.rescore --split heldout --judge` re-grades a saved run without regenerating answers.
