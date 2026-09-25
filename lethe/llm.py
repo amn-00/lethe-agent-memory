@@ -22,18 +22,20 @@ class GroqLLM:
         timeout: float = 60.0,
         retries: int = 4,
         min_interval: float | None = None,
+        temperature: float = 0.2,
     ):
         self.model = model or os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
         self.api_key = api_key or os.environ["GROQ_API_KEY"]
         self.timeout, self.retries = timeout, retries
         self.min_interval = min_interval if min_interval is not None else float(os.getenv("GROQ_MIN_INTERVAL", "2.2"))
         self.reasoning_effort = os.getenv("GROQ_REASONING_EFFORT", "low")
+        self.temperature = temperature
         self.last_usage: dict | None = None
         self._last_call = 0.0
         self._lock = asyncio.Lock()
 
     def _payload(self, messages: list[dict]) -> dict:
-        payload = {"model": self.model, "messages": messages, "temperature": 0.2}
+        payload = {"model": self.model, "messages": messages, "temperature": self.temperature}
         if self.model.startswith("openai/gpt-oss"):
             # reasoning tokens count toward rate limits; keep them small and out of the answer
             payload["reasoning_effort"] = self.reasoning_effort

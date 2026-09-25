@@ -61,11 +61,19 @@ Scripted multi-turn conversations: facts planted early, buried under filler chat
 
 Task categories: single recall, multi-fact recall, distractors (similar but wrong facts), updates (a fact changes), long gaps. Scoring is deterministic regex matching against expected answers.
 
+Two task sets:
+
+- **dev** (`evals/tasks.json`, 12 conversations, 16 questions): where settings get tuned.
+- **heldout** (`evals/heldout.json`, 16 conversations, 34 questions): harder, with unguessable answers, lookalike distractors, 3-step update chains and gaps up to 45 turns. Fresh facts and filler, checked by a test. Run once per version of lethe; never tune on it.
+
 ```bash
-python -m evals.run --dry-run                 # offline pipeline check
-python -m evals.run                           # real run, ~64 Groq calls, a few minutes
-python -m evals.run --budget 4 --reload-threshold 0.65   # try other settings
+python -m evals.run --dry-run                  # offline pipeline check
+python -m evals.run                            # dev set, ~64 Groq calls
+python -m evals.run --split heldout            # held-out set, ~136 Groq calls
+python -m evals.run --reload-threshold 0.55    # try other settings (dev only)
 ```
+
+**Scoring.** Every question has a reference answer. Two scorers run side by side: a deterministic regex match (free, but it can't grade ordering: "before Farah it was Omkar" contains "farah" and passes) and an LLM judge (`--judge`, `openai/gpt-oss-120b` by default) that compares each answer with the reference. When the judge runs it is the primary score, and the report shows how often the two agree. `python -m evals.rescore --split heldout --judge` re-grades a saved run without regenerating answers.
 
 Only question turns call the LLM; filler turns get a canned reply so a full run fits Groq's free tier (`--llm-every-turn` for full fidelity).
 

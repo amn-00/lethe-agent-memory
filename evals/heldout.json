@@ -1,0 +1,653 @@
+{
+ "filler": [
+  "ugh mondays",
+  "that's wild",
+  "same honestly",
+  "brb charging my laptop",
+  "okay okay",
+  "just saw a squirrel outside",
+  "the fan is making a weird noise",
+  "i should drink more water",
+  "can't believe it's already evening",
+  "my back hurts a bit",
+  "reading a random article",
+  "the lights flickered",
+  "hmm let me think",
+  "sounds fair",
+  "not sure about that",
+  "yawning nonstop today",
+  "cooking something simple",
+  "the kettle just clicked off",
+  "looking out the window",
+  "my socks don't match lol",
+  "quiet day so far",
+  "thinking about getting a haircut",
+  "the sky looks cloudy",
+  "fixing my chair",
+  "some birds are loud today",
+  "my headphones died",
+  "stretching a bit",
+  "that was a long call",
+  "nothing much going on",
+  "finally some peace",
+  "doodling on paper",
+  "the doorbell rang, false alarm",
+  "scrolling mindlessly",
+  "tidying my room",
+  "the snacks are gone already",
+  "hard to focus right now",
+  "just sneezed twice",
+  "maybe later",
+  "true true",
+  "alright"
+ ],
+ "tasks": [
+  {
+   "id": "h01",
+   "category": "multi_recall",
+   "script": [
+    {
+     "say": "my locker code at the gym is 4817"
+    },
+    {
+     "filler": 3
+    },
+    {
+     "say": "my gym is called iron temple"
+    },
+    {
+     "filler": 3
+    },
+    {
+     "say": "my trainer there is named dhruv"
+    },
+    {
+     "filler": 3
+    },
+    {
+     "say": "i go to the gym on tuesdays and fridays"
+    },
+    {
+     "filler": 3
+    },
+    {
+     "say": "my gym membership id is gym-5093"
+    },
+    {
+     "filler": 12
+    },
+    {
+     "ask": "what's my gym locker code?",
+     "expect": [
+      "\\b4817\\b"
+     ],
+     "gold": "4817"
+    },
+    {
+     "ask": "what's the name of my gym?",
+     "expect": [
+      "iron\\s*temple"
+     ],
+     "gold": "iron temple"
+    },
+    {
+     "ask": "who is my gym trainer?",
+     "expect": [
+      "\\bdhruv\\b"
+     ],
+     "gold": "dhruv"
+    },
+    {
+     "ask": "which days do i work out?",
+     "expect": [
+      "tue\\w*[\\s\\S]*fri",
+      "fri\\w*[\\s\\S]*tue"
+     ],
+     "gold": "tuesdays and fridays"
+    },
+    {
+     "ask": "what's my gym membership id?",
+     "expect": [
+      "5093"
+     ],
+     "gold": "gym-5093"
+    }
+   ]
+  },
+  {
+   "id": "h02",
+   "category": "multi_recall",
+   "script": [
+    {
+     "say": "my flight to goa is on 22 december"
+    },
+    {
+     "filler": 3
+    },
+    {
+     "say": "the flight number is 6e 2147"
+    },
+    {
+     "filler": 3
+    },
+    {
+     "say": "i'm staying at a hostel called sunbeam"
+    },
+    {
+     "filler": 3
+    },
+    {
+     "say": "my travel buddy for the trip is tanvi"
+    },
+    {
+     "filler": 14
+    },
+    {
+     "ask": "when is my goa flight?",
+     "expect": [
+      "\\b22(nd)?\\s+dec",
+      "dec\\w*\\s+22"
+     ],
+     "gold": "22 december"
+    },
+    {
+     "ask": "what's my flight number?",
+     "expect": [
+      "2147"
+     ],
+     "gold": "6e 2147"
+    },
+    {
+     "ask": "where am i staying in goa?",
+     "expect": [
+      "sunbeam"
+     ],
+     "gold": "a hostel called sunbeam"
+    },
+    {
+     "ask": "who am i travelling with?",
+     "expect": [
+      "\\btanvi\\b"
+     ],
+     "gold": "tanvi"
+    }
+   ]
+  },
+  {
+   "id": "h03",
+   "category": "distractor",
+   "script": [
+    {
+     "say": "my brother kabir works at deloitte"
+    },
+    {
+     "filler": 2
+    },
+    {
+     "say": "my friend who is also named kabir works at razorpay"
+    },
+    {
+     "filler": 2
+    },
+    {
+     "say": "my brother's wife works at accenture"
+    },
+    {
+     "filler": 12
+    },
+    {
+     "ask": "where does my brother work?",
+     "expect": [
+      "deloitte"
+     ],
+     "gold": "deloitte"
+    },
+    {
+     "ask": "which company does my friend kabir work at?",
+     "expect": [
+      "razorpay"
+     ],
+     "gold": "razorpay"
+    }
+   ]
+  },
+  {
+   "id": "h04",
+   "category": "distractor",
+   "script": [
+    {
+     "say": "the wifi password at home is sunflower88"
+    },
+    {
+     "filler": 2
+    },
+    {
+     "say": "the office wifi password is bluefin42"
+    },
+    {
+     "filler": 2
+    },
+    {
+     "say": "the cafe near my place has wifi password latte2020"
+    },
+    {
+     "filler": 12
+    },
+    {
+     "ask": "what's my home wifi password?",
+     "expect": [
+      "sunflower88"
+     ],
+     "gold": "sunflower88"
+    },
+    {
+     "ask": "what's the office wifi password?",
+     "expect": [
+      "bluefin42"
+     ],
+     "gold": "bluefin42"
+    }
+   ]
+  },
+  {
+   "id": "h05",
+   "category": "distractor",
+   "script": [
+    {
+     "say": "my niece goes to greenwood high"
+    },
+    {
+     "filler": 2
+    },
+    {
+     "say": "my nephew studies at sanskriti academy"
+    },
+    {
+     "filler": 2
+    },
+    {
+     "say": "my niece's best friend is called ira"
+    },
+    {
+     "filler": 12
+    },
+    {
+     "ask": "which school does my niece go to?",
+     "expect": [
+      "greenwood"
+     ],
+     "gold": "greenwood high"
+    },
+    {
+     "ask": "where does my nephew study?",
+     "expect": [
+      "sanskriti"
+     ],
+     "gold": "sanskriti academy"
+    }
+   ]
+  },
+  {
+   "id": "h06",
+   "category": "update_chain",
+   "script": [
+    {
+     "say": "i live in gurgaon"
+    },
+    {
+     "filler": 5
+    },
+    {
+     "say": "i moved to indore for work"
+    },
+    {
+     "filler": 5
+    },
+    {
+     "say": "update: i've relocated again, now i'm in hyderabad"
+    },
+    {
+     "filler": 8
+    },
+    {
+     "ask": "which city do i live in now?",
+     "expect": [
+      "hyderabad"
+     ],
+     "gold": "hyderabad"
+    },
+    {
+     "ask": "which city did i live in just before my current one?",
+     "expect": [
+      "\\bindore\\b"
+     ],
+     "gold": "indore (gurgaon -> indore -> hyderabad)"
+    }
+   ]
+  },
+  {
+   "id": "h07",
+   "category": "update_chain",
+   "script": [
+    {
+     "say": "my phone number ends in 4412"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "got a new sim, my number now ends in 7730"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "changed my number again, it ends in 9105 now"
+    },
+    {
+     "filler": 8
+    },
+    {
+     "ask": "what does my current phone number end in?",
+     "expect": [
+      "9105"
+     ],
+     "gold": "9105"
+    }
+   ]
+  },
+  {
+   "id": "h08",
+   "category": "update_chain",
+   "script": [
+    {
+     "say": "my team lead is suresh"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "suresh left the company, my new team lead is farah"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "farah got promoted, so my team lead now is omkar"
+    },
+    {
+     "filler": 8
+    },
+    {
+     "ask": "who is my team lead right now?",
+     "expect": [
+      "\\bomkar\\b"
+     ],
+     "gold": "omkar"
+    },
+    {
+     "ask": "who was my team lead before the current one?",
+     "expect": [
+      "\\bfarah\\b"
+     ],
+     "gold": "farah (suresh -> farah -> omkar)"
+    }
+   ]
+  },
+  {
+   "id": "h09",
+   "category": "update_chain",
+   "script": [
+    {
+     "say": "my main code editor is vim"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "i switched from vim to vscode"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "dropped vscode, i'm using zed as my editor now"
+    },
+    {
+     "filler": 8
+    },
+    {
+     "ask": "which code editor do i use now?",
+     "expect": [
+      "\\bzed\\b"
+     ],
+     "gold": "zed"
+    }
+   ]
+  },
+  {
+   "id": "h10",
+   "category": "long_gap",
+   "script": [
+    {
+     "say": "my bicycle lock combination is 3-9-1-4"
+    },
+    {
+     "filler": 40
+    },
+    {
+     "ask": "what's my bike lock combination?",
+     "expect": [
+      "3\\D?9\\D?1\\D?4"
+     ],
+     "gold": "3-9-1-4"
+    }
+   ]
+  },
+  {
+   "id": "h11",
+   "category": "long_gap",
+   "script": [
+    {
+     "say": "my cat is named biscotti"
+    },
+    {
+     "filler": 40
+    },
+    {
+     "ask": "what's my cat's name?",
+     "expect": [
+      "biscotti"
+     ],
+     "gold": "biscotti"
+    }
+   ]
+  },
+  {
+   "id": "h12",
+   "category": "long_gap",
+   "script": [
+    {
+     "say": "the parking spot i rent is p2-117"
+    },
+    {
+     "filler": 45
+    },
+    {
+     "ask": "which parking spot do i rent?",
+     "expect": [
+      "p\\s*-?\\s*2\\s*-?\\s*117"
+     ],
+     "gold": "p2-117"
+    }
+   ]
+  },
+  {
+   "id": "h13",
+   "category": "multi_recall",
+   "script": [
+    {
+     "say": "my manager is leena"
+    },
+    {
+     "filler": 3
+    },
+    {
+     "say": "my skip-level manager is vikram"
+    },
+    {
+     "filler": 3
+    },
+    {
+     "say": "the hr person for my team is joseph"
+    },
+    {
+     "filler": 3
+    },
+    {
+     "say": "my previous manager was anand"
+    },
+    {
+     "filler": 10
+    },
+    {
+     "ask": "who is my manager?",
+     "expect": [
+      "\\bleena\\b"
+     ],
+     "gold": "leena"
+    },
+    {
+     "ask": "who is my skip-level manager?",
+     "expect": [
+      "\\bvikram\\b"
+     ],
+     "gold": "vikram"
+    },
+    {
+     "ask": "who is the hr contact for my team?",
+     "expect": [
+      "\\bjoseph\\b"
+     ],
+     "gold": "joseph"
+    }
+   ]
+  },
+  {
+   "id": "h14",
+   "category": "update_chain",
+   "script": [
+    {
+     "say": "i drive a grey swift"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "sold the swift, i now drive a white nexon"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "my car's registration number ends in 5521"
+    },
+    {
+     "filler": 10
+    },
+    {
+     "ask": "what car do i drive now?",
+     "expect": [
+      "nexon"
+     ],
+     "gold": "a white nexon"
+    },
+    {
+     "ask": "what does my car registration end in?",
+     "expect": [
+      "5521"
+     ],
+     "gold": "5521"
+    }
+   ]
+  },
+  {
+   "id": "h15",
+   "category": "multi_recall",
+   "script": [
+    {
+     "say": "i live in flat 1204 in tower c"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "my housing society is called palm grove"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "the security guard at our gate is ramesh"
+    },
+    {
+     "filler": 10
+    },
+    {
+     "ask": "what's my flat number?",
+     "expect": [
+      "1204"
+     ],
+     "gold": "flat 1204 (tower c)"
+    },
+    {
+     "ask": "what's the name of my housing society?",
+     "expect": [
+      "palm\\s*grove"
+     ],
+     "gold": "palm grove"
+    },
+    {
+     "ask": "who is the guard at my gate?",
+     "expect": [
+      "\\bramesh\\b"
+     ],
+     "gold": "ramesh"
+    }
+   ]
+  },
+  {
+   "id": "h16",
+   "category": "long_gap",
+   "script": [
+    {
+     "say": "my dentist appointment is on the 9th at 4:30 pm"
+    },
+    {
+     "filler": 20
+    },
+    {
+     "say": "my dentist is dr. mehra"
+    },
+    {
+     "filler": 20
+    },
+    {
+     "ask": "what time is my dentist appointment?",
+     "expect": [
+      "4[:.]30",
+      "half past four"
+     ],
+     "gold": "4:30 pm (on the 9th)"
+    },
+    {
+     "ask": "what's my dentist's name?",
+     "expect": [
+      "mehra"
+     ],
+     "gold": "dr. mehra"
+    }
+   ]
+  }
+ ]
+}
