@@ -146,3 +146,19 @@ def test_ignored_retrieval_lowers_score():
     fact = MemoryRecord("a", "s", "my sister lives in pune", "active", 1, 1)
     noise = MemoryRecord("b", "s", "the weather is nice today", "active", 3, 3, retrieved_count=1, used_count=0)
     assert retention_score(noise, 6, cfg)["score"] < retention_score(fact, 6, cfg)["score"]
+
+
+def test_memories_are_shown_oldest_first_with_turn_tags():
+    """Held-out finding: similarity-ranked memories made RAG answer update chains backwards."""
+    from lethe.agent import format_memories
+    from lethe.models import MemoryRecord, RecallHit
+
+    new = RecallHit(MemoryRecord("b", "s", "now i'm in hyderabad", "active", 13, 13), 0.9)
+    old = RecallHit(MemoryRecord("a", "s", "i moved to indore", "active", 7, 7), 0.8)
+    block, note = format_memories([new, old], current_turn=20)  # similarity order: newest first
+    assert block.index("indore") < block.index("hyderabad")
+    assert "[turn 7]" in block and "[turn 13]" in block
+    assert "current turn: 20" in note and "latest one is the current truth" in note
+
+    plain, plain_note = format_memories([new, old], current_turn=20, ordered=False)
+    assert plain.index("hyderabad") < plain.index("indore") and plain_note == ""

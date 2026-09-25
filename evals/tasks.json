@@ -359,6 +359,144 @@
      "gold": "3 march"
     }
    ]
+  },
+  {
+   "id": "t13",
+   "category": "update_chain",
+   "script": [
+    {
+     "say": "my favourite band is coldplay"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "honestly i'm more into arctic monkeys now"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "these days my favourite band is the local train"
+    },
+    {
+     "filler": 8
+    },
+    {
+     "ask": "what's my favourite band these days?",
+     "expect": [
+      "local\\s*train"
+     ],
+     "gold": "the local train"
+    },
+    {
+     "ask": "which band did i like right before my current favourite?",
+     "expect": [
+      "arctic\\s*monkeys"
+     ],
+     "gold": "arctic monkeys (coldplay -> arctic monkeys -> the local train)"
+    }
+   ]
+  },
+  {
+   "id": "t14",
+   "category": "update_chain",
+   "script": [
+    {
+     "say": "my daily standup is at 10am"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "standup moved to 11:30"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "standup got moved again, it's at 9:15 now"
+    },
+    {
+     "filler": 8
+    },
+    {
+     "ask": "what time is my standup now?",
+     "expect": [
+      "9[:.]15"
+     ],
+     "gold": "9:15"
+    }
+   ]
+  },
+  {
+   "id": "t15",
+   "category": "update_chain",
+   "script": [
+    {
+     "say": "my landlord is mr. kapoor"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "i changed apartments, my landlord is mrs. iyer now"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "moved once more, my new landlord is mr. bose"
+    },
+    {
+     "filler": 8
+    },
+    {
+     "ask": "who is my landlord now?",
+     "expect": [
+      "\\bbose\\b"
+     ],
+     "gold": "mr. bose"
+    },
+    {
+     "ask": "who was my landlord before the current one?",
+     "expect": [
+      "\\biyer\\b"
+     ],
+     "gold": "mrs. iyer (kapoor -> iyer -> bose)"
+    }
+   ]
+  },
+  {
+   "id": "t16",
+   "category": "update_chain",
+   "script": [
+    {
+     "say": "i'm reading dune right now"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "finished dune, now reading project hail mary"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "started a new book, the three body problem"
+    },
+    {
+     "filler": 8
+    },
+    {
+     "ask": "which book am i reading at the moment?",
+     "expect": [
+      "three[\\s-]*body"
+     ],
+     "gold": "the three body problem"
+    }
+   ]
   }
  ]
 }

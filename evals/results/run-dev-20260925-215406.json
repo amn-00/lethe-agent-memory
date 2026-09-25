@@ -1,0 +1,852 @@
+{
+  "meta": {
+    "timestamp": "2026-09-25 21:54",
+    "split": "dev",
+    "model": "openai/gpt-oss-20b",
+    "budget": 6,
+    "grace": 2,
+    "tasks": 16,
+    "probes_per_condition": 22,
+    "dry_run": false,
+    "llm_every_turn": false,
+    "overrides": {},
+    "scoring": {
+      "judged": 44,
+      "agreement": 0.955,
+      "judge_model": "openai/gpt-oss-120b"
+    },
+    "memory_format": "plain"
+  },
+  "summary": {
+    "naive_rag": {
+      "accuracy": 0.864,
+      "regex_accuracy": 0.909,
+      "by_category": {
+        "distractor": 1.0,
+        "long_gap": 1.0,
+        "multi_recall": 1.0,
+        "single_recall": 1.0,
+        "update": 1.0,
+        "update_chain": 0.5
+      },
+      "avg_prompt_tokens": 185.3,
+      "avg_memories_injected": 2.41,
+      "avg_active_memories": 20.3,
+      "probes": 22
+    },
+    "lethe": {
+      "accuracy": 0.864,
+      "regex_accuracy": 0.909,
+      "by_category": {
+        "distractor": 1.0,
+        "long_gap": 1.0,
+        "multi_recall": 1.0,
+        "single_recall": 1.0,
+        "update": 1.0,
+        "update_chain": 0.5
+      },
+      "avg_prompt_tokens": 183.9,
+      "avg_memories_injected": 2.14,
+      "avg_active_memories": 6.1,
+      "probes": 22
+    }
+  },
+  "rows": [
+    {
+      "task": "t01",
+      "category": "single_recall",
+      "condition": "naive_rag",
+      "question": "where does my sister live?",
+      "answer": "Your sister lives in Pune.",
+      "gold": "pune",
+      "expect": [
+        "\\bpune\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 166,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "active_memories": 14,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t02",
+      "category": "single_recall",
+      "condition": "naive_rag",
+      "question": "what's my dog called?",
+      "answer": "Your dog\u2019s name is Bruno.",
+      "gold": "bruno",
+      "expect": [
+        "\\bbruno\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 169,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "active_memories": 16,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t03",
+      "category": "single_recall",
+      "condition": "naive_rag",
+      "question": "which food do i refuse to eat?",
+      "answer": "You refuse to eat mushrooms.",
+      "gold": "mushrooms",
+      "expect": [
+        "mushroom"
+      ],
+      "correct": true,
+      "prompt_tokens": 172,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "active_memories": 18,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t04",
+      "category": "single_recall",
+      "condition": "naive_rag",
+      "question": "what laptop do i use for work?",
+      "answer": "You use a ThinkPad\u202fX1 for work.",
+      "gold": "a thinkpad x1",
+      "expect": [
+        "thinkpad"
+      ],
+      "correct": true,
+      "prompt_tokens": 171,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "active_memories": 20,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t05",
+      "category": "multi_recall",
+      "condition": "naive_rag",
+      "question": "what's my favourite club?",
+      "answer": "Your favourite club is Barcelona.",
+      "gold": "barcelona",
+      "expect": [
+        "\\bbarcelona\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 168,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "active_memories": 20,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t05",
+      "category": "multi_recall",
+      "condition": "naive_rag",
+      "question": "which day do i play football?",
+      "answer": "You play football every Sunday.",
+      "gold": "sunday",
+      "expect": [
+        "\\bsunday"
+      ],
+      "correct": true,
+      "prompt_tokens": 178,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "active_memories": 21,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t05",
+      "category": "multi_recall",
+      "condition": "naive_rag",
+      "question": "what's my coach's name?",
+      "answer": "Your coach\u2019s name is Ravi.",
+      "gold": "ravi",
+      "expect": [
+        "\\bravi\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 179,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "active_memories": 22,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t06",
+      "category": "multi_recall",
+      "condition": "naive_rag",
+      "question": "when is my exam?",
+      "answer": "Your exam is on **14\u202fNovember**.",
+      "gold": "14 november",
+      "expect": [
+        "\\b14(th)?\\s+nov",
+        "nov\\w*\\s+14"
+      ],
+      "correct": true,
+      "prompt_tokens": 184,
+      "memories_injected": 4,
+      "reloaded": 0,
+      "active_memories": 20,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t06",
+      "category": "multi_recall",
+      "condition": "naive_rag",
+      "question": "which exam am i preparing for?",
+      "answer": "You\u2019re preparing for the **GATE exam in Computer Science**.",
+      "gold": "gate (computer science)",
+      "expect": [
+        "\\bgate\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 198,
+      "memories_injected": 4,
+      "reloaded": 0,
+      "active_memories": 21,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t06",
+      "category": "multi_recall",
+      "condition": "naive_rag",
+      "question": "who is my study partner?",
+      "answer": "Your study partner is **Neha**.",
+      "gold": "neha",
+      "expect": [
+        "\\bneha\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 213,
+      "memories_injected": 4,
+      "reloaded": 0,
+      "active_memories": 22,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t07",
+      "category": "distractor",
+      "condition": "naive_rag",
+      "question": "which city does my own sister live in?",
+      "answer": "Your sister lives in Pune.",
+      "gold": "pune",
+      "expect": [
+        "\\bpune\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 187,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "active_memories": 20,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t08",
+      "category": "distractor",
+      "condition": "naive_rag",
+      "question": "who is my current manager?",
+      "answer": "Your current manager is Priya.",
+      "gold": "priya",
+      "expect": [
+        "\\bpriya\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 180,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "active_memories": 20,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t09",
+      "category": "update",
+      "condition": "naive_rag",
+      "question": "which company do i work at now?",
+      "answer": "You\u2019re now working at Zoho.",
+      "gold": "zoho",
+      "expect": [
+        "\\bzoho\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 183,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "active_memories": 17,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t10",
+      "category": "update",
+      "condition": "naive_rag",
+      "question": "which city do i live in now?",
+      "answer": "You\u2019re currently in Bangalore.",
+      "gold": "bangalore",
+      "expect": [
+        "bangalore|bengaluru"
+      ],
+      "correct": true,
+      "prompt_tokens": 178,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "active_memories": 17,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t11",
+      "category": "long_gap",
+      "condition": "naive_rag",
+      "question": "what bike do i ride?",
+      "answer": "You ride a Royal Enfield Classic 350.",
+      "gold": "a royal enfield classic 350",
+      "expect": [
+        "enfield"
+      ],
+      "correct": true,
+      "prompt_tokens": 175,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "active_memories": 28,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t12",
+      "category": "long_gap",
+      "condition": "naive_rag",
+      "question": "when is my mom's birthday?",
+      "answer": "Your mom\u2019s birthday is on March\u202f3.",
+      "gold": "3 march",
+      "expect": [
+        "\\b3(rd)?\\s+march",
+        "march\\s+3"
+      ],
+      "correct": true,
+      "prompt_tokens": 168,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "active_memories": 28,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t13",
+      "category": "update_chain",
+      "condition": "naive_rag",
+      "question": "what's my favourite band these days?",
+      "answer": "Your current favourite band is **Arctic\u202fMonkeys**.",
+      "gold": "the local train",
+      "expect": [
+        "local\\s*train"
+      ],
+      "correct": false,
+      "prompt_tokens": 191,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "active_memories": 20,
+      "correct_regex": false,
+      "correct_judge": false
+    },
+    {
+      "task": "t13",
+      "category": "update_chain",
+      "condition": "naive_rag",
+      "question": "which band did i like right before my current favourite?",
+      "answer": "The band you liked right before Arctic\u202fMonkeys was **The Local Train**.",
+      "gold": "arctic monkeys (coldplay -> arctic monkeys -> the local train)",
+      "expect": [
+        "arctic\\s*monkeys"
+      ],
+      "correct": false,
+      "prompt_tokens": 216,
+      "memories_injected": 4,
+      "reloaded": 0,
+      "active_memories": 21,
+      "correct_regex": true,
+      "correct_judge": false
+    },
+    {
+      "task": "t14",
+      "category": "update_chain",
+      "condition": "naive_rag",
+      "question": "what time is my standup now?",
+      "answer": "Your stand\u2011up is scheduled for **9:15\u202fam**.",
+      "gold": "9:15",
+      "expect": [
+        "9[:.]15"
+      ],
+      "correct": true,
+      "prompt_tokens": 211,
+      "memories_injected": 5,
+      "reloaded": 0,
+      "active_memories": 20,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t15",
+      "category": "update_chain",
+      "condition": "naive_rag",
+      "question": "who is my landlord now?",
+      "answer": "Your current landlord is Mr.\u202fBose.",
+      "gold": "mr. bose",
+      "expect": [
+        "\\bbose\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 196,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "active_memories": 20,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t15",
+      "category": "update_chain",
+      "condition": "naive_rag",
+      "question": "who was my landlord before the current one?",
+      "answer": "Before Mr.\u202fBose, your landlord was Mrs.\u202fIyer.",
+      "gold": "mrs. iyer (kapoor -> iyer -> bose)",
+      "expect": [
+        "\\biyer\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 215,
+      "memories_injected": 4,
+      "reloaded": 0,
+      "active_memories": 21,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t16",
+      "category": "update_chain",
+      "condition": "naive_rag",
+      "question": "which book am i reading at the moment?",
+      "answer": "You\u2019re currently reading *Project Hail\u202fMary*.",
+      "gold": "the three body problem",
+      "expect": [
+        "three[\\s-]*body"
+      ],
+      "correct": false,
+      "prompt_tokens": 179,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "active_memories": 20,
+      "correct_regex": false,
+      "correct_judge": false
+    },
+    {
+      "task": "t01",
+      "category": "single_recall",
+      "condition": "lethe",
+      "question": "where does my sister live?",
+      "answer": "Your sister lives in Pune.",
+      "gold": "pune",
+      "expect": [
+        "\\bpune\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 166,
+      "memories_injected": 1,
+      "reloaded": 1,
+      "active_memories": 6,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t02",
+      "category": "single_recall",
+      "condition": "lethe",
+      "question": "what's my dog called?",
+      "answer": "Your dog\u2019s name is Bruno.",
+      "gold": "bruno",
+      "expect": [
+        "\\bbruno\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 169,
+      "memories_injected": 1,
+      "reloaded": 1,
+      "active_memories": 6,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t03",
+      "category": "single_recall",
+      "condition": "lethe",
+      "question": "which food do i refuse to eat?",
+      "answer": "You don\u2019t eat mushrooms.",
+      "gold": "mushrooms",
+      "expect": [
+        "mushroom"
+      ],
+      "correct": true,
+      "prompt_tokens": 172,
+      "memories_injected": 1,
+      "reloaded": 1,
+      "active_memories": 6,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t04",
+      "category": "single_recall",
+      "condition": "lethe",
+      "question": "what laptop do i use for work?",
+      "answer": "You use a ThinkPad\u202fX1 for work.",
+      "gold": "a thinkpad x1",
+      "expect": [
+        "thinkpad"
+      ],
+      "correct": true,
+      "prompt_tokens": 171,
+      "memories_injected": 1,
+      "reloaded": 1,
+      "active_memories": 6,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t05",
+      "category": "multi_recall",
+      "condition": "lethe",
+      "question": "what's my favourite club?",
+      "answer": "Your favourite club is Barcelona.",
+      "gold": "barcelona",
+      "expect": [
+        "\\bbarcelona\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 168,
+      "memories_injected": 1,
+      "reloaded": 1,
+      "active_memories": 6,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t05",
+      "category": "multi_recall",
+      "condition": "lethe",
+      "question": "which day do i play football?",
+      "answer": "You play football every Sunday.",
+      "gold": "sunday",
+      "expect": [
+        "\\bsunday"
+      ],
+      "correct": true,
+      "prompt_tokens": 178,
+      "memories_injected": 2,
+      "reloaded": 2,
+      "active_memories": 6,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t05",
+      "category": "multi_recall",
+      "condition": "lethe",
+      "question": "what's my coach's name?",
+      "answer": "Your coach\u2019s name is Ravi.",
+      "gold": "ravi",
+      "expect": [
+        "\\bravi\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 179,
+      "memories_injected": 1,
+      "reloaded": 1,
+      "active_memories": 6,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t06",
+      "category": "multi_recall",
+      "condition": "lethe",
+      "question": "when is my exam?",
+      "answer": "Your exam is on **14\u202fNovember**.",
+      "gold": "14 november",
+      "expect": [
+        "\\b14(th)?\\s+nov",
+        "nov\\w*\\s+14"
+      ],
+      "correct": true,
+      "prompt_tokens": 180,
+      "memories_injected": 3,
+      "reloaded": 2,
+      "active_memories": 6,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t06",
+      "category": "multi_recall",
+      "condition": "lethe",
+      "question": "which exam am i preparing for?",
+      "answer": "You\u2019re preparing for the **GATE (Graduate Aptitude Test in Engineering) exam in Computer Science**.",
+      "gold": "gate (computer science)",
+      "expect": [
+        "\\bgate\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 193,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "active_memories": 6,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t06",
+      "category": "multi_recall",
+      "condition": "lethe",
+      "question": "who is my study partner?",
+      "answer": "Your study partner is **Neha**.",
+      "gold": "neha",
+      "expect": [
+        "\\bneha\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 221,
+      "memories_injected": 4,
+      "reloaded": 1,
+      "active_memories": 6,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t07",
+      "category": "distractor",
+      "condition": "lethe",
+      "question": "which city does my own sister live in?",
+      "answer": "Your sister lives in Pune.",
+      "gold": "pune",
+      "expect": [
+        "\\bpune\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 179,
+      "memories_injected": 2,
+      "reloaded": 2,
+      "active_memories": 6,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t08",
+      "category": "distractor",
+      "condition": "lethe",
+      "question": "who is my current manager?",
+      "answer": "Your current manager is Priya.",
+      "gold": "priya",
+      "expect": [
+        "\\bpriya\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 180,
+      "memories_injected": 2,
+      "reloaded": 2,
+      "active_memories": 6,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t09",
+      "category": "update",
+      "condition": "lethe",
+      "question": "which company do i work at now?",
+      "answer": "You\u2019re now working at Zoho.",
+      "gold": "zoho",
+      "expect": [
+        "\\bzoho\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 183,
+      "memories_injected": 2,
+      "reloaded": 2,
+      "active_memories": 6,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t10",
+      "category": "update",
+      "condition": "lethe",
+      "question": "which city do i live in now?",
+      "answer": "You\u2019re currently living in Bangalore.",
+      "gold": "bangalore",
+      "expect": [
+        "bangalore|bengaluru"
+      ],
+      "correct": true,
+      "prompt_tokens": 178,
+      "memories_injected": 2,
+      "reloaded": 2,
+      "active_memories": 6,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t11",
+      "category": "long_gap",
+      "condition": "lethe",
+      "question": "what bike do i ride?",
+      "answer": "You ride a Royal\u202fEnfield Classic\u202f350.",
+      "gold": "a royal enfield classic 350",
+      "expect": [
+        "enfield"
+      ],
+      "correct": true,
+      "prompt_tokens": 168,
+      "memories_injected": 1,
+      "reloaded": 1,
+      "active_memories": 6,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t12",
+      "category": "long_gap",
+      "condition": "lethe",
+      "question": "when is my mom's birthday?",
+      "answer": "Your mom\u2019s birthday is on **March\u202f3**.",
+      "gold": "3 march",
+      "expect": [
+        "\\b3(rd)?\\s+march",
+        "march\\s+3"
+      ],
+      "correct": true,
+      "prompt_tokens": 168,
+      "memories_injected": 1,
+      "reloaded": 1,
+      "active_memories": 6,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t13",
+      "category": "update_chain",
+      "condition": "lethe",
+      "question": "what's my favourite band these days?",
+      "answer": "Your current favorite band is Arctic\u202fMonkeys.",
+      "gold": "the local train",
+      "expect": [
+        "local\\s*train"
+      ],
+      "correct": false,
+      "prompt_tokens": 191,
+      "memories_injected": 3,
+      "reloaded": 3,
+      "active_memories": 8,
+      "correct_regex": false,
+      "correct_judge": false
+    },
+    {
+      "task": "t13",
+      "category": "update_chain",
+      "condition": "lethe",
+      "question": "which band did i like right before my current favourite?",
+      "answer": "The band you liked just before Arctic\u202fMonkeys was The\u202fLocal\u202fTrain.",
+      "gold": "arctic monkeys (coldplay -> arctic monkeys -> the local train)",
+      "expect": [
+        "arctic\\s*monkeys"
+      ],
+      "correct": false,
+      "prompt_tokens": 213,
+      "memories_injected": 4,
+      "reloaded": 0,
+      "active_memories": 6,
+      "correct_regex": true,
+      "correct_judge": false
+    },
+    {
+      "task": "t14",
+      "category": "update_chain",
+      "condition": "lethe",
+      "question": "what time is my standup now?",
+      "answer": "Your stand\u2011up is scheduled for **9:15\u202fam**.",
+      "gold": "9:15",
+      "expect": [
+        "9[:.]15"
+      ],
+      "correct": true,
+      "prompt_tokens": 198,
+      "memories_injected": 3,
+      "reloaded": 2,
+      "active_memories": 6,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t15",
+      "category": "update_chain",
+      "condition": "lethe",
+      "question": "who is my landlord now?",
+      "answer": "Your current landlord is Mr.\u202fBose.",
+      "gold": "mr. bose",
+      "expect": [
+        "\\bbose\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 196,
+      "memories_injected": 3,
+      "reloaded": 3,
+      "active_memories": 6,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t15",
+      "category": "update_chain",
+      "condition": "lethe",
+      "question": "who was my landlord before the current one?",
+      "answer": "Before Mr.\u202fBose, your landlord was Mrs.\u202fIyer.",
+      "gold": "mrs. iyer (kapoor -> iyer -> bose)",
+      "expect": [
+        "\\biyer\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 215,
+      "memories_injected": 4,
+      "reloaded": 0,
+      "active_memories": 6,
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "t16",
+      "category": "update_chain",
+      "condition": "lethe",
+      "question": "which book am i reading at the moment?",
+      "answer": "You\u2019re currently reading *Project Hail\u202fMary*.",
+      "gold": "the three body problem",
+      "expect": [
+        "three[\\s-]*body"
+      ],
+      "correct": false,
+      "prompt_tokens": 179,
+      "memories_injected": 2,
+      "reloaded": 2,
+      "active_memories": 6,
+      "correct_regex": false,
+      "correct_judge": false
+    }
+  ]
+}

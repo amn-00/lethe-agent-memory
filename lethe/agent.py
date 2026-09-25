@@ -11,7 +11,26 @@ SYSTEM = (
     "Keep answers short."
 )
 
+ORDER_NOTE = (
+    "Memories are listed oldest first, each tagged with the turn it was said (current turn: {turn}). "
+    "If memories conflict, the latest one is the current truth; earlier ones describe the past."
+)
+
 CANNED_REPLY = "Got it."
+
+
+def format_memories(hits, current_turn: int, ordered: bool = True) -> tuple[str, str]:
+    """Returns (memory block, extra system note).
+    ordered=True sorts by when each memory was said and tags it with its turn, so the model
+    can tell 'i moved to indore' (turn 7) from 'now i'm in hyderabad' (turn 13).
+    Unordered similarity-ranked lists made RAG get update chains backwards on the held-out set."""
+    if not hits:
+        return "(none)", ""
+    if not ordered:
+        return "\n".join(f"- {h.memory.text}" for h in hits), ""
+    hits = sorted(hits, key=lambda h: h.memory.created_turn)
+    block = "\n".join(f"- [turn {h.memory.created_turn}] {h.memory.text}" for h in hits)
+    return block, ORDER_NOTE.format(turn=current_turn)
 
 
 def estimate_tokens(messages: list[dict]) -> int:
@@ -20,14 +39,17 @@ def estimate_tokens(messages: list[dict]) -> int:
 
 
 class MemoryAgent:
-    def __init__(self, memory: AgentMemory, llm: LLM):
+    def __init__(self, memory: AgentMemory, llm: LLM, ordered: bool = True):
         self.memory = memory
         self.llm = llm
+        self.ordered = ordered
 
     def build_messages(self, session_id: str, message: str, hits) -> list[dict]:
-        mem_block = "\n".join(f"- {h.memory.text}" for h in hits) or "(none)"
+        turn = self.memory.store.current_turn(session_id)
+        mem_block, note = format_memories(hits, turn, self.ordered)
+        system = f"{SYSTEM} {note}".strip()
         return [
-            {"role": "system", "content": f"{SYSTEM}\n\nMemories:\n{mem_block}"},
+            {"role": "system", "content": f"{system}\n\nMemories:\n{mem_block}"},
             *self.memory.store.recent_messages(session_id, self.memory.cfg.recent_window),
             {"role": "user", "content": message},
         ]

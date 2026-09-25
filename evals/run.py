@@ -89,7 +89,9 @@ async def score_rows(rows: list[dict], judge_llm=None) -> dict:
     return {"judged": judged, "agreement": round(agree / judged, 3) if judged else None}
 
 
-def make_agent(condition: str, llm, embedder, budget: int, grace: int, overrides: dict | None = None):
+def make_agent(
+    condition: str, llm, embedder, budget: int, grace: int, overrides: dict | None = None, ordered: bool = True
+):
     if condition == "no_memory":
         return WindowAgent(llm, window=4), None
     if condition == "full_history":
@@ -99,11 +101,11 @@ def make_agent(condition: str, llm, embedder, budget: int, grace: int, overrides
     if condition == "naive_rag":
         cfg = PolicyConfig(active_budget=10**9, **overrides)  # same retrieval, never evicts
     memory = AgentMemory(Store(":memory:"), VectorIndex(None, f"eval-{uuid.uuid4().hex[:10]}"), embedder, cfg)
-    return MemoryAgent(memory, llm), memory
+    return MemoryAgent(memory, llm, ordered=ordered), memory
 
 
-async def run_task(condition, task, filler, llm, embedder, budget, grace, every_turn, overrides=None):
-    agent, memory = make_agent(condition, llm, embedder, budget, grace, overrides)
+async def run_task(condition, task, filler, llm, embedder, budget, grace, every_turn, overrides=None, ordered=True):
+    agent, memory = make_agent(condition, llm, embedder, budget, grace, overrides, ordered)
     sid, results = task["id"], []
     for turn in expand(task, filler):
         is_probe = "ask" in turn
@@ -121,6 +123,7 @@ async def run_task(condition, task, filler, llm, embedder, budget, grace, every_
                 "prompt_tokens": out["prompt_tokens"],
                 "memories_injected": len(out["recalled"]),
                 "reloaded": sum(r["reloaded"] for r in out["recalled"]),
+                "recalled_texts": [x["text"] for x in out["recalled"]],
                 "active_memories": len(memory.store.list_memories(sid, ACTIVE)) if memory else None,
             })
     return results
@@ -157,6 +160,7 @@ def to_markdown(summary: dict, meta: dict) -> str:
         f"model `{meta['model']}` · budget {meta['budget']} · grace {meta['grace']} · "
         f"{meta['tasks']} tasks · {meta['probes_per_condition']} questions per condition"
         + (f" · overrides {meta['overrides']}" if meta["overrides"] else "")
+        + f" · memories {meta.get('memory_format', 'plain')}"
         + (" · DRY RUN (fake LLM)" if meta["dry_run"] else ""),
         "",
     ]
@@ -213,7 +217,8 @@ async def main(args):
         for task in tasks:
             t0 = time.time()
             res = await run_task(
-                cond, task, data["filler"], llm, embedder, args.budget, args.grace, args.llm_every_turn, overrides
+                cond, task, data["filler"], llm, embedder, args.budget, args.grace, args.llm_every_turn, overrides,
+                ordered=args.memory_format == "ordered",
             )
             rows += res
             ok = sum(r["correct"] for r in res)
@@ -234,7 +239,7 @@ async def main(args):
         "timestamp": time.strftime("%Y-%m-%d %H:%M"), "split": args.split, "model": model, "budget": args.budget, "grace": args.grace,
         "tasks": len(tasks), "probes_per_condition": len(rows) // max(len(args.conditions), 1),
         "dry_run": args.dry_run, "llm_every_turn": args.llm_every_turn, "overrides": overrides,
-        "scoring": scoring,
+        "scoring": scoring, "memory_format": args.memory_format,
     }
     out_dir = HERE / "results"
     out_dir.mkdir(exist_ok=True)
@@ -254,6 +259,8 @@ def cli():
     p.add_argument("--limit", type=int, default=0, help="only run the first N tasks")
     p.add_argument("--llm-every-turn", action="store_true", help="call the LLM on filler turns too")
     p.add_argument("--dry-run", action="store_true", help="offline: fake LLM + fake embedder")
+    p.add_argument("--memory-format", default="ordered", choices=["ordered", "plain"],
+                   help="ordered = oldest-first with turn tags; plain = similarity-ranked (the old behaviour)")
     p.add_argument("--judge", action="store_true", help="grade answers with an LLM judge (primary score)")
     p.add_argument("--judge-model", default="openai/gpt-oss-120b")
     p.add_argument("--min-similarity", type=float, default=None, help="override recall threshold")

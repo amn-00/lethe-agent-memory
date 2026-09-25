@@ -22,6 +22,8 @@ Retention score = weighted mix of:
 | frequency | how often it gets retrieved |
 | used_rate | how often it's used *when* retrieved (Laplace-smoothed) |
 
+Recalled memories are shown to the model oldest first, tagged with the turn they were said, so when a fact changes ("moved to indore" at turn 7, "now in hyderabad" at turn 13) the model can tell which one is current. The held-out eval showed similarity-ranked lists made RAG answer update chains backwards.
+
 Memories retrieved often but never used sink fastest. Anything accessed in the last `grace_turns` is protected. Every decision is logged with its score breakdown in `ops`.
 
 ## Stack
