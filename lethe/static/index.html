@@ -407,7 +407,8 @@ async function loadResults() {
   if (resultsLoaded) return;
   const body = $("results-body");
   try {
-    const data = await fetch("/eval/heldout").then(r => r.json());
+    let data = await fetch("/eval/heldout2").then(r => r.json());   // the fresh set, written after all tuning
+    if (!Object.keys(data.conditions).length) data = await fetch("/eval/heldout").then(r => r.json());
     const conds = ORDER.filter(c => data.conditions[c]);
     if (!conds.length) { body.replaceChildren(el("p", "note", "No saved held-out results yet. Run: python -m evals.run --split heldout --judge")); return; }
     body.replaceChildren(overview(data, conds), el("h3", null, "By kind of question"), categories(data, conds), footnote(data, conds));
@@ -425,6 +426,11 @@ function overview(data, conds) {
     const a = el("td"), acc = el("div", "acc"), track = el("div", "track"), fill = el("div", "fill");
     fill.style.setProperty("--w", `${Math.round(s.accuracy * 100)}%`); track.append(fill);
     acc.append(track, el("span", null, `${Math.round(s.accuracy * 100)}%`)); a.append(acc);
+    if (s.ci95) {
+      let range = `likely ${Math.round(s.ci95[0] * 100)}–${Math.round(s.ci95[1] * 100)}%`;
+      if (s.runs > 1) range += `, varied ±${(s.accuracy_std * 100).toFixed(1)} over ${s.runs} runs`;
+      a.append(el("span", "desc", range));
+    }
     tr.append(n, a,
       el("td", "num", Math.round(s.avg_prompt_tokens)),
       el("td", "num", s.avg_active_memories != null ? s.avg_active_memories : c === "no_memory" ? "none" : "everything"),
@@ -450,9 +456,11 @@ function categories(data, conds) {
 function footnote(data, conds) {
   const m = data.meta || {}, judged = conds.every(c => data.conditions[c].judged);
   return el("p", "note",
-    `${m.probes_per_condition || "?"} held-out questions per setup across ${m.tasks || "?"} conversations, answered by ${m.model || "the model"}` +
+    `${m.probes_per_condition || "?"} ${data.split === "heldout2" ? "fresh held-out" : "held-out"} questions per setup across ${m.tasks || "?"} conversations` +
+    `${m.repeats > 1 ? `, each run ${m.repeats} times` : ""}, answered by ${m.model || "the model"}` +
     `${judged ? ` and graded by ${m.scoring?.judge_model || "an LLM judge"} against reference answers` : ""}. ` +
-    `Memory budget ${m.budget}. The same setup can move about 6 points between runs, so smaller gaps are within noise.`);
+    `Memory budget ${m.budget}. The range under each score is a 95% interval from resampling the conversations: ` +
+    `with this many conversations, gaps smaller than that range aren't meaningful.`);
 }
 </script>
 </body>

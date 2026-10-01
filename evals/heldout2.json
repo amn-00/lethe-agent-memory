@@ -1,0 +1,752 @@
+{
+ "filler": [
+  "lmao",
+  "what a day honestly",
+  "the power just blinked",
+  "need to charge my earbuds",
+  "eating some fruit",
+  "it's so humid",
+  "my eyes are tired",
+  "watching the rain",
+  "just stretched my legs",
+  "the cat next door is meowing",
+  "can't find my charger",
+  "so sleepy",
+  "nice nice",
+  "ok that's fair",
+  "hmm maybe",
+  "the internet is crawling",
+  "making some tea",
+  "just got back home",
+  "my neck is stiff",
+  "the street is noisy tonight",
+  "thinking about dinner",
+  "cleaning my glasses",
+  "a mosquito keeps bugging me",
+  "random song stuck in my head",
+  "time flies",
+  "anyway moving on",
+  "just yawned",
+  "my room is a mess",
+  "the fridge is humming",
+  "ordered some groceries",
+  "the sunset looks nice",
+  "feeling lazy",
+  "checking my messages",
+  "had a quick nap",
+  "the milk went sour",
+  "my pen ran out of ink",
+  "watching some cricket highlights",
+  "the ceiling fan wobbles",
+  "okay cool cool",
+  "brb"
+ ],
+ "tasks": [
+  {
+   "id": "v01",
+   "category": "multi_recall",
+   "script": [
+    {
+     "say": "my yoga class is on wednesday evenings"
+    },
+    {
+     "filler": 3
+    },
+    {
+     "say": "the yoga instructor is called meera"
+    },
+    {
+     "filler": 3
+    },
+    {
+     "say": "the studio is named lotus loft"
+    },
+    {
+     "filler": 12
+    },
+    {
+     "ask": "which day is my yoga class?",
+     "expect": [
+      "wednesday"
+     ],
+     "gold": "wednesday evenings"
+    },
+    {
+     "ask": "who is my yoga instructor?",
+     "expect": [
+      "\\bmeera\\b"
+     ],
+     "gold": "meera"
+    },
+    {
+     "ask": "what's the yoga studio called?",
+     "expect": [
+      "lotus\\s*loft"
+     ],
+     "gold": "lotus loft"
+    }
+   ]
+  },
+  {
+   "id": "v02",
+   "category": "multi_recall",
+   "script": [
+    {
+     "say": "my storage unit number is 0458"
+    },
+    {
+     "filler": 3
+    },
+    {
+     "say": "the storage place is called safekeep"
+    },
+    {
+     "filler": 3
+    },
+    {
+     "say": "the gate code at the storage place is 7791"
+    },
+    {
+     "filler": 12
+    },
+    {
+     "ask": "what's my storage unit number?",
+     "expect": [
+      "0?458"
+     ],
+     "gold": "0458"
+    },
+    {
+     "ask": "what's the storage place called?",
+     "expect": [
+      "safe\\s*keep"
+     ],
+     "gold": "safekeep"
+    },
+    {
+     "ask": "what's the gate code at the storage place?",
+     "expect": [
+      "7791"
+     ],
+     "gold": "7791"
+    }
+   ]
+  },
+  {
+   "id": "v03",
+   "category": "multi_recall",
+   "script": [
+    {
+     "say": "my cousin's wedding is on 18 january"
+    },
+    {
+     "filler": 3
+    },
+    {
+     "say": "the wedding is happening in udaipur"
+    },
+    {
+     "filler": 3
+    },
+    {
+     "say": "i'm supposed to give a speech at the wedding"
+    },
+    {
+     "filler": 12
+    },
+    {
+     "ask": "when is my cousin's wedding?",
+     "expect": [
+      "\\b18(th)?\\s+jan",
+      "jan\\w*\\s+18"
+     ],
+     "gold": "18 january"
+    },
+    {
+     "ask": "which city is the wedding in?",
+     "expect": [
+      "udaipur"
+     ],
+     "gold": "udaipur"
+    },
+    {
+     "ask": "what am i supposed to do at the wedding?",
+     "expect": [
+      "speech"
+     ],
+     "gold": "give a speech"
+    }
+   ]
+  },
+  {
+   "id": "v04",
+   "category": "multi_recall",
+   "script": [
+    {
+     "say": "my mentor at work is called nikhil"
+    },
+    {
+     "filler": 3
+    },
+    {
+     "say": "my mentor and i meet every thursday"
+    },
+    {
+     "filler": 3
+    },
+    {
+     "say": "our project is codenamed falcon"
+    },
+    {
+     "filler": 12
+    },
+    {
+     "ask": "who is my mentor at work?",
+     "expect": [
+      "\\bnikhil\\b"
+     ],
+     "gold": "nikhil"
+    },
+    {
+     "ask": "which day do i meet my mentor?",
+     "expect": [
+      "thursday"
+     ],
+     "gold": "thursday"
+    },
+    {
+     "ask": "what's our project's codename?",
+     "expect": [
+      "falcon"
+     ],
+     "gold": "falcon"
+    }
+   ]
+  },
+  {
+   "id": "v05",
+   "category": "multi_recall",
+   "script": [
+    {
+     "say": "my new houseplant is a fiddle leaf fig"
+    },
+    {
+     "filler": 3
+    },
+    {
+     "say": "i named the houseplant ferdinand"
+    },
+    {
+     "filler": 3
+    },
+    {
+     "say": "i water ferdinand every saturday"
+    },
+    {
+     "filler": 12
+    },
+    {
+     "ask": "what kind of houseplant do i have?",
+     "expect": [
+      "fiddle"
+     ],
+     "gold": "a fiddle leaf fig"
+    },
+    {
+     "ask": "what did i name my houseplant?",
+     "expect": [
+      "ferdinand"
+     ],
+     "gold": "ferdinand"
+    },
+    {
+     "ask": "which day do i water my houseplant?",
+     "expect": [
+      "saturday"
+     ],
+     "gold": "saturday"
+    }
+   ]
+  },
+  {
+   "id": "v06",
+   "category": "distractor",
+   "script": [
+    {
+     "say": "my car insurance renews in april"
+    },
+    {
+     "filler": 2
+    },
+    {
+     "say": "my health insurance renews in september"
+    },
+    {
+     "filler": 2
+    },
+    {
+     "say": "my phone insurance renews in june"
+    },
+    {
+     "filler": 12
+    },
+    {
+     "ask": "when does my health insurance renew?",
+     "expect": [
+      "sept"
+     ],
+     "gold": "september"
+    },
+    {
+     "ask": "when does my car insurance renew?",
+     "expect": [
+      "april"
+     ],
+     "gold": "april"
+    }
+   ]
+  },
+  {
+   "id": "v07",
+   "category": "distractor",
+   "script": [
+    {
+     "say": "my older brother is called yash"
+    },
+    {
+     "filler": 2
+    },
+    {
+     "say": "my younger brother is called veer"
+    },
+    {
+     "filler": 2
+    },
+    {
+     "say": "my best friend's brother is called dev"
+    },
+    {
+     "filler": 12
+    },
+    {
+     "ask": "what's my older brother's name?",
+     "expect": [
+      "\\byash\\b"
+     ],
+     "gold": "yash"
+    },
+    {
+     "ask": "what's my younger brother's name?",
+     "expect": [
+      "\\bveer\\b"
+     ],
+     "gold": "veer"
+    }
+   ]
+  },
+  {
+   "id": "v08",
+   "category": "distractor",
+   "script": [
+    {
+     "say": "my work laptop password hint is orange tiger"
+    },
+    {
+     "filler": 2
+    },
+    {
+     "say": "my personal laptop password hint is silver moon"
+    },
+    {
+     "filler": 2
+    },
+    {
+     "say": "my tablet has no password at all"
+    },
+    {
+     "filler": 12
+    },
+    {
+     "ask": "what's the password hint for my work laptop?",
+     "expect": [
+      "orange\\s*tiger"
+     ],
+     "gold": "orange tiger"
+    },
+    {
+     "ask": "what's the password hint for my personal laptop?",
+     "expect": [
+      "silver\\s*moon"
+     ],
+     "gold": "silver moon"
+    }
+   ]
+  },
+  {
+   "id": "v09",
+   "category": "distractor",
+   "script": [
+    {
+     "say": "my morning coffee order is a flat white"
+    },
+    {
+     "filler": 2
+    },
+    {
+     "say": "in the afternoon i order a cold brew"
+    },
+    {
+     "filler": 2
+    },
+    {
+     "say": "my partner always orders a cappuccino"
+    },
+    {
+     "filler": 12
+    },
+    {
+     "ask": "what do i order in the afternoon?",
+     "expect": [
+      "cold\\s*brew"
+     ],
+     "gold": "a cold brew"
+    },
+    {
+     "ask": "what's my morning coffee order?",
+     "expect": [
+      "flat\\s*white"
+     ],
+     "gold": "a flat white"
+    }
+   ]
+  },
+  {
+   "id": "v10",
+   "category": "distractor",
+   "script": [
+    {
+     "say": "my gym is in sector 18"
+    },
+    {
+     "filler": 2
+    },
+    {
+     "say": "my office is in sector 62"
+    },
+    {
+     "filler": 2
+    },
+    {
+     "say": "my parents live in sector 15"
+    },
+    {
+     "filler": 12
+    },
+    {
+     "ask": "which sector is my office in?",
+     "expect": [
+      "\\b62\\b"
+     ],
+     "gold": "sector 62"
+    },
+    {
+     "ask": "which sector do my parents live in?",
+     "expect": [
+      "\\b15\\b"
+     ],
+     "gold": "sector 15"
+    }
+   ]
+  },
+  {
+   "id": "v11",
+   "category": "update_chain",
+   "script": [
+    {
+     "say": "my daily step goal is 6000"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "raised my step goal to 8000"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "now my step goal is 10000"
+    },
+    {
+     "filler": 8
+    },
+    {
+     "ask": "what's my current daily step goal?",
+     "expect": [
+      "10,?000",
+      "\\b10k\\b",
+      "ten thousand"
+     ],
+     "gold": "10000"
+    },
+    {
+     "ask": "what was my step goal just before the current one?",
+     "expect": [
+      "\\b8,?000",
+      "\\b8k\\b",
+      "eight thousand"
+     ],
+     "gold": "8000 (6000 -> 8000 -> 10000)"
+    }
+   ]
+  },
+  {
+   "id": "v12",
+   "category": "update_chain",
+   "script": [
+    {
+     "say": "my favourite tv show is dark"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "now i'm hooked on severance"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "these days my favourite show is shogun"
+    },
+    {
+     "filler": 8
+    },
+    {
+     "ask": "what's my favourite tv show these days?",
+     "expect": [
+      "shogun"
+     ],
+     "gold": "shogun"
+    },
+    {
+     "ask": "which show was my favourite right before the current one?",
+     "expect": [
+      "severance"
+     ],
+     "gold": "severance (dark -> severance -> shogun)"
+    }
+   ]
+  },
+  {
+   "id": "v13",
+   "category": "update_chain",
+   "script": [
+    {
+     "say": "my desk is on the 3rd floor"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "they moved my desk to the 5th floor"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "my desk got moved again, it's on the 9th floor now"
+    },
+    {
+     "filler": 8
+    },
+    {
+     "ask": "which floor is my desk on now?",
+     "expect": [
+      "\\b9(th)?\\b",
+      "ninth"
+     ],
+     "gold": "9th floor"
+    }
+   ]
+  },
+  {
+   "id": "v14",
+   "category": "update_chain",
+   "script": [
+    {
+     "say": "my home wifi provider is airtel"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "switched my home wifi to jio"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "changed providers again, my home wifi is act fibernet now"
+    },
+    {
+     "filler": 8
+    },
+    {
+     "ask": "which wifi provider do i use at home now?",
+     "expect": [
+      "act\\s*fibernet",
+      "\\bact\\b"
+     ],
+     "gold": "act fibernet"
+    }
+   ]
+  },
+  {
+   "id": "v15",
+   "category": "update_chain",
+   "script": [
+    {
+     "say": "i run in asics shoes"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "replaced my running shoes with hokas"
+    },
+    {
+     "filler": 4
+    },
+    {
+     "say": "my running shoes now are nike pegasus"
+    },
+    {
+     "filler": 8
+    },
+    {
+     "ask": "which running shoes do i use now?",
+     "expect": [
+      "pegasus"
+     ],
+     "gold": "nike pegasus"
+    },
+    {
+     "ask": "which running shoes did i have right before the current ones?",
+     "expect": [
+      "hoka"
+     ],
+     "gold": "hoka (asics -> hoka -> pegasus)"
+    }
+   ]
+  },
+  {
+   "id": "v16",
+   "category": "long_gap",
+   "script": [
+    {
+     "say": "my locker at work is number 312"
+    },
+    {
+     "filler": 40
+    },
+    {
+     "ask": "what's my locker number at work?",
+     "expect": [
+      "\\b312\\b"
+     ],
+     "gold": "312"
+    }
+   ]
+  },
+  {
+   "id": "v17",
+   "category": "long_gap",
+   "script": [
+    {
+     "say": "my goldfish is named sushi"
+    },
+    {
+     "filler": 42
+    },
+    {
+     "ask": "what's my goldfish called?",
+     "expect": [
+      "sushi"
+     ],
+     "gold": "sushi"
+    }
+   ]
+  },
+  {
+   "id": "v18",
+   "category": "long_gap",
+   "script": [
+    {
+     "say": "my library card number ends in 6630"
+    },
+    {
+     "filler": 44
+    },
+    {
+     "ask": "what does my library card number end in?",
+     "expect": [
+      "6630"
+     ],
+     "gold": "6630"
+    }
+   ]
+  },
+  {
+   "id": "v19",
+   "category": "long_gap",
+   "script": [
+    {
+     "say": "my grandmother's village is called kheda"
+    },
+    {
+     "filler": 40
+    },
+    {
+     "ask": "what's the name of my grandmother's village?",
+     "expect": [
+      "kheda"
+     ],
+     "gold": "kheda"
+    }
+   ]
+  },
+  {
+   "id": "v20",
+   "category": "long_gap",
+   "script": [
+    {
+     "say": "my emergency contact is my uncle rajiv"
+    },
+    {
+     "filler": 20
+    },
+    {
+     "say": "my uncle rajiv's phone number ends in 2207"
+    },
+    {
+     "filler": 20
+    },
+    {
+     "ask": "who is my emergency contact?",
+     "expect": [
+      "\\brajiv\\b"
+     ],
+     "gold": "uncle rajiv"
+    },
+    {
+     "ask": "what does my emergency contact's number end in?",
+     "expect": [
+      "2207"
+     ],
+     "gold": "2207"
+    }
+   ]
+  }
+ ]
+}

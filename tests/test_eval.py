@@ -11,6 +11,9 @@ import pytest
 EVALS = Path(__file__).parent.parent / "evals"
 DATA = json.loads((EVALS / "tasks.json").read_text(encoding="utf-8"))
 HELDOUT = json.loads((EVALS / "heldout.json").read_text(encoding="utf-8"))
+HELDOUT2 = json.loads((EVALS / "heldout2.json").read_text(encoding="utf-8"))
+ALL_SETS = [DATA, HELDOUT, HELDOUT2]
+SET_IDS = ["dev", "heldout", "heldout2"]
 
 
 FAKE_THRESHOLDS = {"min_similarity": 0.3, "reload_threshold": 0.3}  # fake embedder scores lower than bge
@@ -26,7 +29,7 @@ def _run(condition, task, budget=6, grace=2):
     return _run_on(DATA, condition, task, budget, grace)
 
 
-@pytest.mark.parametrize("data", [DATA, HELDOUT], ids=["dev", "heldout"])
+@pytest.mark.parametrize("data", ALL_SETS, ids=SET_IDS)
 def test_filler_never_leaks_an_answer(data):
     for task in data["tasks"]:
         for step in task["script"]:
@@ -43,7 +46,7 @@ def test_heldout_is_actually_fresh():
     assert not dev_says & held_says
 
 
-@pytest.mark.parametrize("data", [DATA, HELDOUT], ids=["dev", "heldout"])
+@pytest.mark.parametrize("data", ALL_SETS, ids=SET_IDS)
 def test_full_history_can_answer_everything(data):
     """Sanity check on the task set itself: with the whole conversation visible, every
     expected answer must be present, otherwise the task (not the system) is broken."""
@@ -113,7 +116,7 @@ def test_judge_catches_what_regex_cannot():
 
 
 def test_every_question_has_a_gold_answer():
-    for data in (DATA, HELDOUT):
+    for data in ALL_SETS:
         for task in data["tasks"]:
             for step in task["script"]:
                 if "ask" in step:
@@ -183,3 +186,47 @@ def test_daily_limit_is_not_retried():
     finally:
         httpx.AsyncClient = orig
     assert len(calls) == 1  # failed fast instead of sleeping through retries
+
+
+def test_all_three_sets_are_mutually_fresh():
+    """heldout2 was written after all tuning; it must share no filler or fact sentence with the other sets."""
+    import itertools
+    says = lambda d: {s["say"] for t in d["tasks"] for s in t["script"] if "say" in s}
+    for (na, a), (nb, b) in itertools.combinations(zip(SET_IDS, ALL_SETS), 2):
+        assert not set(a["filler"]) & set(b["filler"]), (na, nb)
+        assert not says(a) & says(b), (na, nb)
+
+
+def test_repeats_run_everything_n_times_and_resume_per_repeat(tmp_path):
+    import argparse
+    from evals.run import run_all
+
+    args = argparse.Namespace(budget=6, grace=2, llm_every_turn=False, memory_format="ordered", repeats=2)
+    tasks, ckpt = DATA["tasks"][:2], tmp_path / "ckpt.jsonl"
+    rows = asyncio.run(run_all(["lethe"], tasks, DATA["filler"], MemoryEchoLLM(), FakeEmbedder(), args, FAKE_THRESHOLDS, ckpt, False))
+    assert len(rows) == 4 and sorted({r["repeat"] for r in rows}) == [0, 1]
+    assert len(ckpt.read_text().splitlines()) == 4
+
+    calls = []
+
+    class CountingLLM(MemoryEchoLLM):
+        async def chat(self, messages):
+            calls.append(1)
+            return await super().chat(messages)
+
+    again = asyncio.run(run_all(["lethe"], tasks, DATA["filler"], CountingLLM(), FakeEmbedder(), args, FAKE_THRESHOLDS, ckpt, True))
+    assert not calls and len(again) == 4  # every (task, repeat) pair came from the checkpoint
+
+
+def test_bootstrap_ci_is_deterministic_and_brackets_accuracy():
+    from evals.run import bootstrap_ci, summarize
+
+    rows = [{"task": f"t{i}", "correct": i % 4 != 0, "condition": "x", "category": "c", "prompt_tokens": 1,
+             "memories_injected": 0, "active_memories": None, "repeat": i % 2} for i in range(40)]
+    lo, hi = bootstrap_ci(rows)
+    assert (lo, hi) == bootstrap_ci(rows)
+    s = summarize(rows)["x"]
+    assert lo <= s["accuracy"] <= hi and lo < hi
+    assert s["runs"] == 2 and s["accuracy_std"] is not None and s["probes"] == 20
+    perfect = [dict(r, correct=True) for r in rows]
+    assert bootstrap_ci(perfect) == (1.0, 1.0)

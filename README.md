@@ -72,10 +72,13 @@ Scripted multi-turn conversations: facts planted early, buried under filler chat
 
 Task categories: single recall, multi-fact recall, distractors (similar but wrong facts), updates (a fact changes), long gaps. Scoring is deterministic regex matching against expected answers.
 
-Two task sets:
+Three task sets:
 
 - **dev** (`evals/tasks.json`, 12 conversations, 16 questions): where settings get tuned.
-- **heldout** (`evals/heldout.json`, 16 conversations, 34 questions): harder, with unguessable answers, lookalike distractors, 3-step update chains and gaps up to 45 turns. Fresh facts and filler, checked by a test. Run once per version of lethe; never tune on it.
+- **heldout** (`evals/heldout.json`, 16 conversations, 34 questions): harder, with unguessable answers, lookalike distractors, 3-step update chains and gaps up to 45 turns. Its failures motivated the ordering and extraction fixes, so it is no longer fully independent.
+- **heldout2** (`evals/heldout2.json`, 20 conversations, 39 questions): written after all tuning, for the final numbers. Tests check that no filler line or fact sentence is shared between any two sets.
+
+**Uncertainty.** `--repeats N` runs everything N times and reports the spread between runs (the model isn't deterministic). Every score also gets a 95% interval from bootstrapping over conversations, which shows how much a benchmark this size can actually tell apart: differences inside that range aren't meaningful.
 
 ```bash
 python -m evals.run --dry-run                  # offline pipeline check

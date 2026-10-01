@@ -2,6 +2,7 @@
 
     python -m evals.run                      # real run on the dev set (needs GROQ_API_KEY)
     python -m evals.run --split heldout      # held-out set: run once per version, never tune on it
+    python -m evals.run --split heldout2 --repeats 3 --judge   # final numbers: fresh set, mean/spread/CI
     python -m evals.run --dry-run            # offline smoke test, fake LLM + embedder
     python -m evals.run --conditions lethe naive_rag --limit 3
 
@@ -30,7 +31,7 @@ from evals.judge import judge_correct, regex_correct
 HERE = Path(__file__).parent
 CONDITIONS = ["no_memory", "full_history", "naive_rag", "lethe", "naive_extract", "lethe_extract"]
 DEFAULT_CONDITIONS = ["no_memory", "full_history", "naive_rag", "lethe"]
-SPLITS = {"dev": "tasks.json", "heldout": "heldout.json"}
+SPLITS = {"dev": "tasks.json", "heldout": "heldout.json", "heldout2": "heldout2.json"}
 BASE_SYSTEM = "You are a helpful assistant. Keep answers short."
 
 
@@ -143,6 +144,22 @@ async def run_task(condition, task, filler, llm, embedder, budget, grace, every_
     return results
 
 
+def bootstrap_ci(rows: list[dict], n: int = 2000, seed: int = 0) -> tuple[float, float]:
+    """95% interval for accuracy, resampling whole conversations (questions in one conversation aren't independent)."""
+    by_task = defaultdict(list)
+    for r in rows:
+        by_task[r["task"]].append(r["correct"])
+    groups = list(by_task.values())
+    rng = random.Random(seed)
+    accs = []
+    for _ in range(n):
+        sample = [rng.choice(groups) for _ in groups]
+        flat = [c for g in sample for c in g]
+        accs.append(sum(flat) / len(flat))
+    accs.sort()
+    return round(accs[int(0.025 * n)], 3), round(accs[int(0.975 * n) - 1], 3)
+
+
 def summarize(rows: list[dict]) -> dict:
     by_cond = defaultdict(list)
     for r in rows:
@@ -154,8 +171,19 @@ def summarize(rows: list[dict]) -> dict:
             cats[r["category"]].append(r["correct"])
         active = [r["active_memories"] for r in rs if r["active_memories"] is not None]
         per_task = {r["task"]: r for r in rs}.values()
+        reps = defaultdict(list)
+        for r in rs:
+            reps[r.get("repeat", 0)].append(r["correct"])
+        per_run = [sum(v) / len(v) for v in reps.values()]
+        mean = sum(per_run) / len(per_run)
+        spread = (sum((a - mean) ** 2 for a in per_run) / (len(per_run) - 1)) ** 0.5 if len(per_run) > 1 else None
+        lo, hi = bootstrap_ci(rs)
         summary[cond] = {
             "accuracy": round(sum(r["correct"] for r in rs) / len(rs), 3),
+            "ci95": [lo, hi],
+            "runs": len(per_run),
+            "run_accuracies": [round(a, 3) for a in per_run],
+            "accuracy_std": round(spread, 3) if spread is not None else None,
             "regex_accuracy": round(sum(r.get("correct_regex", r["correct"]) for r in rs) / len(rs), 3),
             "by_category": {c: round(sum(v) / len(v), 3) for c, v in sorted(cats.items())},
             "avg_prompt_tokens": round(sum(r["prompt_tokens"] for r in rs) / len(rs), 1),
@@ -164,7 +192,7 @@ def summarize(rows: list[dict]) -> dict:
             "extract_calls_per_task": round(sum(r.get("task_extract_calls", 0) for r in per_task) / len(per_task), 1),
             "extract_tokens_per_task": round(sum(r.get("task_extract_tokens", 0) for r in per_task) / len(per_task)),
             "extract_failures": sum(r.get("task_extract_failures", 0) for r in per_task),
-            "probes": len(rs),
+            "probes": len(rs) // len(per_run),
         }
     return summary
 
@@ -190,9 +218,9 @@ def to_markdown(summary: dict, meta: dict) -> str:
             "",
         ]
     lines += [
-        "| condition | accuracy | regex accuracy | avg prompt tokens | avg memories injected | avg active memories "
-        "| extraction calls / tokens per conversation |",
-        "|---|---|---|---|---|---|---|",
+        "| condition | accuracy | 95% CI | spread across runs | regex accuracy | avg prompt tokens "
+        "| avg memories injected | avg active memories | extraction calls / tokens per conversation |",
+        "|---|---|---|---|---|---|---|---|---|",
     ]
     for c in conds:
         s = summary[c]
@@ -200,8 +228,10 @@ def to_markdown(summary: dict, meta: dict) -> str:
         ex = "-" if not s.get("extract_calls_per_task") else f"{s['extract_calls_per_task']} / {s['extract_tokens_per_task']}"
         if s.get("extract_failures"):
             ex += f" ({s['extract_failures']} parse failures)"
+        lo, hi = s.get("ci95", [s["accuracy"], s["accuracy"]])
+        sd = f"±{s['accuracy_std'] * 100:.1f} pts ({s['runs']} runs)" if s.get("accuracy_std") is not None else "1 run"
         lines.append(
-            f"| {c} | {s['accuracy']:.0%} | {s['regex_accuracy']:.0%} | {s['avg_prompt_tokens']} "
+            f"| {c} | {s['accuracy']:.0%} | {lo:.0%}–{hi:.0%} | {sd} | {s['regex_accuracy']:.0%} | {s['avg_prompt_tokens']} "
             f"| {s['avg_memories_injected']} | {am} | {ex} |"
         )
     lines += ["", "| category | " + " | ".join(conds) + " |", "|---|" + "---|" * len(conds)]
@@ -214,7 +244,7 @@ def to_markdown(summary: dict, meta: dict) -> str:
 def checkpoint_path(args, model: str, overrides: dict) -> Path:
     """One checkpoint per exact configuration, so --resume can never mix results from different settings."""
     sig = json.dumps({
-        "split": args.split, "model": model, "budget": args.budget, "grace": args.grace, "overrides": overrides,
+        "repeats": getattr(args, "repeats", 1), "split": args.split, "model": model, "budget": args.budget, "grace": args.grace, "overrides": overrides,
         "memory_format": args.memory_format, "every_turn": args.llm_every_turn, "dry_run": args.dry_run,
     }, sort_keys=True)
     return HERE / "results" / f"checkpoint-{args.split}-{hashlib.sha1(sig.encode()).hexdigest()[:10]}.jsonl"
@@ -223,32 +253,37 @@ def checkpoint_path(args, model: str, overrides: dict) -> Path:
 async def run_all(conditions, tasks, filler, llm, embedder, args, overrides, ckpt: Path, resume: bool) -> list[dict]:
     """Runs every (condition, task) pair, appending each finished pair to a checkpoint file.
     With resume=True, pairs already in the checkpoint are skipped."""
-    done: dict[tuple[str, str], list[dict]] = {}
+    repeats = getattr(args, "repeats", 1)
+    done: dict[tuple[str, str, int], list[dict]] = {}
     if resume and ckpt.exists():
         for line in ckpt.read_text(encoding="utf-8").splitlines():
             rec = json.loads(line)
-            done[(rec["condition"], rec["task"])] = rec["rows"]
+            done[(rec["condition"], rec["task"], rec.get("repeat", 0))] = rec["rows"]
         print(f"resuming: {len(done)} finished task runs loaded from {ckpt.name}")
     elif ckpt.exists():
         ckpt.unlink()
     ckpt.parent.mkdir(exist_ok=True)
 
     rows = []
-    for cond in conditions:
-        for task in tasks:
-            if (cond, task["id"]) in done:
-                rows += done[(cond, task["id"])]
-                continue
-            t0 = time.time()
-            res = await run_task(
-                cond, task, filler, llm, embedder, args.budget, args.grace, args.llm_every_turn, overrides,
-                ordered=args.memory_format == "ordered",
-            )
-            with ckpt.open("a", encoding="utf-8") as f:
-                f.write(json.dumps({"condition": cond, "task": task["id"], "rows": res}) + "\n")
-            rows += res
-            ok = sum(r["correct"] for r in res)
-            print(f"[{cond:>12}] {task['id']} {task['category']:<13} {ok}/{len(res)} correct  ({time.time() - t0:.1f}s)")
+    for rep in range(repeats):
+        for cond in conditions:
+            for task in tasks:
+                if (cond, task["id"], rep) in done:
+                    rows += done[(cond, task["id"], rep)]
+                    continue
+                t0 = time.time()
+                res = await run_task(
+                    cond, task, filler, llm, embedder, args.budget, args.grace, args.llm_every_turn, overrides,
+                    ordered=args.memory_format == "ordered",
+                )
+                for r in res:
+                    r["repeat"] = rep
+                with ckpt.open("a", encoding="utf-8") as f:
+                    f.write(json.dumps({"condition": cond, "task": task["id"], "repeat": rep, "rows": res}) + "\n")
+                rows += res
+                ok = sum(r["correct"] for r in res)
+                tag = f" run {rep + 1}/{repeats}" if repeats > 1 else ""
+                print(f"[{cond:>12}]{tag} {task['id']} {task['category']:<13} {ok}/{len(res)} correct  ({time.time() - t0:.1f}s)")
     return rows
 
 
@@ -307,7 +342,8 @@ async def main(args):
     summary = summarize(rows)
     meta = {
         "timestamp": time.strftime("%Y-%m-%d %H:%M"), "split": args.split, "model": model, "budget": args.budget, "grace": args.grace,
-        "tasks": len(tasks), "probes_per_condition": len(rows) // max(len(args.conditions), 1),
+        "tasks": len(tasks), "repeats": args.repeats,
+        "probes_per_condition": len(rows) // max(len(args.conditions) * args.repeats, 1),
         "dry_run": args.dry_run, "llm_every_turn": args.llm_every_turn, "overrides": overrides,
         "scoring": scoring, "memory_format": args.memory_format,
     }
@@ -333,6 +369,7 @@ def cli():
     p.add_argument("--dry-run", action="store_true", help="offline: fake LLM + fake embedder")
     p.add_argument("--memory-format", default="ordered", choices=["ordered", "plain"],
                    help="ordered = oldest-first with turn tags; plain = similarity-ranked (the old behaviour)")
+    p.add_argument("--repeats", type=int, default=1, help="run everything N times; report mean, spread and CI")
     p.add_argument("--resume", action="store_true", help="continue an interrupted run with the same settings")
     p.add_argument("--judge", action="store_true", help="grade answers with an LLM judge (primary score)")
     p.add_argument("--judge-model", default="openai/gpt-oss-120b")
