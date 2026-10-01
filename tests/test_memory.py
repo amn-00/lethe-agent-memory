@@ -162,3 +162,32 @@ def test_memories_are_shown_oldest_first_with_turn_tags():
 
     plain, plain_note = format_memories([new, old], current_turn=20, ordered=False)
     assert plain.index("hyderabad") < plain.index("indore") and plain_note == ""
+
+
+def test_ui_and_config_are_served():
+    mem = make_memory()
+    client = TestClient(create_app(mem, EchoLLM()))
+    page = client.get("/")
+    assert page.status_code == 200 and "lethe" in page.text and "waterline" in page.text
+    cfg = client.get("/config").json()
+    assert cfg["budget"] == mem.cfg.active_budget and cfg["extract"] is False
+    r = client.post("/sessions/u9/chat", json={"message": "hello"}).json()
+    assert r["pending"] == 0
+
+
+def test_eval_endpoint_merges_latest_ordered_run_per_condition(tmp_path):
+    import json as _json
+    from lethe.api import latest_eval
+
+    def write(name, fmt, conds):
+        run = {"meta": {"split": "heldout", "memory_format": fmt, "scoring": {"judged": 34}},
+               "summary": {c: {"accuracy": acc} for c, acc in conds.items()}}
+        (tmp_path / name).write_text(_json.dumps(run))
+
+    write("run-heldout-20260925-1.json", None, {"lethe": 0.82, "naive_rag": 0.85})          # old, unordered: ignored
+    write("run-heldout-20260925-2.json", "ordered", {"lethe": 0.94, "naive_rag": 1.0})
+    write("run-heldout-20261001-1.json", "ordered", {"lethe_extract": 0.97})
+    write("run-heldout-20261001-2-dry.json", "ordered", {"lethe_extract": 0.10})            # dry run: ignored
+    out = latest_eval("heldout", tmp_path)
+    acc = {c: v["accuracy"] for c, v in out["conditions"].items()}
+    assert acc == {"lethe": 0.94, "naive_rag": 1.0, "lethe_extract": 0.97}

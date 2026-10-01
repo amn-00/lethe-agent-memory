@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lethe: an agent that decides what to remember</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌊</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --mist: #EEF2F1;
+  --paper: #F8FAF9;
+  --ink: #1D2B2E;
+  --ink-soft: #4E5F62;
+  --river: #2F7F86;
+  --river-wash: #DCEBEB;
+  --silt: #8E9C9E;
+  --silt-wash: #E3E8E8;
+  --ochre: #B8862B;
+  --ochre-wash: #F3E7CC;
+  --line: #CFD9D9;
+  --danger: #9A3B3B;
+  --font: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --step--1: 0.8125rem;
+  --step-0: 0.9375rem;
+  --step-1: 1.125rem;
+  --step-2: 1.5rem;
+  --radius-s: 4px;
+  --radius-m: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --mist: #142022; --paper: #1A2729; --ink: #E3ECEB; --ink-soft: #A7B6B7;
+    --river: #5FB0B6; --river-wash: #1F3A3C; --silt: #6E7F81; --silt-wash: #223032;
+    --ochre: #D9A84A; --ochre-wash: #3A3020; --line: #2C3D3F; --danger: #D98080;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font-family: var(--font); font-size: var(--step-0); line-height: 1.5;
+  color: var(--ink); background: var(--mist);
+  font-variant-numeric: tabular-nums;
+  display: flex; flex-direction: column;
+}
+button, input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--river); outline-offset: 2px; }
+
+/* header */
+.top {
+  display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
+  padding: 0.9rem 1.5rem; border-bottom: 1px solid var(--line); background: var(--paper);
+}
+.brand { display: flex; align-items: baseline; gap: 0.75rem; margin-right: auto; }
+.brand h1 { margin: 0; font-size: var(--step-2); font-weight: 600; letter-spacing: -0.02em; }
+.brand p { margin: 0; color: var(--ink-soft); font-size: var(--step--1); }
+.tabs { display: flex; gap: 0.25rem; }
+.tab {
+  background: none; border: 1px solid transparent; border-radius: var(--radius-s);
+  padding: 0.35rem 0.8rem; cursor: pointer; color: var(--ink-soft);
+}
+.tab[aria-selected="true"] { color: var(--ink); border-color: var(--line); background: var(--mist); font-weight: 500; }
+.ghost {
+  background: none; border: 1px solid var(--line); border-radius: var(--radius-s);
+  padding: 0.35rem 0.8rem; cursor: pointer;
+}
+.ghost:hover { border-color: var(--river); }
+
+/* chat view */
+.view { flex: 1; min-height: 0; }
+[hidden] { display: none !important; } /* an id selector's display would otherwise win over [hidden] */
+#chat-view { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 420px); }
+.chat { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--line); }
+.log { flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+.empty { max-width: 34rem; margin: auto; text-align: left; color: var(--ink-soft); }
+.empty h2 { font-size: var(--step-1); font-weight: 500; color: var(--ink); margin: 0 0 0.5rem; }
+.empty p { margin: 0 0 0.75rem; }
+.try { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.try button {
+  background: var(--paper); border: 1px solid var(--line); border-radius: 999px;
+  padding: 0.3rem 0.85rem; cursor: pointer; font-size: var(--step--1);
+}
+.try button:hover { border-color: var(--river); }
+.msg { max-width: 38rem; }
+.msg.user { align-self: flex-end; background: var(--river-wash); padding: 0.6rem 0.9rem; border-radius: var(--radius-m) var(--radius-m) var(--radius-s) var(--radius-m); }
+.msg.bot { align-self: flex-start; }
+.msg.bot .text { white-space: pre-wrap; }
+.msg .turn { font-size: var(--step--1); color: var(--ink-soft); margin-bottom: 0.15rem; }
+.recall { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
+.chip {
+  font-size: var(--step--1); border-radius: var(--radius-s); padding: 0.1rem 0.5rem;
+  border: 1px solid var(--line); color: var(--ink-soft); max-width: 100%;
+}
+.chip.used { border-color: var(--river); color: var(--river); }
+.chip.back { border-color: var(--ochre); color: var(--ochre); background: var(--ochre-wash); }
+.msg.error { color: var(--danger); font-size: var(--step--1); }
+.composer { display: flex; gap: 0.5rem; padding: 1rem 1.5rem; border-top: 1px solid var(--line); background: var(--paper); }
+.composer input {
+  flex: 1; border: 1px solid var(--line); border-radius: var(--radius-s); padding: 0.6rem 0.8rem;
+  background: var(--mist);
+}
+.send {
+  border: none; border-radius: var(--radius-s); padding: 0.6rem 1.1rem; cursor: pointer;
+  background: var(--ink); color: var(--paper); font-weight: 500;
+}
+.send:disabled { opacity: 0.5; cursor: wait; }
+
+/* memory river */
+.memory { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; background: var(--paper); }
+.memory > * { flex-shrink: 0; } /* otherwise the waterline collapses once the panel overflows */
+.mem-head { padding: 1.25rem 1.25rem 0.5rem; }
+.mem-head h2 { margin: 0; font-size: var(--step-1); font-weight: 500; }
+.mem-head p { margin: 0.15rem 0 0; color: var(--ink-soft); font-size: var(--step--1); }
+.surface, .bed { list-style: none; margin: 0; padding: 0.5rem 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; }
+.surface:empty::after, .bed:empty::after { color: var(--ink-soft); font-size: var(--step--1); }
+.surface:empty::after { content: "Nothing kept yet. Tell it something about yourself."; }
+.bed:empty::after { content: "Nothing archived yet."; }
+.mem { padding: 0.55rem 0.7rem; border-radius: var(--radius-s); background: var(--river-wash); }
+.bed .mem { background: var(--silt-wash); color: var(--ink-soft); }
+.mem p { margin: 0; }
+.mem .why { display: flex; flex-wrap: wrap; gap: 0 0.8rem; font-size: var(--step--1); color: var(--ink-soft); margin-top: 0.2rem; }
+.score { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.35rem; }
+.score .track { flex: 1; height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--river) 18%, transparent); overflow: hidden; }
+.score .fill { height: 100%; width: var(--w); background: var(--river); }
+.bed .score .fill { background: var(--silt); }
+.score .num { font-size: var(--step--1); min-width: 2.6rem; text-align: right; }
+.waterline { display: block; width: 100%; height: 28px; color: var(--river); }
+.bed-head { padding: 0 1.25rem; font-size: var(--step--1); color: var(--ink-soft); margin: 0; font-weight: 400; }
+.events { padding: 1rem 1.25rem 1.5rem; border-top: 1px solid var(--line); margin-top: 1rem; }
+.events h3 { margin: 0 0 0.5rem; font-size: var(--step-0); font-weight: 500; }
+.events ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; font-size: var(--step--1); }
+.events li { color: var(--ink-soft); }
+.events li b { font-weight: 500; color: var(--ink); }
+.events .pending { color: var(--ink-soft); font-style: italic; }
+
+/* the one bold moment: memories sink below the waterline, and resurface */
+@keyframes sink { from { transform: translateY(-36px); opacity: 0; background: var(--river-wash); } to { transform: none; opacity: 1; } }
+@keyframes rise { from { transform: translateY(36px); opacity: 0; background: var(--ochre-wash); } 60% { background: var(--ochre-wash); } to { transform: none; opacity: 1; } }
+@keyframes appear { from { opacity: 0; } to { opacity: 1; } }
+.mem.sinking { animation: sink 700ms cubic-bezier(.3,.7,.2,1); }
+.mem.rising { animation: rise 900ms cubic-bezier(.3,.7,.2,1); box-shadow: inset 3px 0 0 var(--ochre); }
+.mem.new { animation: appear 500ms ease-out; }
+@media (prefers-reduced-motion: reduce) { .mem.sinking, .mem.rising, .mem.new { animation: none; } }
+
+/* results view */
+#results-view { overflow-y: auto; }
+.results { max-width: 64rem; margin: 0 auto; padding: 2rem 1.5rem 3rem; }
+.results h2 { font-size: var(--step-2); font-weight: 600; letter-spacing: -0.01em; margin: 0 0 0.5rem; }
+.results .lede { max-width: 42rem; color: var(--ink-soft); margin: 0 0 2rem; }
+.results h3 { font-size: var(--step-1); font-weight: 500; margin: 2rem 0 0.75rem; }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 36rem; }
+th, td { text-align: left; padding: 0.55rem 0.75rem 0.55rem 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 500; font-size: var(--step--1); color: var(--ink-soft); }
+td .desc { display: block; font-size: var(--step--1); color: var(--ink-soft); }
+tr.ours td:first-child { box-shadow: inset 3px 0 0 var(--river); padding-left: 0.6rem; }
+.acc { display: flex; align-items: center; gap: 0.5rem; min-width: 10rem; }
+.acc .track { flex: 1; height: 6px; border-radius: 3px; background: var(--silt-wash); overflow: hidden; }
+.acc .fill { height: 100%; width: var(--w); background: var(--river); }
+td.num, th.num { text-align: right; }
+.cat td { font-variant-numeric: tabular-nums; }
+.cat td.cell { text-align: right; }
+.note { font-size: var(--step--1); color: var(--ink-soft); margin-top: 1rem; max-width: 42rem; }
+
+@media (max-width: 860px) {
+  html, body { height: auto; }
+  body { display: block; }
+  #chat-view { display: block; }
+  .chat { height: 78vh; border-right: none; border-bottom: 1px solid var(--line); }
+  .memory { overflow: visible; }
+  .top { padding: 0.75rem 1rem; gap: 0.75rem; }
+  .brand p { display: none; }
+  .log { padding: 1rem; }
+  .composer { padding: 0.75rem 1rem; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <h1>lethe</h1>
+    <p>An agent that decides what to remember, what to archive, and when to bring something back.</p>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Views">
+    <button class="tab" role="tab" aria-selected="true" aria-controls="chat-view" id="tab-chat">Chat</button>
+    <button class="tab" role="tab" aria-selected="false" aria-controls="results-view" id="tab-results">Results</button>
+  </nav>
+  <button class="ghost" id="new-chat" type="button">New chat</button>
+</header>
+
+<main class="view" id="chat-view" role="tabpanel" aria-labelledby="tab-chat">
+  <section class="chat" aria-label="Conversation">
+    <div class="log" id="log" aria-live="polite">
+      <div class="empty" id="empty">
+        <h2>Tell it a few things, chat for a while, then ask.</h2>
+        <p>Facts you share are kept at the surface of its memory. Small talk is dropped. When memory is full, the least useful facts sink to the archive, and they come back up if you ask about them.</p>
+        <div class="try" id="try">
+          <button type="button">my sister lives in pune</button>
+          <button type="button">i play football every sunday</button>
+          <button type="button">lol ok</button>
+          <button type="button">i moved to bangalore last week</button>
+          <button type="button">where does my sister live?</button>
+        </div>
+      </div>
+    </div>
+    <form class="composer" id="composer">
+      <label for="msg" class="visually-hidden" style="position:absolute;left:-9999px">Message</label>
+      <input id="msg" autocomplete="off" placeholder="Say something about yourself, or ask what it remembers" required>
+      <button class="send" id="send" type="submit">Send</button>
+    </form>
+  </section>
+
+  <aside class="memory" aria-label="Memory">
+    <div class="mem-head">
+      <h2>Memory</h2>
+      <p id="mem-summary">Loading settings…</p>
+    </div>
+    <ul class="surface" id="surface"></ul>
+    <svg class="waterline" viewBox="0 0 400 28" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 14 Q 25 4 50 14 T 100 14 T 150 14 T 200 14 T 250 14 T 300 14 T 350 14 T 400 14" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.55"/>
+      <path d="M0 20 Q 25 12 50 20 T 100 20 T 150 20 T 200 20 T 250 20 T 300 20 T 350 20 T 400 20" fill="none" stroke="currentColor" stroke-width="1" opacity="0.25"/>
+    </svg>
+    <h3 class="bed-head">Archived, out of the prompt but recoverable</h3>
+    <ul class="bed" id="bed"></ul>
+    <section class="events" aria-label="Recent memory events">
+      <h3>What just happened</h3>
+      <ol id="events"><li>Nothing yet.</li></ol>
+    </section>
+  </aside>
+</main>
+
+<main class="view" id="results-view" role="tabpanel" aria-labelledby="tab-results" hidden>
+  <div class="results">
+    <h2>How it scores</h2>
+    <p class="lede">Each memory setup answers the same held-out conversations: facts are mentioned early, buried under small talk, then asked about later. Ordering memories by when they were said took questions about changed facts from 38% to 100%, and storing extracted facts instead of raw messages cut memory by 83% at the same accuracy.</p>
+    <div id="results-body"><p class="note">Loading results…</p></div>
+  </div>
+</main>
+
+<script>
+const LABELS = {
+  no_memory: ["No memory", "Only the last 4 messages"],
+  full_history: ["Full history", "The whole conversation, every time"],
+  naive_rag: ["Naive RAG", "Searches every message, never forgets"],
+  lethe: ["lethe", "Budgeted memory that archives and reloads"],
+  naive_extract: ["Naive RAG + facts", "Stores extracted facts, never forgets"],
+  lethe_extract: ["lethe + facts", "Extracted facts, budgeted, archives and reloads"],
+};
+const ORDER = ["no_memory", "full_history", "naive_rag", "naive_extract", "lethe", "lethe_extract"];
+const CATS = { multi_recall: "Several facts at once", distractor: "Lookalike facts", update_chain: "Facts that changed", long_gap: "Long gaps", single_recall: "Single fact", update: "One change" };
+
+const $ = (id) => document.getElementById(id);
+const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+
+let session = sessionStorage.getItem("lethe-session") || newId();
+sessionStorage.setItem("lethe-session", session);
+let known = new Map();      // memory id -> tier, to animate moves between refreshes
+let texts = new Map();      // memory id -> text, for the event log
+let pending = 0;
+
+function newId() { return (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())).slice(0, 8); }
+
+/* tabs */
+function show(which) {
+  const chat = which === "chat";
+  $("tab-chat").setAttribute("aria-selected", chat);
+  $("tab-results").setAttribute("aria-selected", !chat);
+  $("chat-view").hidden = !chat;
+  $("results-view").hidden = chat;
+  if (!chat) loadResults();
+}
+$("tab-chat").onclick = () => show("chat");
+$("tab-results").onclick = () => show("results");
+
+/* settings */
+fetch("/config").then(r => r.json()).then(c => {
+  $("mem-summary").textContent = `Keeps up to ${c.budget} memories in the prompt. ${c.extract ? "Stores extracted facts, not raw messages." : "Stores raw messages."}`;
+  $("mem-summary").dataset.budget = c.budget;
+}).catch(() => { $("mem-summary").textContent = "Couldn't load settings. Is the server running?"; });
+
+/* chat */
+$("try").addEventListener("click", (e) => { if (e.target.tagName === "BUTTON") { $("msg").value = e.target.textContent; $("msg").focus(); } });
+$("composer").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const text = $("msg").value.trim();
+  if (!text) return;
+  $("empty")?.remove();
+  addUser(text);
+  $("msg").value = "";
+  $("send").disabled = true;
+  try {
+    const r = await fetch(`/sessions/${session}/chat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: text }) });
+    if (!r.ok) throw new Error(`The server returned ${r.status}.`);
+    const out = await r.json();
+    pending = out.pending || 0;
+    addBot(out);
+    await refreshMemory();
+  } catch (err) {
+    const m = el("div", "msg error", `No reply. ${err.message} If the server log mentions the daily quota, try again after it resets.`);
+    $("log").append(m);
+  } finally {
+    $("send").disabled = false;
+    $("msg").focus();
+  }
+});
+
+function addUser(text) {
+  $("log").append(el("div", "msg user", text));
+  scrollLog();
+}
+function addBot(out) {
+  const m = el("div", "msg bot");
+  m.append(el("div", "turn", `Turn ${out.turn}`), el("div", "text", out.answer));
+  if (out.recalled?.length) {
+    const used = new Map((out.usage || []).map(u => [u.memory_id, u.used]));
+    const box = el("div", "recall");
+    for (const h of out.recalled) {
+      const chip = el("span", "chip", h.text);
+      if (h.reloaded) { chip.classList.add("back"); chip.title = "Brought back from the archive for this answer"; }
+      else if (used.get(h.memory_id)) { chip.classList.add("used"); chip.title = "Recalled and used in the answer"; }
+      else { chip.title = "Recalled but not used"; }
+      box.append(chip);
+    }
+    m.append(box);
+  }
+  $("log").append(m);
+  scrollLog();
+}
+function scrollLog() { $("log").scrollTop = $("log").scrollHeight; }
+
+/* memory river */
+async function refreshMemory() {
+  const [mems, ops] = await Promise.all([
+    fetch(`/sessions/${session}/memories`).then(r => r.json()),
+    fetch(`/sessions/${session}/ops?limit=40`).then(r => r.json()),
+  ]);
+  const surface = $("surface"), bed = $("bed");
+  surface.replaceChildren(); bed.replaceChildren();
+  for (const m of mems) {
+    texts.set(m.id, m.text);
+    const li = el("li", "mem");
+    li.append(el("p", null, m.text));
+    const why = el("div", "why");
+    why.append(el("span", null, `said at turn ${m.created_turn}`), el("span", null, `recalled ${m.retrieved_count}×, used ${m.used_count}×`));
+    li.append(why);
+    const score = el("div", "score");
+    const track = el("div", "track"), fill = el("div", "fill");
+    fill.style.setProperty("--w", `${Math.round(m.score * 100)}%`);
+    track.append(fill);
+    score.title = `recency ${m.recency.toFixed(2)}, use frequency ${m.frequency.toFixed(2)}, used when recalled ${m.used_rate.toFixed(2)}`;
+    score.append(track, el("span", "num", m.score.toFixed(2)));
+    li.append(score);
+    const before = known.get(m.id);
+    if (before === undefined) li.classList.add("new");
+    else if (before === "active" && m.tier === "archive") li.classList.add("sinking");
+    else if (before === "archive" && m.tier === "active") li.classList.add("rising");
+    known.set(m.id, m.tier);
+    (m.tier === "active" ? surface : bed).append(li);
+  }
+  const budget = $("mem-summary").dataset.budget;
+  if (budget) {
+    const active = mems.filter(m => m.tier === "active").length;
+    $("mem-summary").textContent = `${active} of ${budget} slots in use. Highest score first; the bar is how worth keeping each one is.`;
+  }
+  renderEvents(ops);
+}
+
+function renderEvents(ops) {
+  const list = $("events");
+  list.replaceChildren();
+  if (pending > 0) list.append(el("li", "pending", `${pending} new message${pending > 1 ? "s" : ""} will be turned into facts before the next reply.`));
+  const shown = ops.filter(o => ["extract", "add", "evict", "reload"].includes(o.op)).slice(0, 12);
+  for (const o of shown) {
+    const li = el("li");
+    const t = (id) => `"${texts.get(id) || "a memory"}"`;
+    if (o.op === "extract") {
+      const n = o.detail?.facts?.length || 0;
+      li.append(el("b", null, `Turn ${o.turn}: `), document.createTextNode(n ? `kept ${n} fact${n > 1 ? "s" : ""} from ${o.detail.messages} message${o.detail.messages > 1 ? "s" : ""}: ${o.detail.facts.join(" ")}` : `nothing worth keeping in ${o.detail?.messages || 0} message${o.detail?.messages > 1 ? "s" : ""}`));
+    } else if (o.op === "add") {
+      li.append(el("b", null, `Turn ${o.turn}: `), document.createTextNode(`saved ${t(o.memory_id)}`));
+    } else if (o.op === "evict") {
+      li.append(el("b", null, `Turn ${o.turn}: `), document.createTextNode(`archived ${t(o.memory_id)} (score ${o.score.toFixed(2)})`));
+    } else if (o.op === "reload") {
+      li.append(el("b", null, `Turn ${o.turn}: `), document.createTextNode(`brought back ${t(o.memory_id)} because the question matched it`));
+    }
+    list.append(li);
+  }
+  if (!list.children.length) list.append(el("li", null, "Nothing yet."));
+}
+
+$("new-chat").onclick = () => {
+  session = newId(); sessionStorage.setItem("lethe-session", session);
+  known = new Map(); texts = new Map(); pending = 0;
+  location.reload();
+};
+
+/* results */
+let resultsLoaded = false;
+async function loadResults() {
+  if (resultsLoaded) return;
+  const body = $("results-body");
+  try {
+    const data = await fetch("/eval/heldout").then(r => r.json());
+    const conds = ORDER.filter(c => data.conditions[c]);
+    if (!conds.length) { body.replaceChildren(el("p", "note", "No saved held-out results yet. Run: python -m evals.run --split heldout --judge")); return; }
+    body.replaceChildren(overview(data, conds), el("h3", null, "By kind of question"), categories(data, conds), footnote(data, conds));
+    resultsLoaded = true;
+  } catch { body.replaceChildren(el("p", "note", "Couldn't load results from the server.")); }
+}
+function overview(data, conds) {
+  const wrap = el("div", "table-wrap"), t = el("table");
+  t.innerHTML = `<thead><tr><th>Setup</th><th>Accuracy</th><th class="num">Prompt tokens per answer</th><th class="num">Memories kept</th><th class="num">Extraction tokens per conversation</th></tr></thead>`;
+  const tb = el("tbody");
+  for (const c of conds) {
+    const s = data.conditions[c], [name, desc] = LABELS[c] || [c, ""];
+    const tr = el("tr"); if (c === "lethe_extract") tr.className = "ours";
+    const n = el("td"); n.append(el("span", null, name), el("span", "desc", desc));
+    const a = el("td"), acc = el("div", "acc"), track = el("div", "track"), fill = el("div", "fill");
+    fill.style.setProperty("--w", `${Math.round(s.accuracy * 100)}%`); track.append(fill);
+    acc.append(track, el("span", null, `${Math.round(s.accuracy * 100)}%`)); a.append(acc);
+    tr.append(n, a,
+      el("td", "num", Math.round(s.avg_prompt_tokens)),
+      el("td", "num", s.avg_active_memories != null ? s.avg_active_memories : c === "no_memory" ? "none" : "everything"),
+      el("td", "num", s.extract_tokens_per_task ? s.extract_tokens_per_task.toLocaleString() : "none"));
+    tb.append(tr);
+  }
+  t.append(tb); wrap.append(t); return wrap;
+}
+function categories(data, conds) {
+  const cats = [...new Set(conds.flatMap(c => Object.keys(data.conditions[c].by_category)))];
+  const wrap = el("div", "table-wrap"), t = el("table", "cat");
+  const head = el("tr"); head.append(el("th", null, "Question type"));
+  for (const c of conds) head.append(el("th", "num", (LABELS[c] || [c])[0]));
+  const th = el("thead"); th.append(head); t.append(th);
+  const tb = el("tbody");
+  for (const cat of cats) {
+    const tr = el("tr"); tr.append(el("td", null, CATS[cat] || cat));
+    for (const c of conds) { const v = data.conditions[c].by_category[cat]; tr.append(el("td", "cell", v == null ? "–" : `${Math.round(v * 100)}%`)); }
+    tb.append(tr);
+  }
+  t.append(tb); wrap.append(t); return wrap;
+}
+function footnote(data, conds) {
+  const m = data.meta || {}, judged = conds.every(c => data.conditions[c].judged);
+  return el("p", "note",
+    `${m.probes_per_condition || "?"} held-out questions per setup across ${m.tasks || "?"} conversations, answered by ${m.model || "the model"}` +
+    `${judged ? ` and graded by ${m.scoring?.judge_model || "an LLM judge"} against reference answers` : ""}. ` +
+    `Memory budget ${m.budget}. The same setup can move about 6 points between runs, so smaller gaps are within noise.`);
+}
+</script>
+</body>
+</html>

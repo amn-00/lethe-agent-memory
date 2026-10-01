@@ -44,6 +44,10 @@ uvicorn lethe.api:build_default_app --factory --reload
 
 Config via env vars or `.env`: `LETHE_EXTRACT` (1 = store extracted facts, 0 = raw messages), `LETHE_BUDGET` (active memory cap, default 40), `LETHE_GRACE` (default 3), `GROQ_MODEL` (default `openai/gpt-oss-20b`), `GROQ_MIN_INTERVAL` (seconds between calls, default 2.2 for the free tier).
 
+Then open http://127.0.0.1:8000 for the UI: chat on the left, and on the right the memory itself. Kept facts sit above the waterline with a score bar showing how worth keeping each one is; archived facts sink below it and rise back up (highlighted) when a question brings them back. A Results tab shows the latest held-out eval. Set `LETHE_BUDGET=6` to see archiving happen within a short chat.
+
+The JSON API is also available:
+
 ```bash
 curl -X POST localhost:8000/sessions/demo/chat -H "Content-Type: application/json" \
   -d '{"message": "my sister lives in pune"}'
