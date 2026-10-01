@@ -207,7 +207,7 @@ td.num, th.num { text-align: right; }
     </div>
     <form class="composer" id="composer">
       <label for="msg" class="visually-hidden" style="position:absolute;left:-9999px">Message</label>
-      <input id="msg" autocomplete="off" placeholder="Say something about yourself, or ask what it remembers" required>
+      <input id="msg" autocomplete="off" maxlength="500" placeholder="Say something about yourself, or ask what it remembers" required>
       <button class="send" id="send" type="submit">Send</button>
     </form>
   </section>
@@ -276,7 +276,8 @@ $("tab-results").onclick = () => show("results");
 
 /* settings */
 fetch("/config").then(r => r.json()).then(c => {
-  $("mem-summary").textContent = `Keeps up to ${c.budget} memories in the prompt. ${c.extract ? "Stores extracted facts, not raw messages." : "Stores raw messages."}`;
+  $("mem-summary").textContent = `Keeps up to ${c.budget} memories in the prompt. ${c.extract ? "Stores extracted facts, not raw messages." : "Stores raw messages."}` +
+    (c.messages_per_chat ? ` This demo allows ${c.messages_per_chat} messages per chat.` : "");
   $("mem-summary").dataset.budget = c.budget;
 }).catch(() => { $("mem-summary").textContent = "Couldn't load settings. Is the server running?"; });
 
@@ -292,13 +293,17 @@ $("composer").addEventListener("submit", async (e) => {
   $("send").disabled = true;
   try {
     const r = await fetch(`/sessions/${session}/chat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: text }) });
-    if (!r.ok) throw new Error(`The server returned ${r.status}.`);
+    if (!r.ok) {
+      let detail = `The server returned ${r.status}.`;
+      try { const j = await r.json(); if (typeof j.detail === "string") detail = j.detail; } catch {}
+      throw new Error(detail);
+    }
     const out = await r.json();
     pending = out.pending || 0;
     addBot(out);
     await refreshMemory();
   } catch (err) {
-    const m = el("div", "msg error", `No reply. ${err.message} If the server log mentions the daily quota, try again after it resets.`);
+    const m = el("div", "msg error", `No reply. ${err.message}`);
     $("log").append(m);
   } finally {
     $("send").disabled = false;

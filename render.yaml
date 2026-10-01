@@ -1,0 +1,26 @@
+# Render blueprint: New > Blueprint > pick this repo. Only GROQ_API_KEY needs entering by hand.
+services:
+  - type: web
+    name: lethe-agent-memory
+    runtime: python
+    plan: free
+    # download the embedding model once at build time, so cold starts don't re-download it
+    buildCommand: pip install -e . && python -c "from lethe.index import FastEmbedder; FastEmbedder()"
+    startCommand: uvicorn lethe.api:build_default_app --factory --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.6
+      - key: GROQ_API_KEY
+        sync: false
+      - key: LETHE_BUDGET
+        value: "6"
+      - key: LETHE_GRACE
+        value: "2"
+      - key: LETHE_EMBED_CACHE
+        value: .fastembed
+      # one Groq key serves every visitor: keep the demo inside the free tier
+      - key: LETHE_DEMO_PER_CHAT
+        value: "30"
+      - key: LETHE_DEMO_PER_DAY
+        value: "150"

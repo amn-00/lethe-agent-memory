@@ -11,10 +11,14 @@ class Embedder(Protocol):
 class FastEmbedder:
     """ONNX embeddings, no torch. bge-small is ~130MB, fits Render's free tier."""
 
-    def __init__(self, model: str = "BAAI/bge-small-en-v1.5"):
+    def __init__(self, model: str = "BAAI/bge-small-en-v1.5", cache_dir: str | None = None):
+        import os
+
         from fastembed import TextEmbedding
 
-        self._model = TextEmbedding(model_name=model)
+        # a fixed cache dir lets a deploy download the model once at build time instead of on every cold start
+        cache_dir = cache_dir or os.getenv("LETHE_EMBED_CACHE")
+        self._model = TextEmbedding(model_name=model, cache_dir=cache_dir) if cache_dir else TextEmbedding(model_name=model)
 
     def embed(self, texts: list[str]) -> list[list[float]]:
         return [v.tolist() for v in self._model.embed(texts)]

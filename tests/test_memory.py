@@ -191,3 +191,18 @@ def test_eval_endpoint_merges_latest_ordered_run_per_condition(tmp_path):
     out = latest_eval("heldout", tmp_path)
     acc = {c: v["accuracy"] for c, v in out["conditions"].items()}
     assert acc == {"lethe": 0.94, "naive_rag": 1.0, "lethe_extract": 0.97}
+
+
+def test_demo_limits_cap_messages_with_a_clear_reason():
+    from lethe.api import DemoLimits
+    mem = make_memory()
+    client = TestClient(create_app(mem, EchoLLM(), limits=DemoLimits(per_session=2, per_day=3)))
+    assert client.post("/sessions/a/chat", json={"message": "one"}).status_code == 200
+    assert client.post("/sessions/a/chat", json={"message": "two"}).status_code == 200
+    r = client.post("/sessions/a/chat", json={"message": "three"})
+    assert r.status_code == 429 and "Start a new chat" in r.json()["detail"]
+    assert client.post("/sessions/b/chat", json={"message": "one"}).status_code == 200
+    r = client.post("/sessions/c/chat", json={"message": "one"})
+    assert r.status_code == 429 and "daily" in r.json()["detail"]
+    assert client.post("/sessions/d/chat", json={"message": "x" * 501}).status_code == 422  # length cap
+    assert client.get("/config").json()["messages_per_chat"] == 2

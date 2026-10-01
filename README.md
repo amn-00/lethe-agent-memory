@@ -55,6 +55,10 @@ curl localhost:8000/sessions/demo/memories   # tiers + score breakdowns
 curl localhost:8000/sessions/demo/ops        # add / retrieve / used / ignored / evict / reload log
 ```
 
+## Deploy
+
+`render.yaml` deploys the UI and API as one free Render web service: New > Blueprint, pick the repo, paste `GROQ_API_KEY` when asked. The embedding model is downloaded at build time so cold starts stay fast. Because one API key serves every visitor, the demo caps messages per chat (`LETHE_DEMO_PER_CHAT`) and per day (`LETHE_DEMO_PER_DAY`), and visitors see a plain explanation when a cap or the model's quota is hit. Memories live on the instance's disk and reset when it restarts, which is fine for a demo.
+
 ## Eval
 
 Scripted multi-turn conversations: facts planted early, buried under filler chatter, then asked about later. Four conditions on the same conversations:
