@@ -1,0 +1,2277 @@
+{
+  "meta": {
+    "timestamp": "2026-10-01 21:50",
+    "split": "heldout",
+    "model": "openai/gpt-oss-20b",
+    "budget": 6,
+    "grace": 2,
+    "tasks": 16,
+    "probes_per_condition": 34,
+    "dry_run": false,
+    "llm_every_turn": false,
+    "overrides": {},
+    "scoring": {
+      "judged": 68,
+      "agreement": 0.985,
+      "judge_model": "openai/gpt-oss-120b"
+    },
+    "memory_format": "ordered"
+  },
+  "summary": {
+    "naive_extract": {
+      "accuracy": 0.971,
+      "regex_accuracy": 1.0,
+      "by_category": {
+        "distractor": 1.0,
+        "long_gap": 1.0,
+        "multi_recall": 1.0,
+        "update_chain": 0.875
+      },
+      "avg_prompt_tokens": 249.7,
+      "avg_memories_injected": 2.65,
+      "avg_active_memories": 4.8,
+      "extract_calls_per_task": 5.0,
+      "extract_tokens_per_task": 2649,
+      "extract_failures": 1,
+      "probes": 34
+    },
+    "lethe_extract": {
+      "accuracy": 0.971,
+      "regex_accuracy": 0.971,
+      "by_category": {
+        "distractor": 1.0,
+        "long_gap": 1.0,
+        "multi_recall": 1.0,
+        "update_chain": 0.875
+      },
+      "avg_prompt_tokens": 249.8,
+      "avg_memories_injected": 2.68,
+      "avg_active_memories": 4.4,
+      "extract_calls_per_task": 5.0,
+      "extract_tokens_per_task": 2544,
+      "extract_failures": 0,
+      "probes": 34
+    }
+  },
+  "rows": [
+    {
+      "task": "h01",
+      "category": "multi_recall",
+      "condition": "naive_extract",
+      "question": "what's my gym locker code?",
+      "answer": "Your locker code is **4817**.",
+      "gold": "4817",
+      "expect": [
+        "\\b4817\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 262,
+      "memories_injected": 4,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My locker code at the gym is 4817.",
+        "My gym membership id is gym-5093.",
+        "My gym is called iron temple.",
+        "I go to the gym on Tuesdays and Fridays."
+      ],
+      "active_memories": 7,
+      "task_extract_calls": 8,
+      "task_extract_tokens": 4190,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My locker code at the gym is 4817.",
+        "My gym is called iron temple.",
+        "My trainer there is named Dhruv.",
+        "I go to the gym on Tuesdays and Fridays.",
+        "My back hurts a bit.",
+        "I should drink more water.",
+        "My gym membership id is gym-5093.",
+        "I work out on Tuesdays and Fridays."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h01",
+      "category": "multi_recall",
+      "condition": "naive_extract",
+      "question": "what's the name of my gym?",
+      "answer": "Your gym is called **Iron Temple**.",
+      "gold": "iron temple",
+      "expect": [
+        "iron\\s*temple"
+      ],
+      "correct": true,
+      "prompt_tokens": 286,
+      "memories_injected": 5,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My gym is called iron temple.",
+        "My gym membership id is gym-5093.",
+        "My locker code at the gym is 4817.",
+        "My trainer there is named Dhruv.",
+        "I go to the gym on Tuesdays and Fridays."
+      ],
+      "active_memories": 7,
+      "task_extract_calls": 8,
+      "task_extract_tokens": 4190,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My locker code at the gym is 4817.",
+        "My gym is called iron temple.",
+        "My trainer there is named Dhruv.",
+        "I go to the gym on Tuesdays and Fridays.",
+        "My back hurts a bit.",
+        "I should drink more water.",
+        "My gym membership id is gym-5093.",
+        "I work out on Tuesdays and Fridays."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h01",
+      "category": "multi_recall",
+      "condition": "naive_extract",
+      "question": "who is my gym trainer?",
+      "answer": "Your trainer at the gym is **Dhruv**.",
+      "gold": "dhruv",
+      "expect": [
+        "\\bdhruv\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 295,
+      "memories_injected": 5,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My gym membership id is gym-5093.",
+        "My trainer there is named Dhruv.",
+        "My locker code at the gym is 4817.",
+        "My gym is called iron temple.",
+        "I go to the gym on Tuesdays and Fridays."
+      ],
+      "active_memories": 7,
+      "task_extract_calls": 8,
+      "task_extract_tokens": 4190,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My locker code at the gym is 4817.",
+        "My gym is called iron temple.",
+        "My trainer there is named Dhruv.",
+        "I go to the gym on Tuesdays and Fridays.",
+        "My back hurts a bit.",
+        "I should drink more water.",
+        "My gym membership id is gym-5093.",
+        "I work out on Tuesdays and Fridays."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h01",
+      "category": "multi_recall",
+      "condition": "naive_extract",
+      "question": "which days do i work out?",
+      "answer": "You work out on **Tuesdays** and **Fridays**.",
+      "gold": "tuesdays and fridays",
+      "expect": [
+        "tue\\w*[\\s\\S]*fri",
+        "fri\\w*[\\s\\S]*tue"
+      ],
+      "correct": true,
+      "prompt_tokens": 253,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "recalled_texts": [
+        "I go to the gym on Tuesdays and Fridays.",
+        "My gym membership id is gym-5093."
+      ],
+      "active_memories": 7,
+      "task_extract_calls": 8,
+      "task_extract_tokens": 4190,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My locker code at the gym is 4817.",
+        "My gym is called iron temple.",
+        "My trainer there is named Dhruv.",
+        "I go to the gym on Tuesdays and Fridays.",
+        "My back hurts a bit.",
+        "I should drink more water.",
+        "My gym membership id is gym-5093.",
+        "I work out on Tuesdays and Fridays."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h01",
+      "category": "multi_recall",
+      "condition": "naive_extract",
+      "question": "what's my gym membership id?",
+      "answer": "Your gym membership ID is **gym-5093**.",
+      "gold": "gym-5093",
+      "expect": [
+        "5093"
+      ],
+      "correct": true,
+      "prompt_tokens": 303,
+      "memories_injected": 5,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My gym membership id is gym-5093.",
+        "My locker code at the gym is 4817.",
+        "My gym is called iron temple.",
+        "I go to the gym on Tuesdays and Fridays.",
+        "My trainer there is named Dhruv."
+      ],
+      "active_memories": 8,
+      "task_extract_calls": 8,
+      "task_extract_tokens": 4190,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My locker code at the gym is 4817.",
+        "My gym is called iron temple.",
+        "My trainer there is named Dhruv.",
+        "I go to the gym on Tuesdays and Fridays.",
+        "My back hurts a bit.",
+        "I should drink more water.",
+        "My gym membership id is gym-5093.",
+        "I work out on Tuesdays and Fridays."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h02",
+      "category": "multi_recall",
+      "condition": "naive_extract",
+      "question": "when is my goa flight?",
+      "answer": "Your flight to Goa is scheduled for **22\u202fDecember**.",
+      "gold": "22 december",
+      "expect": [
+        "\\b22(nd)?\\s+dec",
+        "dec\\w*\\s+22"
+      ],
+      "correct": true,
+      "prompt_tokens": 232,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My flight to Goa is on 22 December.",
+        "My flight number is 6e 2147."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 7,
+      "task_extract_tokens": 3425,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My flight to Goa is on 22 December.",
+        "My flight number is 6e 2147.",
+        "I am staying at a hostel called Sunbeam.",
+        "My travel buddy for the trip is Tanvi.",
+        "My back hurts a bit.",
+        "My flight number is 6e 2147."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h02",
+      "category": "multi_recall",
+      "condition": "naive_extract",
+      "question": "what's my flight number?",
+      "answer": "Your flight number is **6E\u202f2147**.",
+      "gold": "6e 2147",
+      "expect": [
+        "2147"
+      ],
+      "correct": true,
+      "prompt_tokens": 246,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My flight number is 6e 2147.",
+        "My flight to Goa is on 22 December."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 7,
+      "task_extract_tokens": 3425,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My flight to Goa is on 22 December.",
+        "My flight number is 6e 2147.",
+        "I am staying at a hostel called Sunbeam.",
+        "My travel buddy for the trip is Tanvi.",
+        "My back hurts a bit.",
+        "My flight number is 6e 2147."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h02",
+      "category": "multi_recall",
+      "condition": "naive_extract",
+      "question": "where am i staying in goa?",
+      "answer": "You\u2019re staying at the **Sunbeam hostel** in Goa.",
+      "gold": "a hostel called sunbeam",
+      "expect": [
+        "sunbeam"
+      ],
+      "correct": true,
+      "prompt_tokens": 257,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My flight to Goa is on 22 December.",
+        "I am staying at a hostel called Sunbeam."
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 7,
+      "task_extract_tokens": 3425,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My flight to Goa is on 22 December.",
+        "My flight number is 6e 2147.",
+        "I am staying at a hostel called Sunbeam.",
+        "My travel buddy for the trip is Tanvi.",
+        "My back hurts a bit.",
+        "My flight number is 6e 2147."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h02",
+      "category": "multi_recall",
+      "condition": "naive_extract",
+      "question": "who am i travelling with?",
+      "answer": "You\u2019re traveling with **Tanvi**.",
+      "gold": "tanvi",
+      "expect": [
+        "\\btanvi\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 306,
+      "memories_injected": 5,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My travel buddy for the trip is Tanvi.",
+        "My flight number is 6e 2147.",
+        "My flight number is 6e 2147.",
+        "My flight to Goa is on 22 December.",
+        "I am staying at a hostel called Sunbeam."
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 7,
+      "task_extract_tokens": 3425,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My flight to Goa is on 22 December.",
+        "My flight number is 6e 2147.",
+        "I am staying at a hostel called Sunbeam.",
+        "My travel buddy for the trip is Tanvi.",
+        "My back hurts a bit.",
+        "My flight number is 6e 2147."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h03",
+      "category": "distractor",
+      "condition": "naive_extract",
+      "question": "where does my brother work?",
+      "answer": "He works at Deloitte.",
+      "gold": "deloitte",
+      "expect": [
+        "deloitte"
+      ],
+      "correct": true,
+      "prompt_tokens": 227,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My brother Kabir works at Deloitte.",
+        "My brother's wife works at Accenture."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 1968,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My brother Kabir works at Deloitte.",
+        "My friend Kabir works at Razorpay.",
+        "My brother's wife works at Accenture.",
+        "My headphones died.",
+        "My laptop is charging.",
+        "My brother Kabir works at Deloitte."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h03",
+      "category": "distractor",
+      "condition": "naive_extract",
+      "question": "which company does my friend kabir work at?",
+      "answer": "Your friend Kabir works at Razorpay.",
+      "gold": "razorpay",
+      "expect": [
+        "razorpay"
+      ],
+      "correct": true,
+      "prompt_tokens": 251,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My friend Kabir works at Razorpay.",
+        "My brother Kabir works at Deloitte.",
+        "My brother Kabir works at Deloitte."
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 1968,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My brother Kabir works at Deloitte.",
+        "My friend Kabir works at Razorpay.",
+        "My brother's wife works at Accenture.",
+        "My headphones died.",
+        "My laptop is charging.",
+        "My brother Kabir works at Deloitte."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h04",
+      "category": "distractor",
+      "condition": "naive_extract",
+      "question": "what's my home wifi password?",
+      "answer": "Your home Wi\u2011Fi password is **sunflower88**.",
+      "gold": "sunflower88",
+      "expect": [
+        "sunflower88"
+      ],
+      "correct": true,
+      "prompt_tokens": 246,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My home wifi password is sunflower88.",
+        "My office wifi password is bluefin42.",
+        "The cafe near my place has wifi password latte2020."
+      ],
+      "active_memories": 3,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 1857,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My home wifi password is sunflower88.",
+        "My office wifi password is bluefin42.",
+        "The cafe near my place has wifi password latte2020."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h04",
+      "category": "distractor",
+      "condition": "naive_extract",
+      "question": "what's the office wifi password?",
+      "answer": "Your office Wi\u2011Fi password is **bluefin42**.",
+      "gold": "bluefin42",
+      "expect": [
+        "bluefin42"
+      ],
+      "correct": true,
+      "prompt_tokens": 261,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My office wifi password is bluefin42.",
+        "My home wifi password is sunflower88.",
+        "The cafe near my place has wifi password latte2020."
+      ],
+      "active_memories": 3,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 1857,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My home wifi password is sunflower88.",
+        "My office wifi password is bluefin42.",
+        "The cafe near my place has wifi password latte2020."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h05",
+      "category": "distractor",
+      "condition": "naive_extract",
+      "question": "which school does my niece go to?",
+      "answer": "Your niece attends Greenwood High.",
+      "gold": "greenwood high",
+      "expect": [
+        "greenwood"
+      ],
+      "correct": true,
+      "prompt_tokens": 229,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My niece goes to Greenwood High.",
+        "My niece's best friend is called Ira."
+      ],
+      "active_memories": 4,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 1961,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My niece goes to Greenwood High.",
+        "My nephew studies at Sanskriti Academy.",
+        "My headphones died.",
+        "My niece's best friend is called Ira."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h05",
+      "category": "distractor",
+      "condition": "naive_extract",
+      "question": "where does my nephew study?",
+      "answer": "Your nephew studies at Sanskriti Academy.",
+      "gold": "sanskriti academy",
+      "expect": [
+        "sanskriti"
+      ],
+      "correct": true,
+      "prompt_tokens": 233,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My nephew studies at Sanskriti Academy.",
+        "My niece goes to Greenwood High."
+      ],
+      "active_memories": 4,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 1961,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My niece goes to Greenwood High.",
+        "My nephew studies at Sanskriti Academy.",
+        "My headphones died.",
+        "My niece's best friend is called Ira."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h06",
+      "category": "update_chain",
+      "condition": "naive_extract",
+      "question": "which city do i live in now?",
+      "answer": "You\u2019re currently living in Hyderabad.",
+      "gold": "hyderabad",
+      "expect": [
+        "hyderabad"
+      ],
+      "correct": true,
+      "prompt_tokens": 249,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "I now live in Hyderabad (moved from Indore).",
+        "I now live in Indore (moved from Gurgaon).",
+        "I live in Gurgaon."
+      ],
+      "active_memories": 3,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 1973,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "I live in Gurgaon.",
+        "I now live in Indore (moved from Gurgaon).",
+        "I now live in Hyderabad (moved from Indore)."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h06",
+      "category": "update_chain",
+      "condition": "naive_extract",
+      "question": "which city did i live in just before my current one?",
+      "answer": "Just before Hyderabad, you lived in Indore.",
+      "gold": "indore (gurgaon -> indore -> hyderabad)",
+      "expect": [
+        "\\bindore\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 260,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "I now live in Hyderabad (moved from Indore).",
+        "I now live in Indore (moved from Gurgaon).",
+        "I live in Gurgaon."
+      ],
+      "active_memories": 3,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 1973,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "I live in Gurgaon.",
+        "I now live in Indore (moved from Gurgaon).",
+        "I now live in Hyderabad (moved from Indore)."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h07",
+      "category": "update_chain",
+      "condition": "naive_extract",
+      "question": "what does my current phone number end in?",
+      "answer": "Your phone number currently ends in **9105**.",
+      "gold": "9105",
+      "expect": [
+        "9105"
+      ],
+      "correct": true,
+      "prompt_tokens": 258,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "my phone number ends in 4412",
+        "My phone number now ends in 9105 (replaced 7730).",
+        "got a new sim, my number now ends in 7730"
+      ],
+      "active_memories": 9,
+      "task_extract_calls": 3,
+      "task_extract_tokens": 3707,
+      "task_extract_failures": 1,
+      "task_facts": [
+        "my phone number ends in 4412",
+        "scrolling mindlessly",
+        "just saw a squirrel outside",
+        "nothing much going on",
+        "my headphones died",
+        "got a new sim, my number now ends in 7730",
+        "the sky looks cloudy",
+        "looking out the window",
+        "My phone number now ends in 9105 (replaced 7730)."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h08",
+      "category": "update_chain",
+      "condition": "naive_extract",
+      "question": "who is my team lead right now?",
+      "answer": "Your current team lead is **Omkar**.",
+      "gold": "omkar",
+      "expect": [
+        "\\bomkar\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 256,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My team lead is Suresh.",
+        "My team lead is Farah (replacing Suresh).",
+        "My team lead is Omkar (replacing Farah)."
+      ],
+      "active_memories": 3,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 2052,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My team lead is Suresh.",
+        "My team lead is Farah (replacing Suresh).",
+        "My team lead is Omkar (replacing Farah).",
+        "My team lead is Farah (replacing Suresh)."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h08",
+      "category": "update_chain",
+      "condition": "naive_extract",
+      "question": "who was my team lead before the current one?",
+      "answer": "Before Farah, your team lead was **Suresh**.",
+      "gold": "farah (suresh -> farah -> omkar)",
+      "expect": [
+        "\\bfarah\\b"
+      ],
+      "correct": false,
+      "prompt_tokens": 285,
+      "memories_injected": 4,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My team lead is Suresh.",
+        "My team lead is Farah (replacing Suresh).",
+        "My team lead is Farah (replacing Suresh).",
+        "My team lead is Omkar (replacing Farah)."
+      ],
+      "active_memories": 4,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 2052,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My team lead is Suresh.",
+        "My team lead is Farah (replacing Suresh).",
+        "My team lead is Omkar (replacing Farah).",
+        "My team lead is Farah (replacing Suresh)."
+      ],
+      "correct_regex": true,
+      "correct_judge": false
+    },
+    {
+      "task": "h09",
+      "category": "update_chain",
+      "condition": "naive_extract",
+      "question": "which code editor do i use now?",
+      "answer": "You\u2019re using **Zed** as your main code editor.",
+      "gold": "zed",
+      "expect": [
+        "\\bzed\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 253,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My main code editor is zed (replaced vscode).",
+        "My main code editor is vscode (switched from vim).",
+        "My main code editor is vim."
+      ],
+      "active_memories": 3,
+      "task_extract_calls": 3,
+      "task_extract_tokens": 1613,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My main code editor is vim.",
+        "My main code editor is vscode (switched from vim).",
+        "My main code editor is zed (replaced vscode)."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h10",
+      "category": "long_gap",
+      "condition": "naive_extract",
+      "question": "what's my bike lock combination?",
+      "answer": "Your bike lock combination is **3\u20119\u20111\u20114**.",
+      "gold": "3-9-1-4",
+      "expect": [
+        "3\\D?9\\D?1\\D?4"
+      ],
+      "correct": true,
+      "prompt_tokens": 220,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My bicycle lock combination is 3-9-1-4."
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 6,
+      "task_extract_tokens": 3010,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My bicycle lock combination is 3-9-1-4.",
+        "I am thinking about getting a haircut.",
+        "My headphones are broken.",
+        "I should drink more water.",
+        "My back hurts a bit.",
+        "The snacks are gone."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h11",
+      "category": "long_gap",
+      "condition": "naive_extract",
+      "question": "what's my cat's name?",
+      "answer": "Your cat\u2019s name is Biscotti.",
+      "gold": "biscotti",
+      "expect": [
+        "biscotti"
+      ],
+      "correct": true,
+      "prompt_tokens": 215,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My cat is named Biscotti."
+      ],
+      "active_memories": 2,
+      "task_extract_calls": 6,
+      "task_extract_tokens": 3038,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My cat is named Biscotti.",
+        "My headphones died."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h12",
+      "category": "long_gap",
+      "condition": "naive_extract",
+      "question": "which parking spot do i rent?",
+      "answer": "You\u2019re renting parking spot **p2\u2011117**.",
+      "gold": "p2-117",
+      "expect": [
+        "p\\s*-?\\s*2\\s*-?\\s*117"
+      ],
+      "correct": true,
+      "prompt_tokens": 213,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "I rent parking spot p2-117."
+      ],
+      "active_memories": 1,
+      "task_extract_calls": 6,
+      "task_extract_tokens": 2807,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "I rent parking spot p2-117."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h13",
+      "category": "multi_recall",
+      "condition": "naive_extract",
+      "question": "who is my manager?",
+      "answer": "Your manager is Leena.",
+      "gold": "leena",
+      "expect": [
+        "\\bleena\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 254,
+      "memories_injected": 4,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My manager is Leena.",
+        "My previous manager was anand.",
+        "My skip-level manager is Vikram.",
+        "My HR person for my team is joseph."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 5,
+      "task_extract_tokens": 2499,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My manager is Leena.",
+        "My skip-level manager is Vikram.",
+        "I should drink more water.",
+        "My HR person for my team is joseph.",
+        "My previous manager was anand."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h13",
+      "category": "multi_recall",
+      "condition": "naive_extract",
+      "question": "who is my skip-level manager?",
+      "answer": "Your skip\u2011level manager is Vikram.",
+      "gold": "vikram",
+      "expect": [
+        "\\bvikram\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 259,
+      "memories_injected": 4,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My skip-level manager is Vikram.",
+        "My previous manager was anand.",
+        "My manager is Leena.",
+        "My HR person for my team is joseph."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 5,
+      "task_extract_tokens": 2499,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My manager is Leena.",
+        "My skip-level manager is Vikram.",
+        "I should drink more water.",
+        "My HR person for my team is joseph.",
+        "My previous manager was anand."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h13",
+      "category": "multi_recall",
+      "condition": "naive_extract",
+      "question": "who is the hr contact for my team?",
+      "answer": "The HR contact for your team is Joseph.",
+      "gold": "joseph",
+      "expect": [
+        "\\bjoseph\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 243,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My HR person for my team is joseph.",
+        "My manager is Leena."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 5,
+      "task_extract_tokens": 2499,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My manager is Leena.",
+        "My skip-level manager is Vikram.",
+        "I should drink more water.",
+        "My HR person for my team is joseph.",
+        "My previous manager was anand."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h14",
+      "category": "update_chain",
+      "condition": "naive_extract",
+      "question": "what car do i drive now?",
+      "answer": "You\u2019re driving a white Nexon.",
+      "gold": "a white nexon",
+      "expect": [
+        "nexon"
+      ],
+      "correct": true,
+      "prompt_tokens": 247,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "I now drive a white nexon (sold the swift).",
+        "I drive a grey swift.",
+        "My car's registration number ends in 5521."
+      ],
+      "active_memories": 4,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 2030,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "I drive a grey swift.",
+        "My headphones died.",
+        "I now drive a white nexon (sold the swift).",
+        "My car's registration number ends in 5521."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h14",
+      "category": "update_chain",
+      "condition": "naive_extract",
+      "question": "what does my car registration end in?",
+      "answer": "It ends in **5521**.",
+      "gold": "5521",
+      "expect": [
+        "5521"
+      ],
+      "correct": true,
+      "prompt_tokens": 226,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My car's registration number ends in 5521."
+      ],
+      "active_memories": 4,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 2030,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "I drive a grey swift.",
+        "My headphones died.",
+        "I now drive a white nexon (sold the swift).",
+        "My car's registration number ends in 5521."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h15",
+      "category": "multi_recall",
+      "condition": "naive_extract",
+      "question": "what's my flat number?",
+      "answer": "Your flat number is **1204**.",
+      "gold": "flat 1204 (tower c)",
+      "expect": [
+        "1204"
+      ],
+      "correct": true,
+      "prompt_tokens": 217,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "I live in flat 1204 in tower c."
+      ],
+      "active_memories": 4,
+      "task_extract_calls": 5,
+      "task_extract_tokens": 2598,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "I live in flat 1204 in tower c.",
+        "My housing society is called palm grove.",
+        "The security guard at my gate is Ramesh.",
+        "My headphones died.",
+        "My flat number is 1204."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h15",
+      "category": "multi_recall",
+      "condition": "naive_extract",
+      "question": "what's the name of my housing society?",
+      "answer": "Palm Grove.",
+      "gold": "palm grove",
+      "expect": [
+        "palm\\s*grove"
+      ],
+      "correct": true,
+      "prompt_tokens": 225,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My housing society is called palm grove."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 5,
+      "task_extract_tokens": 2598,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "I live in flat 1204 in tower c.",
+        "My housing society is called palm grove.",
+        "The security guard at my gate is Ramesh.",
+        "My headphones died.",
+        "My flat number is 1204."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h15",
+      "category": "multi_recall",
+      "condition": "naive_extract",
+      "question": "who is the guard at my gate?",
+      "answer": "The guard at your gate is Ramesh.",
+      "gold": "ramesh",
+      "expect": [
+        "\\bramesh\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 231,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "The security guard at my gate is Ramesh."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 5,
+      "task_extract_tokens": 2598,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "I live in flat 1204 in tower c.",
+        "My housing society is called palm grove.",
+        "The security guard at my gate is Ramesh.",
+        "My headphones died.",
+        "My flat number is 1204."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h16",
+      "category": "long_gap",
+      "condition": "naive_extract",
+      "question": "what time is my dentist appointment?",
+      "answer": "Your dentist appointment is on the 9th at 4:30\u202fpm.",
+      "gold": "4:30 pm (on the 9th)",
+      "expect": [
+        "4[:.]30",
+        "half past four"
+      ],
+      "correct": true,
+      "prompt_tokens": 237,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My dentist appointment is on the 9th at 4:30 pm.",
+        "My dentist is dr. mehra."
+      ],
+      "active_memories": 4,
+      "task_extract_calls": 7,
+      "task_extract_tokens": 3649,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My dentist appointment is on the 9th at 4:30 pm.",
+        "My headphones died.",
+        "I am reading a random article.",
+        "My dentist is dr. mehra."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h16",
+      "category": "long_gap",
+      "condition": "naive_extract",
+      "question": "what's my dentist's name?",
+      "answer": "Your dentist is Dr.\u202fMehra.",
+      "gold": "dr. mehra",
+      "expect": [
+        "mehra"
+      ],
+      "correct": true,
+      "prompt_tokens": 254,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My dentist appointment is on the 9th at 4:30 pm.",
+        "My dentist is dr. mehra."
+      ],
+      "active_memories": 4,
+      "task_extract_calls": 7,
+      "task_extract_tokens": 3649,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My dentist appointment is on the 9th at 4:30 pm.",
+        "My headphones died.",
+        "I am reading a random article.",
+        "My dentist is dr. mehra."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h01",
+      "category": "multi_recall",
+      "condition": "lethe_extract",
+      "question": "what's my gym locker code?",
+      "answer": "Your locker code is 4817.",
+      "gold": "4817",
+      "expect": [
+        "\\b4817\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 265,
+      "memories_injected": 4,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My locker code at the gym is 4817.",
+        "My gym membership id is gym-5093.",
+        "My gym is called Iron Temple.",
+        "I go to the gym on tuesdays and fridays."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 8,
+      "task_extract_tokens": 4035,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My locker code at the gym is 4817.",
+        "My gym is called Iron Temple.",
+        "My trainer there is named dhruv.",
+        "I go to the gym on tuesdays and fridays.",
+        "My gym membership id is gym-5093."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h01",
+      "category": "multi_recall",
+      "condition": "lethe_extract",
+      "question": "what's the name of my gym?",
+      "answer": "Your gym is called Iron Temple.",
+      "gold": "iron temple",
+      "expect": [
+        "iron\\s*temple"
+      ],
+      "correct": true,
+      "prompt_tokens": 288,
+      "memories_injected": 5,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My gym is called Iron Temple.",
+        "My gym membership id is gym-5093.",
+        "My locker code at the gym is 4817.",
+        "My trainer there is named dhruv.",
+        "I go to the gym on tuesdays and fridays."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 8,
+      "task_extract_tokens": 4035,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My locker code at the gym is 4817.",
+        "My gym is called Iron Temple.",
+        "My trainer there is named dhruv.",
+        "I go to the gym on tuesdays and fridays.",
+        "My gym membership id is gym-5093."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h01",
+      "category": "multi_recall",
+      "condition": "lethe_extract",
+      "question": "who is my gym trainer?",
+      "answer": "Your trainer at the gym is named Dhruv.",
+      "gold": "dhruv",
+      "expect": [
+        "\\bdhruv\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 295,
+      "memories_injected": 5,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My gym membership id is gym-5093.",
+        "My trainer there is named dhruv.",
+        "My locker code at the gym is 4817.",
+        "My gym is called Iron Temple.",
+        "I go to the gym on tuesdays and fridays."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 8,
+      "task_extract_tokens": 4035,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My locker code at the gym is 4817.",
+        "My gym is called Iron Temple.",
+        "My trainer there is named dhruv.",
+        "I go to the gym on tuesdays and fridays.",
+        "My gym membership id is gym-5093."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h01",
+      "category": "multi_recall",
+      "condition": "lethe_extract",
+      "question": "which days do i work out?",
+      "answer": "You work out on Tuesdays and Fridays.",
+      "gold": "tuesdays and fridays",
+      "expect": [
+        "tue\\w*[\\s\\S]*fri",
+        "fri\\w*[\\s\\S]*tue"
+      ],
+      "correct": true,
+      "prompt_tokens": 253,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "recalled_texts": [
+        "I go to the gym on tuesdays and fridays.",
+        "My gym membership id is gym-5093."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 8,
+      "task_extract_tokens": 4035,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My locker code at the gym is 4817.",
+        "My gym is called Iron Temple.",
+        "My trainer there is named dhruv.",
+        "I go to the gym on tuesdays and fridays.",
+        "My gym membership id is gym-5093."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h01",
+      "category": "multi_recall",
+      "condition": "lethe_extract",
+      "question": "what's my gym membership id?",
+      "answer": "Your gym membership ID is **gym-5093**.",
+      "gold": "gym-5093",
+      "expect": [
+        "5093"
+      ],
+      "correct": true,
+      "prompt_tokens": 298,
+      "memories_injected": 5,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My gym membership id is gym-5093.",
+        "My locker code at the gym is 4817.",
+        "My gym is called Iron Temple.",
+        "I go to the gym on tuesdays and fridays.",
+        "My trainer there is named dhruv."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 8,
+      "task_extract_tokens": 4035,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My locker code at the gym is 4817.",
+        "My gym is called Iron Temple.",
+        "My trainer there is named dhruv.",
+        "I go to the gym on tuesdays and fridays.",
+        "My gym membership id is gym-5093."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h02",
+      "category": "multi_recall",
+      "condition": "lethe_extract",
+      "question": "when is my goa flight?",
+      "answer": "Your flight to Goa is on **22\u202fDecember**.",
+      "gold": "22 december",
+      "expect": [
+        "\\b22(nd)?\\s+dec",
+        "dec\\w*\\s+22"
+      ],
+      "correct": true,
+      "prompt_tokens": 232,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My flight to Goa is on 22 December.",
+        "My flight number is 6e 2147."
+      ],
+      "active_memories": 4,
+      "task_extract_calls": 7,
+      "task_extract_tokens": 3314,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My flight to Goa is on 22 December.",
+        "My flight number is 6e 2147.",
+        "I am staying at a hostel called Sunbeam.",
+        "My travel buddy for the trip is Tanvi."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h02",
+      "category": "multi_recall",
+      "condition": "lethe_extract",
+      "question": "what's my flight number?",
+      "answer": "Your flight number is **6E\u202f2147**.",
+      "gold": "6e 2147",
+      "expect": [
+        "2147"
+      ],
+      "correct": true,
+      "prompt_tokens": 245,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My flight number is 6e 2147.",
+        "My flight to Goa is on 22 December."
+      ],
+      "active_memories": 4,
+      "task_extract_calls": 7,
+      "task_extract_tokens": 3314,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My flight to Goa is on 22 December.",
+        "My flight number is 6e 2147.",
+        "I am staying at a hostel called Sunbeam.",
+        "My travel buddy for the trip is Tanvi."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h02",
+      "category": "multi_recall",
+      "condition": "lethe_extract",
+      "question": "where am i staying in goa?",
+      "answer": "You\u2019re staying at the **Sunbeam hostel** in Goa.",
+      "gold": "a hostel called sunbeam",
+      "expect": [
+        "sunbeam"
+      ],
+      "correct": true,
+      "prompt_tokens": 256,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My flight to Goa is on 22 December.",
+        "I am staying at a hostel called Sunbeam."
+      ],
+      "active_memories": 4,
+      "task_extract_calls": 7,
+      "task_extract_tokens": 3314,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My flight to Goa is on 22 December.",
+        "My flight number is 6e 2147.",
+        "I am staying at a hostel called Sunbeam.",
+        "My travel buddy for the trip is Tanvi."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h02",
+      "category": "multi_recall",
+      "condition": "lethe_extract",
+      "question": "who am i travelling with?",
+      "answer": "You\u2019re traveling with **Tanvi**.",
+      "gold": "tanvi",
+      "expect": [
+        "\\btanvi\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 289,
+      "memories_injected": 4,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My travel buddy for the trip is Tanvi.",
+        "My flight number is 6e 2147.",
+        "My flight to Goa is on 22 December.",
+        "I am staying at a hostel called Sunbeam."
+      ],
+      "active_memories": 4,
+      "task_extract_calls": 7,
+      "task_extract_tokens": 3314,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My flight to Goa is on 22 December.",
+        "My flight number is 6e 2147.",
+        "I am staying at a hostel called Sunbeam.",
+        "My travel buddy for the trip is Tanvi."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h03",
+      "category": "distractor",
+      "condition": "lethe_extract",
+      "question": "where does my brother work?",
+      "answer": "He works at Deloitte.",
+      "gold": "deloitte",
+      "expect": [
+        "deloitte"
+      ],
+      "correct": true,
+      "prompt_tokens": 227,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My brother Kabir works at Deloitte.",
+        "My brother's wife works at Accenture."
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 2295,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My brother Kabir works at Deloitte.",
+        "My friend Kabir works at Razorpay.",
+        "My brother's wife works at Accenture.",
+        "I am thinking about getting a haircut.",
+        "I had a long call.",
+        "My headphones died.",
+        "I am charging my laptop.",
+        "My brother Kabir works at Deloitte."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h03",
+      "category": "distractor",
+      "condition": "lethe_extract",
+      "question": "which company does my friend kabir work at?",
+      "answer": "Your friend Kabir works at Razorpay.",
+      "gold": "razorpay",
+      "expect": [
+        "razorpay"
+      ],
+      "correct": true,
+      "prompt_tokens": 251,
+      "memories_injected": 3,
+      "reloaded": 1,
+      "recalled_texts": [
+        "My friend Kabir works at Razorpay.",
+        "My brother Kabir works at Deloitte.",
+        "My brother Kabir works at Deloitte."
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 2295,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My brother Kabir works at Deloitte.",
+        "My friend Kabir works at Razorpay.",
+        "My brother's wife works at Accenture.",
+        "I am thinking about getting a haircut.",
+        "I had a long call.",
+        "My headphones died.",
+        "I am charging my laptop.",
+        "My brother Kabir works at Deloitte."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h04",
+      "category": "distractor",
+      "condition": "lethe_extract",
+      "question": "what's my home wifi password?",
+      "answer": "Your home Wi\u2011Fi password is **sunflower88**.",
+      "gold": "sunflower88",
+      "expect": [
+        "sunflower88"
+      ],
+      "correct": true,
+      "prompt_tokens": 244,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My wifi password at home is sunflower88.",
+        "My office wifi password is bluefin42.",
+        "My cafe wifi password is latte2020."
+      ],
+      "active_memories": 3,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 1854,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My wifi password at home is sunflower88.",
+        "My office wifi password is bluefin42.",
+        "My cafe wifi password is latte2020."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h04",
+      "category": "distractor",
+      "condition": "lethe_extract",
+      "question": "what's the office wifi password?",
+      "answer": "Your office Wi\u2011Fi password is **bluefin42**.",
+      "gold": "bluefin42",
+      "expect": [
+        "bluefin42"
+      ],
+      "correct": true,
+      "prompt_tokens": 259,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My office wifi password is bluefin42.",
+        "My wifi password at home is sunflower88.",
+        "My cafe wifi password is latte2020."
+      ],
+      "active_memories": 3,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 1854,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My wifi password at home is sunflower88.",
+        "My office wifi password is bluefin42.",
+        "My cafe wifi password is latte2020."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h05",
+      "category": "distractor",
+      "condition": "lethe_extract",
+      "question": "which school does my niece go to?",
+      "answer": "Your niece goes to Greenwood High.",
+      "gold": "greenwood high",
+      "expect": [
+        "greenwood"
+      ],
+      "correct": true,
+      "prompt_tokens": 229,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My niece goes to Greenwood High.",
+        "My niece's best friend is called Ira."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 1952,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My niece goes to Greenwood High.",
+        "My nephew studies at Sanskriti Academy.",
+        "My headphones died.",
+        "My niece's best friend is called Ira.",
+        "I am thinking about getting a haircut."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h05",
+      "category": "distractor",
+      "condition": "lethe_extract",
+      "question": "where does my nephew study?",
+      "answer": "Your nephew studies at Sanskriti Academy.",
+      "gold": "sanskriti academy",
+      "expect": [
+        "sanskriti"
+      ],
+      "correct": true,
+      "prompt_tokens": 234,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My nephew studies at Sanskriti Academy.",
+        "My niece goes to Greenwood High."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 1952,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My niece goes to Greenwood High.",
+        "My nephew studies at Sanskriti Academy.",
+        "My headphones died.",
+        "My niece's best friend is called Ira.",
+        "I am thinking about getting a haircut."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h06",
+      "category": "update_chain",
+      "condition": "lethe_extract",
+      "question": "which city do i live in now?",
+      "answer": "You\u2019re currently living in Hyderabad.",
+      "gold": "hyderabad",
+      "expect": [
+        "hyderabad"
+      ],
+      "correct": true,
+      "prompt_tokens": 249,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "I now live in Hyderabad (moved from Indore).",
+        "I now live in Indore (moved from Gurgaon).",
+        "I live in Gurgaon."
+      ],
+      "active_memories": 3,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 1974,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "I live in Gurgaon.",
+        "I now live in Indore (moved from Gurgaon).",
+        "I now live in Hyderabad (moved from Indore)."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h06",
+      "category": "update_chain",
+      "condition": "lethe_extract",
+      "question": "which city did i live in just before my current one?",
+      "answer": "Just before Hyderabad, you lived in Indore.",
+      "gold": "indore (gurgaon -> indore -> hyderabad)",
+      "expect": [
+        "\\bindore\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 260,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "I now live in Hyderabad (moved from Indore).",
+        "I now live in Indore (moved from Gurgaon).",
+        "I live in Gurgaon."
+      ],
+      "active_memories": 3,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 1974,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "I live in Gurgaon.",
+        "I now live in Indore (moved from Gurgaon).",
+        "I now live in Hyderabad (moved from Indore)."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h07",
+      "category": "update_chain",
+      "condition": "lethe_extract",
+      "question": "what does my current phone number end in?",
+      "answer": "Your phone number currently ends in **9105**.",
+      "gold": "9105",
+      "expect": [
+        "9105"
+      ],
+      "correct": true,
+      "prompt_tokens": 260,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My phone number ends in 4412.",
+        "My phone number now ends in 7730 (replaced 4412).",
+        "My phone number now ends in 9105 (replaced 7730)."
+      ],
+      "active_memories": 4,
+      "task_extract_calls": 3,
+      "task_extract_tokens": 1628,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My phone number ends in 4412.",
+        "My headphones died.",
+        "My phone number now ends in 7730 (replaced 4412).",
+        "My phone number now ends in 9105 (replaced 7730)."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h08",
+      "category": "update_chain",
+      "condition": "lethe_extract",
+      "question": "who is my team lead right now?",
+      "answer": "Your current team lead is **Omkar**.",
+      "gold": "omkar",
+      "expect": [
+        "\\bomkar\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 256,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My team lead is Suresh.",
+        "My team lead is Farah (replaced Suresh).",
+        "My team lead is Omkar (replaced Farah)."
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 2564,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My team lead is Suresh.",
+        "My team lead is Farah (replaced Suresh).",
+        "Suresh left the company.",
+        "I am thinking about getting a haircut.",
+        "I should drink more water.",
+        "My team lead is Omkar (replaced Farah).",
+        "My team lead is Farah."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h08",
+      "category": "update_chain",
+      "condition": "lethe_extract",
+      "question": "who was my team lead before the current one?",
+      "answer": "The team lead before the current one was **Omkar**.",
+      "gold": "farah (suresh -> farah -> omkar)",
+      "expect": [
+        "\\bfarah\\b"
+      ],
+      "correct": false,
+      "prompt_tokens": 279,
+      "memories_injected": 4,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My team lead is Suresh.",
+        "My team lead is Farah (replaced Suresh).",
+        "My team lead is Omkar (replaced Farah).",
+        "My team lead is Farah."
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 2564,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My team lead is Suresh.",
+        "My team lead is Farah (replaced Suresh).",
+        "Suresh left the company.",
+        "I am thinking about getting a haircut.",
+        "I should drink more water.",
+        "My team lead is Omkar (replaced Farah).",
+        "My team lead is Farah."
+      ],
+      "correct_regex": false,
+      "correct_judge": false
+    },
+    {
+      "task": "h09",
+      "category": "update_chain",
+      "condition": "lethe_extract",
+      "question": "which code editor do i use now?",
+      "answer": "You\u2019re using **Zed** as your main code editor.",
+      "gold": "zed",
+      "expect": [
+        "\\bzed\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 253,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My main code editor is vscode (switched from vim).",
+        "My main code editor is zed (dropped vscode).",
+        "My main code editor is vim."
+      ],
+      "active_memories": 3,
+      "task_extract_calls": 3,
+      "task_extract_tokens": 1576,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My main code editor is vim.",
+        "My main code editor is vscode (switched from vim).",
+        "My main code editor is zed (dropped vscode)."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h10",
+      "category": "long_gap",
+      "condition": "lethe_extract",
+      "question": "what's my bike lock combination?",
+      "answer": "Your bike lock combination is 3\u20119\u20111\u20114.",
+      "gold": "3-9-1-4",
+      "expect": [
+        "3\\D?9\\D?1\\D?4"
+      ],
+      "correct": true,
+      "prompt_tokens": 220,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My bicycle lock combination is 3-9-1-4."
+      ],
+      "active_memories": 2,
+      "task_extract_calls": 6,
+      "task_extract_tokens": 2881,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My bicycle lock combination is 3-9-1-4.",
+        "I am thinking about getting a haircut."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h11",
+      "category": "long_gap",
+      "condition": "lethe_extract",
+      "question": "what's my cat's name?",
+      "answer": "Your cat\u2019s name is Biscotti.",
+      "gold": "biscotti",
+      "expect": [
+        "biscotti"
+      ],
+      "correct": true,
+      "prompt_tokens": 215,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My cat is named Biscotti."
+      ],
+      "active_memories": 3,
+      "task_extract_calls": 6,
+      "task_extract_tokens": 3027,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My cat is named Biscotti.",
+        "I should drink more water.",
+        "My headphones died."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h12",
+      "category": "long_gap",
+      "condition": "lethe_extract",
+      "question": "which parking spot do i rent?",
+      "answer": "You\u2019re renting parking spot **p2\u2011117**.",
+      "gold": "p2-117",
+      "expect": [
+        "p\\s*-?\\s*2\\s*-?\\s*117"
+      ],
+      "correct": true,
+      "prompt_tokens": 213,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "I rent parking spot p2-117."
+      ],
+      "active_memories": 1,
+      "task_extract_calls": 6,
+      "task_extract_tokens": 2747,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "I rent parking spot p2-117."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h13",
+      "category": "multi_recall",
+      "condition": "lethe_extract",
+      "question": "who is my manager?",
+      "answer": "Your manager is Leena.",
+      "gold": "leena",
+      "expect": [
+        "\\bleena\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 254,
+      "memories_injected": 4,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My manager is Leena.",
+        "My previous manager was anand.",
+        "My skip-level manager is Vikram.",
+        "My HR person for my team is joseph."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 5,
+      "task_extract_tokens": 2627,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My manager is Leena.",
+        "My skip-level manager is Vikram.",
+        "I should drink more water.",
+        "My HR person for my team is joseph.",
+        "My previous manager was anand.",
+        "My manager is Leena."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h13",
+      "category": "multi_recall",
+      "condition": "lethe_extract",
+      "question": "who is my skip-level manager?",
+      "answer": "Your skip\u2011level manager is Vikram.",
+      "gold": "vikram",
+      "expect": [
+        "\\bvikram\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 271,
+      "memories_injected": 5,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My skip-level manager is Vikram.",
+        "My previous manager was anand.",
+        "My manager is Leena.",
+        "My manager is Leena.",
+        "My HR person for my team is joseph."
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 5,
+      "task_extract_tokens": 2627,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My manager is Leena.",
+        "My skip-level manager is Vikram.",
+        "I should drink more water.",
+        "My HR person for my team is joseph.",
+        "My previous manager was anand.",
+        "My manager is Leena."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h13",
+      "category": "multi_recall",
+      "condition": "lethe_extract",
+      "question": "who is the hr contact for my team?",
+      "answer": "The HR contact for your team is Joseph.",
+      "gold": "joseph",
+      "expect": [
+        "\\bjoseph\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 255,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My HR person for my team is joseph.",
+        "My manager is Leena.",
+        "My manager is Leena."
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 5,
+      "task_extract_tokens": 2627,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My manager is Leena.",
+        "My skip-level manager is Vikram.",
+        "I should drink more water.",
+        "My HR person for my team is joseph.",
+        "My previous manager was anand.",
+        "My manager is Leena."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h14",
+      "category": "update_chain",
+      "condition": "lethe_extract",
+      "question": "what car do i drive now?",
+      "answer": "You\u2019re driving a white Nexon.",
+      "gold": "a white nexon",
+      "expect": [
+        "nexon"
+      ],
+      "correct": true,
+      "prompt_tokens": 248,
+      "memories_injected": 3,
+      "reloaded": 0,
+      "recalled_texts": [
+        "I now drive a white nexon (sold the grey swift).",
+        "I drive a grey swift.",
+        "My car's registration number ends in 5521."
+      ],
+      "active_memories": 4,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 2185,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "I drive a grey swift.",
+        "My headphones died.",
+        "I now drive a white nexon (sold the grey swift).",
+        "My car's registration number ends in 5521.",
+        "I now drive a white nexon (sold the grey swift)."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h14",
+      "category": "update_chain",
+      "condition": "lethe_extract",
+      "question": "what does my car registration end in?",
+      "answer": "It ends in **5521**.",
+      "gold": "5521",
+      "expect": [
+        "5521"
+      ],
+      "correct": true,
+      "prompt_tokens": 226,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My car's registration number ends in 5521."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 4,
+      "task_extract_tokens": 2185,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "I drive a grey swift.",
+        "My headphones died.",
+        "I now drive a white nexon (sold the grey swift).",
+        "My car's registration number ends in 5521.",
+        "I now drive a white nexon (sold the grey swift)."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h15",
+      "category": "multi_recall",
+      "condition": "lethe_extract",
+      "question": "what's my flat number?",
+      "answer": "Your flat number is 1204.",
+      "gold": "flat 1204 (tower c)",
+      "expect": [
+        "1204"
+      ],
+      "correct": true,
+      "prompt_tokens": 217,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "I live in flat 1204 in tower c."
+      ],
+      "active_memories": 5,
+      "task_extract_calls": 5,
+      "task_extract_tokens": 2730,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "I live in flat 1204 in tower c.",
+        "My housing society is called palm grove.",
+        "The security guard at our gate is Ramesh.",
+        "My kettle just clicked off.",
+        "My headphones died.",
+        "My flat number is 1204.",
+        "My housing society is called palm grove."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h15",
+      "category": "multi_recall",
+      "condition": "lethe_extract",
+      "question": "what's the name of my housing society?",
+      "answer": "Your housing society is called **Palm Grove**.",
+      "gold": "palm grove",
+      "expect": [
+        "palm\\s*grove"
+      ],
+      "correct": true,
+      "prompt_tokens": 224,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My housing society is called palm grove."
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 5,
+      "task_extract_tokens": 2730,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "I live in flat 1204 in tower c.",
+        "My housing society is called palm grove.",
+        "The security guard at our gate is Ramesh.",
+        "My kettle just clicked off.",
+        "My headphones died.",
+        "My flat number is 1204.",
+        "My housing society is called palm grove."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h15",
+      "category": "multi_recall",
+      "condition": "lethe_extract",
+      "question": "who is the guard at my gate?",
+      "answer": "The guard at your gate is Ramesh.",
+      "gold": "ramesh",
+      "expect": [
+        "\\bramesh\\b"
+      ],
+      "correct": true,
+      "prompt_tokens": 237,
+      "memories_injected": 1,
+      "reloaded": 0,
+      "recalled_texts": [
+        "The security guard at our gate is Ramesh."
+      ],
+      "active_memories": 6,
+      "task_extract_calls": 5,
+      "task_extract_tokens": 2730,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "I live in flat 1204 in tower c.",
+        "My housing society is called palm grove.",
+        "The security guard at our gate is Ramesh.",
+        "My kettle just clicked off.",
+        "My headphones died.",
+        "My flat number is 1204.",
+        "My housing society is called palm grove."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h16",
+      "category": "long_gap",
+      "condition": "lethe_extract",
+      "question": "what time is my dentist appointment?",
+      "answer": "Your dentist appointment is on the 9th at 4:30\u202fpm.",
+      "gold": "4:30 pm (on the 9th)",
+      "expect": [
+        "4[:.]30",
+        "half past four"
+      ],
+      "correct": true,
+      "prompt_tokens": 237,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My dentist appointment is on the 9th at 4:30 pm.",
+        "My dentist is dr. mehra."
+      ],
+      "active_memories": 3,
+      "task_extract_calls": 7,
+      "task_extract_tokens": 3322,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My dentist appointment is on the 9th at 4:30 pm.",
+        "I should drink more water.",
+        "My dentist is dr. mehra."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    },
+    {
+      "task": "h16",
+      "category": "long_gap",
+      "condition": "lethe_extract",
+      "question": "what's my dentist's name?",
+      "answer": "Your dentist is Dr.\u202fMehra.",
+      "gold": "dr. mehra",
+      "expect": [
+        "mehra"
+      ],
+      "correct": true,
+      "prompt_tokens": 254,
+      "memories_injected": 2,
+      "reloaded": 0,
+      "recalled_texts": [
+        "My dentist appointment is on the 9th at 4:30 pm.",
+        "My dentist is dr. mehra."
+      ],
+      "active_memories": 3,
+      "task_extract_calls": 7,
+      "task_extract_tokens": 3322,
+      "task_extract_failures": 0,
+      "task_facts": [
+        "My dentist appointment is on the 9th at 4:30 pm.",
+        "I should drink more water.",
+        "My dentist is dr. mehra."
+      ],
+      "correct_regex": true,
+      "correct_judge": true
+    }
+  ]
+}
