@@ -105,5 +105,5 @@ Tests run offline with a fake embedder and fake LLM.
 ## Known limits
 
 - Lexical overlap misses paraphrased usage.
-- Raw user messages are stored as memories; fact extraction is a planned upgrade.
+- Fact extraction costs an extra LLM call per batch of 8 messages (~2.6K tokens per eval conversation), and with `LETHE_EXTRACT=0` raw user messages are stored as-is, chatter included.
 - If every active memory is inside the grace window, the budget can temporarily overflow.
