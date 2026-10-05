@@ -177,6 +177,7 @@ def test_ui_and_config_are_served():
 
 def test_eval_endpoint_merges_latest_ordered_run_per_condition(tmp_path):
     import json as _json
+
     from lethe.api import latest_eval
 
     def write(name, fmt, conds):

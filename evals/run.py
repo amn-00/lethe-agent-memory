@@ -21,12 +21,11 @@ import uuid
 from collections import defaultdict
 from pathlib import Path
 
+from evals.judge import judge_correct, regex_correct
 from lethe import AgentMemory, PolicyConfig, Store
 from lethe.agent import CANNED_REPLY, MemoryAgent, estimate_tokens
 from lethe.index import VectorIndex
 from lethe.models import ACTIVE
-
-from evals.judge import judge_correct, regex_correct
 
 HERE = Path(__file__).parent
 CONDITIONS = ["no_memory", "full_history", "naive_rag", "lethe", "naive_extract", "lethe_extract"]

@@ -6,7 +6,6 @@ from lethe import AgentMemory, PolicyConfig, Store
 from lethe.agent import MemoryAgent
 from lethe.extract import FactExtractor, parse_facts
 from lethe.index import VectorIndex
-
 from tests.test_memory import FakeEmbedder
 
 

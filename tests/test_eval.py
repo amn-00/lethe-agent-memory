@@ -3,10 +3,10 @@ import json
 import re
 from pathlib import Path
 
+import pytest
+
 from evals.fakes import FakeEmbedder, MemoryEchoLLM
 from evals.run import expand, is_correct, run_task, summarize
-
-import pytest
 
 EVALS = Path(__file__).parent.parent / "evals"
 DATA = json.loads((EVALS / "tasks.json").read_text(encoding="utf-8"))
@@ -199,6 +199,7 @@ def test_all_three_sets_are_mutually_fresh():
 
 def test_repeats_run_everything_n_times_and_resume_per_repeat(tmp_path):
     import argparse
+
     from evals.run import run_all
 
     args = argparse.Namespace(budget=6, grace=2, llm_every_turn=False, memory_format="ordered", repeats=2)
