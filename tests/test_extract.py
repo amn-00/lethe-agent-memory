@@ -108,3 +108,30 @@ def test_extractor_sees_related_known_facts_across_batches():
     asyncio.run(agent.chat("s", "started a new book, the three body problem", respond=False))
     assert "Facts already in memory" in seen_prompts[-1]
     assert "Project Hail Mary" in seen_prompts[-1]
+
+
+def test_one_off_activities_are_skipped_but_durable_facts_kept():
+    """'I made coffee' and 'I forgot my umbrella' were being stored as facts. The prompt must tell the
+    extractor to skip one-off activities without losing habits or situation-changing events."""
+    seen_prompts = []
+
+    class RecordingLLM(ScriptedLLM):
+        async def chat(self, messages):
+            seen_prompts.append(messages[-1]["content"])
+            return await super().chat(messages)
+
+    llm = RecordingLLM({
+        "every morning": "I make coffee every morning.",
+        "moved to": "I now live in Bangalore.",
+    })
+    agent, mem = make(llm, batch_size=4)
+    for msg in ["just made coffee", "i forgot my umbrella today", "i make coffee every morning", "i moved to bangalore last week"]:
+        asyncio.run(agent.chat("s", msg, respond=False))
+
+    prompt = seen_prompts[-1]
+    assert "Skip one-off activities" in prompt
+    assert "habits and routines" in prompt and "change the user's situation" in prompt
+    assert "right now or later today" in prompt
+    assert "[t2] i forgot my umbrella today" in prompt  # the extractor saw every message
+    stored = {(m.created_turn, m.text) for m in mem.store.list_memories("s")}
+    assert stored == {(3, "I make coffee every morning."), (4, "I now live in Bangalore.")}

@@ -22,13 +22,16 @@ EXTRACT_PROMPT = """You extract durable personal facts from a user's chat messag
 Rules:
 - Keep only facts about the user or their life that could matter later: people, places, jobs, possessions, preferences, plans, dates, numbers, codes, and changes to any of these.
 - Skip small talk, moods, passing remarks about the moment (weather, snacks, tiredness), and questions.
-- Write each fact as a short first-person sentence that stands on its own, e.g. "My sister lives in Pune."
+- Skip one-off activities that are over once done and change nothing lasting, e.g. "I ironed a shirt", "I watered the plants", "I had toast for breakfast", "I took out the trash". Ask: would this still be true, or worth recalling, next week?
+- But keep habits and routines ("I go swimming on Saturdays"), ongoing activities ("I'm learning Spanish"), and events that change the user's situation or that they will need later ("I bought a house", "I adopted a kitten", "I lost my passport").
+- Skip what the user is doing right now or later today, e.g. "I'm doing a crossword", "I'm baking a cake tonight". Keep plans only when they have a date or time worth recalling.
+- Write each fact as a short first-person sentence that stands on its own, e.g. "My aunt lives in Mysuru."
 - Keep names, numbers and codes exactly as given.
-- If a message changes an earlier fact (including one of the already-known facts), state the new situation and what it replaced, using the same wording as the question someone would ask, e.g. "I now live in Hyderabad (moved from Indore)." or "I'm now reading Dune (finished Neuromancer)."
+- If a message changes an earlier fact (including one of the already-known facts), state the new situation and what it replaced, using the same wording as the question someone would ask, e.g. "I now live in Nagpur (moved from Lucknow)." or "I now play badminton (gave up tennis)."
 - Don't repeat already-known facts that haven't changed.
 - Tag each fact with the turn of the message it came from.
 
-Return only JSON, no other text: {{"facts": [{{"turn": 3, "fact": "My sister lives in Pune."}}]}}
+Return only JSON, no other text: {{"facts": [{{"turn": 3, "fact": "My aunt lives in Mysuru."}}]}}
 If there are no facts, return {{"facts": []}}"""
 
 

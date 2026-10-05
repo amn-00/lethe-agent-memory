@@ -1,5 +1,6 @@
 {
   "permissions": {
     "deny": ["Read(./.env)", "Bash(rm:*)", "Bash(del:*)", "Bash(Remove-Item:*)"]
-  }
+  },
+  "attribution": { "commit": "", "pr": "" }
 }
