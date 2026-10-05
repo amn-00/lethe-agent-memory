@@ -6,3 +6,4 @@ data/
 .pytest_cache/
 evals/results/*dry*
 .fastembed/
+evals/results/checkpoint-*

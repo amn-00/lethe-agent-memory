@@ -27,7 +27,7 @@ Rules:
 - Skip what the user is doing right now or later today, e.g. "I'm doing a crossword", "I'm baking a cake tonight". Keep plans only when they have a date or time worth recalling.
 - Write each fact as a short first-person sentence that stands on its own, e.g. "My aunt lives in Mysuru."
 - Keep names, numbers and codes exactly as given.
-- If a message changes an earlier fact (including one of the already-known facts), state the new situation and what it replaced, using the same wording as the question someone would ask, e.g. "I now live in Nagpur (moved from Lucknow)." or "I now play badminton (gave up tennis)."
+- If a message changes an earlier fact (including one of the already-known facts), state the new situation and what it replaced, and restate the attribute that changed in the words a question about it would use, e.g. "I now live in Nagpur (moved from Lucknow)." or "My commute is now by metro (was by tram)."
 - Don't repeat already-known facts that haven't changed.
 - Tag each fact with the turn of the message it came from.
 
