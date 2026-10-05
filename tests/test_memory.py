@@ -2,7 +2,6 @@ import hashlib
 import math
 import uuid
 
-import pytest
 from fastapi.testclient import TestClient
 
 from lethe import AgentMemory, PolicyConfig, Store
@@ -30,7 +29,7 @@ class EchoLLM:
     """Answers by repeating the first memory line, so 'used' tracking is predictable."""
 
     async def chat(self, messages):
-        lines = [l[2:] for l in messages[0]["content"].splitlines() if l.startswith("- ")]
+        lines = [line[2:] for line in messages[0]["content"].splitlines() if line.startswith("- ")]
         return lines[0] if lines else "I don't know."
 
 

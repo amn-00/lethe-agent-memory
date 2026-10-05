@@ -191,8 +191,11 @@ def test_daily_limit_is_not_retried():
 def test_all_three_sets_are_mutually_fresh():
     """heldout2 was written after all tuning; it must share no filler or fact sentence with the other sets."""
     import itertools
-    says = lambda d: {s["say"] for t in d["tasks"] for s in t["script"] if "say" in s}
-    for (na, a), (nb, b) in itertools.combinations(zip(SET_IDS, ALL_SETS), 2):
+
+    def says(d):
+        return {s["say"] for t in d["tasks"] for s in t["script"] if "say" in s}
+
+    for (na, a), (nb, b) in itertools.combinations(zip(SET_IDS, ALL_SETS, strict=True), 2):
         assert not set(a["filler"]) & set(b["filler"]), (na, nb)
         assert not says(a) & says(b), (na, nb)
 

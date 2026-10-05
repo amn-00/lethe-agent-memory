@@ -15,7 +15,6 @@ import asyncio
 import hashlib
 import json
 import random
-import re
 import time
 import uuid
 from collections import defaultdict
@@ -320,7 +319,7 @@ async def main(args):
         raise SystemExit(
             f"\nStopped: {e}\nProgress saved ({saved}/{total} task runs). "
             f"After the quota resets, rerun the same command with --resume."
-        )
+        ) from e
 
     judge_llm, judge_model = None, None
     if args.judge and not args.dry_run:
@@ -335,7 +334,7 @@ async def main(args):
         raise SystemExit(
             f"\nStopped while judging: {e}\nAll answers are saved; rerun the same command with --resume "
             f"after the quota resets (answers are reused, only judging is redone)."
-        )
+        ) from e
     scoring["judge_model"] = judge_model
 
     summary = summarize(rows)

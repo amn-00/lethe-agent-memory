@@ -94,8 +94,8 @@ def create_app(memory: AgentMemory, llm: LLM, extractor=None, limits: DemoLimits
             out = await agent.chat(session_id, body.message)
         except Exception as e:
             if type(e).__name__ == "DailyLimitError":
-                raise HTTPException(429, "The model's daily quota is used up. Try again tomorrow.")
-            raise HTTPException(502, "The model didn't respond. Try again in a moment.")
+                raise HTTPException(429, "The model's daily quota is used up. Try again tomorrow.") from e
+            raise HTTPException(502, "The model didn't respond. Try again in a moment.") from e
         out["pending"] = len(agent.pending.get(session_id, []))  # messages waiting to be turned into facts
         return out
 

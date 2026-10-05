@@ -45,4 +45,4 @@ class VectorIndex:
             where={"$and": [{"session_id": session_id}, {"tier": tier}]},
         )
         # cosine distance -> similarity
-        return [(i, 1.0 - d) for i, d in zip(res["ids"][0], res["distances"][0])]
+        return [(i, 1.0 - d) for i, d in zip(res["ids"][0], res["distances"][0], strict=True)]
