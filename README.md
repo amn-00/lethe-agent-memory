@@ -9,6 +9,8 @@ pinned: false
 short_description: Agent memory that decides what to keep, archive and recall
 ---
 
+[![tests](https://github.com/amn-00/lethe-agent-memory/actions/workflows/tests.yml/badge.svg)](https://github.com/amn-00/lethe-agent-memory/actions/workflows/tests.yml)
+
 # lethe
 
 Long-horizon memory for LLM agents. Decides what to **retain**, **evict**, and **reload** across a conversation, and tracks which retrieved memories the answer actually **used**.
