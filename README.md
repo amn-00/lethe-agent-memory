@@ -41,11 +41,44 @@ Recalled memories are shown to the model oldest first, tagged with the turn they
 
 Memories retrieved often but never used sink fastest. Anything accessed in the last `grace_turns` is protected. Every decision is logged with its score breakdown in `ops`.
 
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> Queued: user message (extraction on)
+    [*] --> Active: user message (LETHE_EXTRACT=0)
+    Queued --> Active: extracted as a fact, or kept raw if the extractor's output can't be parsed
+    Queued --> [*]: chatter and questions dropped
+    Active --> Active: recalled (retrieved +1), used in the answer (used +1)
+    Active --> Archive: over budget, lowest retention score, outside grace_turns
+    Archive --> Active: recalled with similarity ≥ reload_threshold
+```
+
+Nothing is ever deleted: archived memories stay searchable and come back when a question needs them.
+
 ## Stack
 
 FastAPI · Groq (Llama) · ChromaDB · FastEmbed (ONNX, no torch) · SQLite
 
 SQLite is the source of truth for text, tier, and stats; Chroma holds vectors with tier/session metadata for filtered search.
+
+```mermaid
+flowchart LR
+    UI["Browser UI<br/>static/index.html"] -->|JSON API| API["FastAPI<br/>api.py"]
+    API --> Agent
+    Evals["Eval harness<br/>evals/run.py"] --> Agent
+
+    Agent["MemoryAgent.chat<br/>agent.py<br/>one turn"] -->|"recall, mark_used,<br/>add, maintain"| Mem["AgentMemory<br/>memory.py"]
+    Agent -->|"queued messages"| Extract["FactExtractor<br/>extract.py"]
+    Agent -->|"prompt with memories"| Groq(["Groq LLM"])
+    Extract -->|"rewrite as facts"| Groq
+
+    Mem --> Policy["policy.py<br/>retention score,<br/>answer overlap"]
+    Mem --> Embed["FastEmbed<br/>bge-small-en-v1.5"]
+    Mem -->|"text, tier, counters, ops log"| SQLite[("SQLite")]
+    Mem -->|"vectors + tier/session"| Chroma[("Chroma")]
+```
+
+The API and the eval harness both go through `MemoryAgent.chat`, so the benchmark measures the same pipeline the UI runs. Moving a memory between active and archive updates SQLite and Chroma together.
 
 ## Run
 
