@@ -1,17 +1,8 @@
----
-title: lethe
-emoji: 🌊
-colorFrom: blue
-colorTo: green
-sdk: docker
-app_port: 7860
-pinned: false
-short_description: Agent memory that decides what to keep, archive and recall
----
-
 [![tests](https://github.com/amn-00/lethe-agent-memory/actions/workflows/tests.yml/badge.svg)](https://github.com/amn-00/lethe-agent-memory/actions/workflows/tests.yml)
 
 # lethe
+
+**Live demo: https://lethe-agent-memory.onrender.com** (it may take a minute to wake up; each chat allows 30 messages)
 
 Long-horizon memory for LLM agents. Decides what to **retain**, **evict**, and **reload** across a conversation, and tracks which retrieved memories the answer actually **used**.
 
@@ -57,7 +48,7 @@ Nothing is ever deleted: archived memories stay searchable and come back when a 
 
 ## Stack
 
-FastAPI · Groq (Llama) · ChromaDB · FastEmbed (ONNX, no torch) · SQLite
+FastAPI · Groq (gpt-oss-20b) · ChromaDB · FastEmbed (ONNX, no torch) · SQLite
 
 SQLite is the source of truth for text, tier, and stats; Chroma holds vectors with tier/session metadata for filtered search.
 
@@ -103,9 +94,16 @@ curl localhost:8000/sessions/demo/ops        # add / retrieve / used / ignored /
 
 ## Deploy
 
-**Hugging Face Spaces** (the live demo): the `Dockerfile` and the block at the top of this README are all a Docker Space needs. Add `GROQ_API_KEY` as a secret in the Space settings. Free Spaces sleep only after 48 hours without visitors.
+**Render** (the live demo): `render.yaml` deploys the UI and API as one free Render web service: New > Blueprint, pick the repo, paste `GROQ_API_KEY` when asked. The embedding model is downloaded at build time so cold starts stay fast. Free instances sleep when idle, so the first request after a quiet spell takes about a minute. Because one API key serves every visitor, the demo caps messages per chat (`LETHE_DEMO_PER_CHAT`, 30) and per day (`LETHE_DEMO_PER_DAY`, 150), and visitors see a plain explanation when a cap or the model's quota is hit. Memories live on the instance's disk and reset when it restarts, which is fine for a demo.
 
-**Render**: `render.yaml` deploys the UI and API as one free Render web service: New > Blueprint, pick the repo, paste `GROQ_API_KEY` when asked. The embedding model is downloaded at build time so cold starts stay fast. Because one API key serves every visitor, the demo caps messages per chat (`LETHE_DEMO_PER_CHAT`) and per day (`LETHE_DEMO_PER_DAY`), and visitors see a plain explanation when a cap or the model's quota is hit. Memories live on the instance's disk and reset when it restarts, which is fine for a demo.
+**Docker** (any Docker host): the `Dockerfile` builds a self-contained image with the embedding model baked in and the same demo defaults as Render.
+
+```bash
+docker build -t lethe .
+docker run -p 7860:7860 -e GROQ_API_KEY=... lethe
+```
+
+Then open http://localhost:7860. Override any `LETHE_*` setting with `-e`, for example `-e LETHE_DEMO_PER_CHAT=0` to lift the caps. Memories are stored in `/app/data` inside the container; mount a volume there to keep them across restarts.
 
 ## Eval
 
