@@ -174,6 +174,21 @@ def test_ui_and_config_are_served():
     assert r["pending"] == 0
 
 
+def test_demo_script_is_served_and_tells_the_whole_story():
+    client = TestClient(create_app(make_memory(), EchoLLM()))
+    assert "/static/demo.json" in client.get("/").text
+    r = client.get("/static/demo.json")
+    assert r.status_code == 200 and r.headers["content-type"].startswith("application/json")
+    demo = r.json()
+    assert demo["budget"] > 0 and demo["steps"]
+    for step in demo["steps"]:
+        assert step["user"] and step["reply"]["answer"] and isinstance(step["reply"]["turn"], int)
+        assert all({"id", "text", "tier", "score"} <= m.keys() for m in step["memories"])
+        assert all("op" in o and "turn" in o for o in step["ops"])
+    ops = {o["op"] for o in demo["steps"][-1]["ops"]}
+    assert {"extract", "evict", "reload"} <= ops  # facts kept, one sinks, one comes back
+
+
 def test_eval_endpoint_merges_latest_ordered_run_per_condition(tmp_path):
     import json as _json
 

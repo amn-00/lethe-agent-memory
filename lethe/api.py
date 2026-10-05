@@ -75,6 +75,10 @@ def create_app(memory: AgentMemory, llm: LLM, extractor=None, limits: DemoLimits
     def index():
         return FileResponse(STATIC / "index.html")
 
+    @app.get("/static/demo.json", include_in_schema=False)
+    def demo_script():
+        return FileResponse(STATIC / "demo.json")
+
     @app.get("/config")
     def config():
         cfg = memory.cfg

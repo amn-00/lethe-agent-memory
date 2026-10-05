@@ -7,186 +7,348 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌊</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
+/* Palette: misty pale water (light), deep night water (dark). Teal = kept, amber = resurfacing only.
+   Every text/background pair below was checked against WCAG AA (4.5:1); graphics against 3:1. */
 :root {
-  --mist: #EEF2F1;
-  --paper: #F8FAF9;
-  --ink: #1D2B2E;
-  --ink-soft: #4E5F62;
-  --river: #2F7F86;
-  --river-wash: #DCEBEB;
-  --silt: #8E9C9E;
-  --silt-wash: #E3E8E8;
-  --ochre: #B8862B;
-  --ochre-wash: #F3E7CC;
-  --line: #CFD9D9;
-  --danger: #9A3B3B;
+  --bg: #E9F0F0;
+  --paper: #F5F9F9;
+  --ink: #102A2F;
+  --ink-soft: #43616A;
+  --accent: #0F6F75;
+  --accent-ink: #FFFFFF;
+  --accent-wash: #D3E8E8;
+  --amber: #8A5206;
+  --amber-wash: #F6E5C4;
+  --amber-glow: rgba(232, 163, 61, 0.55);
+  --line: #C6D6D7;
+  --danger: #9E3434;
+  --water-top: #EEF6F6;
+  --water-mid: #DCEAEB;
+  --water-bed: #C8DADC;
+  --mem: #F8FCFC;
+  --mem-edge: rgba(15, 111, 117, 0.22);
+  --mem-shadow: 0 1px 2px rgba(16, 42, 47, 0.06), 0 6px 18px -10px rgba(16, 42, 47, 0.25);
+  --mem-deep: #CADBDD;
+  --mem-deep-ink: #2E4950;
+  --silt: #6F8A8F;
+  --track: rgba(15, 111, 117, 0.16);
+  --bar: #6F8A8F; /* neutral bars, 3.47:1 on the card */
+  /* stepped sequential scale for the heatmap: each step's label colour clears 4.5:1 on it */
+  --heat-0: #E3EFEE; --heat-1: #BCDCD9; --heat-2: #8FC5C0; --heat-3: #2C7A7B; --heat-4: #0B5A60;
+  --heat-t0: #102A2F; --heat-t1: #102A2F; --heat-t2: #102A2F; --heat-t3: #FFFFFF; --heat-t4: #FFFFFF;
   --font: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: "Fraunces", "Iowan Old Style", Georgia, serif;
   --step--1: 0.8125rem;
   --step-0: 0.9375rem;
-  --step-1: 1.125rem;
-  --step-2: 1.5rem;
-  --radius-s: 4px;
-  --radius-m: 10px;
+  --step-1: 1.1875rem;
+  --step-2: 1.625rem;
+  --radius-s: 6px;
+  --radius-m: 12px;
+  --ease-water: cubic-bezier(0.22, 0.61, 0.24, 1);
+  color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --mist: #142022; --paper: #1A2729; --ink: #E3ECEB; --ink-soft: #A7B6B7;
-    --river: #5FB0B6; --river-wash: #1F3A3C; --silt: #6E7F81; --silt-wash: #223032;
-    --ochre: #D9A84A; --ochre-wash: #3A3020; --line: #2C3D3F; --danger: #D98080;
+    --bg: #07161A; --paper: #0C1F24; --ink: #DCEDEC; --ink-soft: #93B2B4;
+    --accent: #46D3C6; --accent-ink: #04201F; --accent-wash: #0F3A3C;
+    --amber: #F0B058; --amber-wash: #3A2A10; --amber-glow: rgba(240, 176, 88, 0.45);
+    --line: #1B363C; --danger: #E58A8A;
+    --water-top: #0F2E35; --water-mid: #0A2228; --water-bed: #030E11;
+    --mem: #123840; --mem-edge: rgba(70, 211, 198, 0.28);
+    --mem-shadow: 0 0 0 1px rgba(70, 211, 198, 0.06), 0 8px 24px -14px rgba(70, 211, 198, 0.45);
+    --mem-deep: #0A1F24; --mem-deep-ink: #8FADB0; --silt: #4E6C70;
+    --track: rgba(70, 211, 198, 0.14);
+    --bar: #5D7D81;
+    --heat-0: #0E2A30; --heat-1: #164249; --heat-2: #3AAEA5; --heat-3: #4BC8BD; --heat-4: #6EE6D9;
+    --heat-t0: #DCEDEC; --heat-t1: #DCEDEC; --heat-t2: #04201F; --heat-t3: #04201F; --heat-t4: #04201F;
+    color-scheme: dark;
   }
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; }
 body {
   font-family: var(--font); font-size: var(--step-0); line-height: 1.5;
-  color: var(--ink); background: var(--mist);
-  font-variant-numeric: tabular-nums;
+  color: var(--ink); background: var(--bg);
   display: flex; flex-direction: column;
+  -webkit-font-smoothing: antialiased;
 }
 button, input, textarea { font: inherit; color: inherit; }
-:focus-visible { outline: 2px solid var(--river); outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 600; letter-spacing: -0.01em; font-optical-sizing: auto; }
 
 /* header */
 .top {
-  display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
-  padding: 0.9rem 1.5rem; border-bottom: 1px solid var(--line); background: var(--paper);
+  display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;
+  padding: 0.85rem 1.5rem; border-bottom: 1px solid var(--line); background: var(--paper);
 }
-.brand { display: flex; align-items: baseline; gap: 0.75rem; margin-right: auto; }
-.brand h1 { margin: 0; font-size: var(--step-2); font-weight: 600; letter-spacing: -0.02em; }
+.brand { display: flex; align-items: center; gap: 0.85rem; margin-right: auto; min-width: 0; }
+.wordmark { display: flex; align-items: center; gap: 0.45rem; }
+.wordmark svg { width: 26px; height: 16px; color: var(--accent); flex-shrink: 0; }
+.brand h1 { margin: 0; font-size: 1.75rem; line-height: 1; font-weight: 600; letter-spacing: -0.03em; }
 .brand p { margin: 0; color: var(--ink-soft); font-size: var(--step--1); }
-.tabs { display: flex; gap: 0.25rem; }
+.tabs { display: flex; gap: 0.25rem; padding: 3px; border-radius: calc(var(--radius-s) + 3px); background: var(--bg); }
 .tab {
-  background: none; border: 1px solid transparent; border-radius: var(--radius-s);
-  padding: 0.35rem 0.8rem; cursor: pointer; color: var(--ink-soft);
+  background: none; border: none; border-radius: var(--radius-s);
+  padding: 0.35rem 0.9rem; cursor: pointer; color: var(--ink-soft);
+  transition: background-color 200ms ease, color 200ms ease, box-shadow 200ms ease;
 }
-.tab[aria-selected="true"] { color: var(--ink); border-color: var(--line); background: var(--mist); font-weight: 500; }
+.tab:hover { color: var(--ink); }
+.tab[aria-selected="true"] { color: var(--ink); background: var(--paper); font-weight: 500; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
 .ghost {
   background: none; border: 1px solid var(--line); border-radius: var(--radius-s);
-  padding: 0.35rem 0.8rem; cursor: pointer;
+  padding: 0.35rem 0.8rem; cursor: pointer; transition: border-color 200ms ease, background-color 200ms ease;
 }
-.ghost:hover { border-color: var(--river); }
+.ghost:hover { border-color: var(--accent); }
+.gh { display: inline-flex; align-items: center; gap: 0.4rem; text-decoration: none; font-size: var(--step--1); color: var(--ink-soft); transition: color 200ms ease; }
+.gh:hover { color: var(--ink); }
+.gh svg { width: 15px; height: 15px; fill: currentColor; }
 
-/* chat view */
+/* views */
 .view { flex: 1; min-height: 0; }
 [hidden] { display: none !important; } /* an id selector's display would otherwise win over [hidden] */
-#chat-view { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 420px); }
+.view:not([hidden]) { animation: fade-in 320ms ease-out; }
+@keyframes fade-in { from { opacity: 0; } }
+
+/* chat */
+#chat-view { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 430px); }
 .chat { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--line); }
 .log { flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
-.empty { max-width: 34rem; margin: auto; text-align: left; color: var(--ink-soft); }
-.empty h2 { font-size: var(--step-1); font-weight: 500; color: var(--ink); margin: 0 0 0.5rem; }
+.empty { max-width: 34rem; margin: auto; text-align: left; color: var(--ink-soft); animation: fade-in 400ms ease-out; }
+.empty h2 { font-size: var(--step-2); line-height: 1.2; color: var(--ink); margin: 0 0 1.1rem; }
 .empty p { margin: 0 0 0.75rem; }
-.try { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-.try button {
-  background: var(--paper); border: 1px solid var(--line); border-radius: 999px;
-  padding: 0.3rem 0.85rem; cursor: pointer; font-size: var(--step--1);
+.steps { list-style: none; margin: 0 0 1.5rem; padding: 0; display: flex; flex-direction: column; gap: 0.9rem; counter-reset: step; }
+.steps li { display: grid; grid-template-columns: 2rem 1fr; gap: 0.75rem; align-items: start; counter-increment: step; }
+.steps li::before {
+  content: counter(step); display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%;
+  background: var(--accent-wash); color: var(--accent); font-family: var(--serif); font-weight: 600;
 }
-.try button:hover { border-color: var(--river); }
-.msg { max-width: 38rem; }
-.msg.user { align-self: flex-end; background: var(--river-wash); padding: 0.6rem 0.9rem; border-radius: var(--radius-m) var(--radius-m) var(--radius-s) var(--radius-m); }
+.steps b { display: block; font-weight: 500; color: var(--ink); }
+.links { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.1rem; font-size: var(--step--1); }
+.links a, .linkish { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.linkish { background: none; border: none; padding: 0; cursor: pointer; font-size: inherit; }
+.demo-btn {
+  display: inline-flex; align-items: center; gap: 0.55rem; margin: 0 0 1.1rem;
+  border: none; border-radius: 999px; padding: 0.65rem 1.25rem 0.65rem 1rem; cursor: pointer;
+  background: var(--accent); color: var(--accent-ink); font-weight: 500;
+  box-shadow: 0 6px 20px -10px var(--accent);
+  transition: transform 200ms var(--ease-water), box-shadow 200ms ease;
+}
+.demo-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 26px -10px var(--accent); }
+.demo-btn svg { width: 11px; height: 12px; fill: currentColor; }
+.banner {
+  position: sticky; top: -1.5rem; z-index: 1; margin: -1.5rem -1.5rem 0; padding: 0.6rem 1.5rem; /* sticky offsets start inside the log's padding */
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.75rem;
+  background: var(--amber-wash); color: var(--ink); border-bottom: 1px solid var(--line); font-size: var(--step--1);
+  animation: fade-in 300ms ease-out;
+}
+.banner span { flex: 1; min-width: 12rem; }
+.banner button { background: none; border: 1px solid var(--amber); color: var(--ink); border-radius: var(--radius-s); padding: 0.15rem 0.7rem; cursor: pointer; font-size: var(--step--1); }
+.msg { max-width: 38rem; animation: msg-in 360ms var(--ease-water); }
+@keyframes msg-in { from { opacity: 0; transform: translateY(6px); } }
+.msg.user { align-self: flex-end; background: var(--accent-wash); padding: 0.6rem 0.95rem; border-radius: var(--radius-m) var(--radius-m) 4px var(--radius-m); }
 .msg.bot { align-self: flex-start; }
 .msg.bot .text { white-space: pre-wrap; }
 .msg .turn { font-size: var(--step--1); color: var(--ink-soft); margin-bottom: 0.15rem; }
+.typing { display: inline-flex; gap: 5px; align-items: center; padding: 0.7rem 0.9rem; border-radius: var(--radius-m); background: var(--paper); border: 1px solid var(--line); }
+.typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-soft); animation: bob 1.2s ease-in-out infinite; }
+.typing i:nth-child(2) { animation-delay: 0.15s; } .typing i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes bob { 0%, 60%, 100% { transform: translateY(0); opacity: 0.45; } 30% { transform: translateY(-4px); opacity: 1; } }
 .recall { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
 .chip {
-  font-size: var(--step--1); border-radius: var(--radius-s); padding: 0.1rem 0.5rem;
+  font-size: var(--step--1); border-radius: 999px; padding: 0.1rem 0.6rem;
   border: 1px solid var(--line); color: var(--ink-soft); max-width: 100%;
 }
-.chip.used { border-color: var(--river); color: var(--river); }
-.chip.back { border-color: var(--ochre); color: var(--ochre); background: var(--ochre-wash); }
+.chip.used { border-color: var(--accent); color: var(--ink); background: var(--accent-wash); }
+.chip.back { border-color: var(--amber); color: var(--amber); background: var(--amber-wash); }
+.memnote { display: none; margin-top: 0.45rem; font-size: var(--step--1); color: var(--ink-soft); border-left: 2px solid var(--line); padding-left: 0.55rem; }
+.memnote.moved { border-left-color: var(--amber); }
 .msg.error { color: var(--danger); font-size: var(--step--1); }
 .composer { display: flex; gap: 0.5rem; padding: 1rem 1.5rem; border-top: 1px solid var(--line); background: var(--paper); }
 .composer input {
-  flex: 1; border: 1px solid var(--line); border-radius: var(--radius-s); padding: 0.6rem 0.8rem;
-  background: var(--mist);
+  flex: 1; min-width: 0; border: 1px solid var(--line); border-radius: 999px; padding: 0.6rem 1rem;
+  background: var(--bg); transition: border-color 200ms ease, box-shadow 200ms ease;
 }
+.composer input::placeholder { color: var(--ink-soft); }
+.composer input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--track); }
 .send {
-  border: none; border-radius: var(--radius-s); padding: 0.6rem 1.1rem; cursor: pointer;
-  background: var(--ink); color: var(--paper); font-weight: 500;
+  border: none; border-radius: 999px; padding: 0.6rem 1.2rem; cursor: pointer;
+  background: var(--ink); color: var(--paper); font-weight: 500; transition: opacity 200ms ease;
 }
 .send:disabled { opacity: 0.5; cursor: wait; }
 
-/* memory river */
-.memory { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; background: var(--paper); }
+/* memory as water: light surface, darker riverbed */
+.memory { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; background: var(--water-top); }
 .memory > * { flex-shrink: 0; } /* otherwise the waterline collapses once the panel overflows */
-.mem-head { padding: 1.25rem 1.25rem 0.5rem; }
-.mem-head h2 { margin: 0; font-size: var(--step-1); font-weight: 500; }
-.mem-head p { margin: 0.15rem 0 0; color: var(--ink-soft); font-size: var(--step--1); }
-.surface, .bed { list-style: none; margin: 0; padding: 0.5rem 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; }
+.mem-head { padding: 1.25rem 1.25rem 0.4rem; }
+.mem-head h2 { margin: 0; font-size: var(--step-1); }
+.mem-head p { margin: 0.2rem 0 0; color: var(--ink-soft); font-size: var(--step--1); transition: opacity 300ms ease; }
+.water {
+  position: relative; padding-bottom: 1.5rem; flex-grow: 1; /* the river fills the panel; events sit at the bottom */
+  background:
+    radial-gradient(120% 60% at 50% -10%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%),
+    linear-gradient(180deg, var(--water-top) 0%, var(--water-top) 30%, var(--water-mid) 62%, var(--water-bed) 100%);
+}
+.surface, .bed { list-style: none; margin: 0; padding: 0.5rem 1.25rem; display: flex; flex-direction: column; gap: 0.6rem; }
 .surface:empty::after, .bed:empty::after { color: var(--ink-soft); font-size: var(--step--1); }
 .surface:empty::after { content: "Nothing kept yet. Tell it something about yourself."; }
 .bed:empty::after { content: "Nothing archived yet."; }
-.mem { padding: 0.55rem 0.7rem; border-radius: var(--radius-s); background: var(--river-wash); }
-.bed .mem { background: var(--silt-wash); color: var(--ink-soft); }
+.mem {
+  padding: 0.6rem 0.75rem; border-radius: var(--radius-s); background: var(--mem);
+  border: 1px solid var(--mem-edge); box-shadow: var(--mem-shadow);
+  transition: background-color 400ms ease, box-shadow 400ms ease;
+}
 .mem p { margin: 0; }
 .mem .why { display: flex; flex-wrap: wrap; gap: 0 0.8rem; font-size: var(--step--1); color: var(--ink-soft); margin-top: 0.2rem; }
-.score { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.35rem; }
-.score .track { flex: 1; height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--river) 18%, transparent); overflow: hidden; }
-.score .fill { height: 100%; width: var(--w); background: var(--river); }
+.surface .mem { animation: drift 7s ease-in-out infinite; }
+.surface .mem:nth-child(2n) { animation-duration: 8.5s; animation-delay: -2.4s; }
+.surface .mem:nth-child(3n) { animation-duration: 9.5s; animation-delay: -4.8s; }
+@keyframes drift { 0%, 100% { transform: translate(0, 0) rotate(0deg); } 50% { transform: translate(1px, -2px) rotate(-0.12deg); } }
+.bed .mem { background: var(--mem-deep); color: var(--mem-deep-ink); border-color: transparent; box-shadow: none; margin-left: 0.6rem; }
+.bed .mem .why { color: var(--mem-deep-ink); }
+.score { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.4rem; }
+.score .track { flex: 1; height: 4px; border-radius: 2px; background: var(--track); overflow: hidden; }
+.score .fill { height: 100%; width: var(--w); border-radius: 2px; background: var(--accent); animation: grow 900ms var(--ease-water); }
+@keyframes grow { from { width: var(--from, 0%); } }
 .bed .score .fill { background: var(--silt); }
-.score .num { font-size: var(--step--1); min-width: 2.6rem; text-align: right; }
-.waterline { display: block; width: 100%; height: 28px; color: var(--river); }
-.bed-head { padding: 0 1.25rem; font-size: var(--step--1); color: var(--ink-soft); margin: 0; font-weight: 400; }
-.events { padding: 1rem 1.25rem 1.5rem; border-top: 1px solid var(--line); margin-top: 1rem; }
-.events h3 { margin: 0 0 0.5rem; font-size: var(--step-0); font-weight: 500; }
+.score .num { font-size: var(--step--1); min-width: 2.6rem; text-align: right; font-variant-numeric: tabular-nums; }
+.waterline { position: relative; height: 30px; overflow: hidden; color: var(--accent); margin: 0.35rem 0 0.1rem; }
+.waterline svg { position: absolute; left: 0; top: 0; width: 200%; height: 100%; }
+.waterline .w1 { animation: wave 16s linear infinite; }
+.waterline .w2 { animation: wave 26s linear infinite reverse; }
+@keyframes wave { to { transform: translateX(-50%); } }
+.bed-head { padding: 0 1.25rem; font-family: var(--font); font-size: var(--step--1); color: var(--ink-soft); margin: 0; font-weight: 400; letter-spacing: 0; }
+.events { padding: 1rem 1.25rem 1.5rem; border-top: 1px solid var(--line); background: var(--paper); }
+.events h3 { margin: 0 0 0.5rem; font-size: var(--step-0); }
 .events ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; font-size: var(--step--1); }
-.events li { color: var(--ink-soft); }
+.events li { color: var(--ink-soft); animation: fade-in 400ms ease-out; }
 .events li b { font-weight: 500; color: var(--ink); }
-.events .pending { color: var(--ink-soft); font-style: italic; }
+.events .pending { font-style: italic; }
 
-/* the one bold moment: memories sink below the waterline, and resurface */
-@keyframes sink { from { transform: translateY(-36px); opacity: 0; background: var(--river-wash); } to { transform: none; opacity: 1; } }
-@keyframes rise { from { transform: translateY(36px); opacity: 0; background: var(--ochre-wash); } 60% { background: var(--ochre-wash); } to { transform: none; opacity: 1; } }
-@keyframes appear { from { opacity: 0; } to { opacity: 1; } }
-.mem.sinking { animation: sink 700ms cubic-bezier(.3,.7,.2,1); }
-.mem.rising { animation: rise 900ms cubic-bezier(.3,.7,.2,1); box-shadow: inset 3px 0 0 var(--ochre); }
-.mem.new { animation: appear 500ms ease-out; }
-@media (prefers-reduced-motion: reduce) { .mem.sinking, .mem.rising, .mem.new { animation: none; } }
+/* the bold moment: memories sink below the waterline with a slow water ease, and rise with a soft glow */
+@keyframes sink {
+  0% { transform: translateY(-110px) rotate(-1deg); opacity: 0; }
+  25% { opacity: 1; }
+  70% { transform: translateY(5px) rotate(0.4deg); }
+  100% { transform: none; }
+}
+@keyframes rise {
+  0% { transform: translateY(80px); opacity: 0; }
+  55% { transform: translateY(-4px); opacity: 1; }
+  100% { transform: none; }
+}
+@keyframes glow {
+  0%, 45% { box-shadow: 0 0 0 1px var(--amber), 0 0 28px 4px var(--amber-glow); }
+  100% { box-shadow: 0 0 0 1px var(--amber), 0 0 0 0 transparent; }
+}
+@keyframes appear { from { opacity: 0; transform: translateY(-6px); } }
+.bed .mem.sinking { animation: sink 1800ms var(--ease-water); }
+.surface .mem.rising { border-color: var(--amber); animation: rise 1500ms var(--ease-water), glow 2600ms ease-out forwards, drift 7s ease-in-out 1.5s infinite; }
+.surface .mem.new { animation: appear 600ms var(--ease-water), drift 7s ease-in-out 0.6s infinite; }
 
-/* results view */
+/* results */
 #results-view { overflow-y: auto; }
-.results { max-width: 64rem; margin: 0 auto; padding: 2rem 1.5rem 3rem; }
-.results h2 { font-size: var(--step-2); font-weight: 600; letter-spacing: -0.01em; margin: 0 0 0.5rem; }
-.results .lede { max-width: 42rem; color: var(--ink-soft); margin: 0 0 2rem; }
-.results h3 { font-size: var(--step-1); font-weight: 500; margin: 2rem 0 0.75rem; }
+.results { position: relative; max-width: 68rem; margin: 0 auto; padding: 2.25rem 1.5rem 3rem; }
+.results h2 { font-size: 2rem; line-height: 1.15; margin: 0 0 0.6rem; }
+.results .lede { max-width: 44rem; color: var(--ink-soft); margin: 0 0 2rem; }
+.results h3 { font-size: var(--step-1); margin: 2.25rem 0 0.75rem; }
+.milestones h3 { margin-top: 0; }
+.ms-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14.5rem), 1fr)); gap: 0.9rem; }
+.ms { padding: 0.9rem 1rem 1rem; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-m); display: flex; flex-direction: column; gap: 0.3rem; }
+.ms-set { align-self: flex-start; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.02em; padding: 0.05rem 0.55rem; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-soft); }
+.ms-set.held { background: var(--accent-wash); border-color: transparent; color: var(--ink); }
+.ms-metric { margin: 0.2rem 0 0; font-weight: 500; }
+@media (min-width: 861px) { .ms-metric { min-height: 3em; } } /* two lines, so before → after lines up across cards */
+.ms-nums { margin: 0; display: flex; align-items: baseline; gap: 0.5rem; font-size: 1.6rem; line-height: 1.2; }
+.ms-nums .before { color: var(--ink-soft); }
+.ms-nums .arrow { color: var(--ink-soft); font-size: 1.1rem; }
+.ms-nums .after { font-weight: 600; }
+.ms-what { margin: 0; font-size: var(--step--1); color: var(--ink-soft); }
+.ms-note { margin-top: 0.75rem; }
+.figure { margin: 0 0 1.25rem; padding: 1.1rem 1.1rem 0.9rem; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-m); min-width: 0; }
+.figure h3 { margin: 0; font-size: var(--step-1); }
+.figure .sub { margin: 0.15rem 0 0.75rem; font-size: var(--step--1); color: var(--ink-soft); }
+.figure svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart-grid { stroke: var(--line); stroke-width: 1; }
+.chart-axis { fill: var(--ink-soft); font-size: 11px; font-variant-numeric: tabular-nums; }
+.chart-label { fill: var(--ink); font-size: 12px; }
+.chart-label.ours { font-weight: 600; }
+.chart-title { fill: var(--ink-soft); font-size: 12px; font-weight: 500; }
+.chart-base { stroke: var(--line); stroke-width: 1; }
+.bar { fill: var(--bar); }
+.bar.ours { fill: var(--accent); }
+.row-band { fill: var(--accent-wash); opacity: 0.6; }
+.whisker { stroke: var(--ink); stroke-width: 1.5; stroke-linecap: round; }
+.hit { fill: transparent; cursor: default; }
+.hit:focus-visible { outline: none; stroke: var(--accent); stroke-width: 2; }
+.cell-text { font-size: 12px; font-weight: 500; font-variant-numeric: tabular-nums; pointer-events: none; }
+.legend { display: flex; flex-wrap: wrap; gap: 0.35rem 0.9rem; margin-top: 0.6rem; font-size: var(--step--1); color: var(--ink-soft); }
+.legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
+.legend i { width: 14px; height: 10px; border-radius: 2px; display: inline-block; }
+.tip {
+  position: absolute; z-index: 5; pointer-events: none; max-width: 16rem;
+  background: var(--ink); color: var(--paper); font-size: var(--step--1); line-height: 1.4;
+  padding: 0.4rem 0.6rem; border-radius: var(--radius-s); box-shadow: 0 6px 20px -8px rgba(0, 0, 0, 0.4);
+  transform: translate(-50%, calc(-100% - 10px)); transition: opacity 120ms ease;
+}
 .table-wrap { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; min-width: 36rem; }
 th, td { text-align: left; padding: 0.55rem 0.75rem 0.55rem 0; border-bottom: 1px solid var(--line); vertical-align: top; }
 th { font-weight: 500; font-size: var(--step--1); color: var(--ink-soft); }
 td .desc { display: block; font-size: var(--step--1); color: var(--ink-soft); }
-tr.ours td:first-child { box-shadow: inset 3px 0 0 var(--river); padding-left: 0.6rem; }
+tr.ours td:first-child { box-shadow: inset 3px 0 0 var(--accent); padding-left: 0.6rem; }
 .acc { display: flex; align-items: center; gap: 0.5rem; min-width: 10rem; }
-.acc .track { flex: 1; height: 6px; border-radius: 3px; background: var(--silt-wash); overflow: hidden; }
-.acc .fill { height: 100%; width: var(--w); background: var(--river); }
-td.num, th.num { text-align: right; }
-.cat td { font-variant-numeric: tabular-nums; }
-.cat td.cell { text-align: right; }
-.note { font-size: var(--step--1); color: var(--ink-soft); margin-top: 1rem; max-width: 42rem; }
+.acc .track { flex: 1; height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; }
+.acc .fill { height: 100%; width: var(--w); border-radius: 3px; background: var(--accent); animation: grow 900ms var(--ease-water); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.note { font-size: var(--step--1); color: var(--ink-soft); margin-top: 1rem; max-width: 44rem; }
+.note code { font-size: 0.95em; color: var(--ink); overflow-wrap: anywhere; }
 
 @media (max-width: 860px) {
   html, body { height: auto; }
   body { display: block; }
   #chat-view { display: block; }
-  .chat { height: 78vh; border-right: none; border-bottom: 1px solid var(--line); }
+  .chat { height: 78vh; height: 78svh; border-right: none; border-bottom: 1px solid var(--line); }
   .memory { overflow: visible; }
-  .top { padding: 0.75rem 1rem; gap: 0.75rem; }
+  .top { padding: 0.75rem 1rem; gap: 0.5rem 0.75rem; }
   .brand p { display: none; }
   .log { padding: 1rem; }
+  .banner { top: -1rem; margin: -1rem -1rem 0; padding: 0.6rem 1rem; }
   .composer { padding: 0.75rem 1rem; }
+  .composer input { font-size: 16px; } /* below 16px, iOS zooms the page on focus */
+  .memnote { display: block; } /* the memory panel is below the fold here, so each reply says what changed */
+  .results { padding: 1.5rem 1rem 2.5rem; }
+  .results h2 { font-size: 1.6rem; }
+}
+@media (max-width: 420px) {
+  .gh span { position: absolute; left: -9999px; }
+  .tabs { order: 3; width: 100%; }
+  .tab { flex: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 </style>
 </head>
 <body>
 <header class="top">
   <div class="brand">
-    <h1>lethe</h1>
+    <div class="wordmark">
+      <svg viewBox="0 0 26 16" aria-hidden="true"><path d="M1 6c3-3 5-3 8 0s5 3 8 0 5-3 8 0M1 12c3-3 5-3 8 0s5 3 8 0 5-3 8 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <h1>lethe</h1>
+    </div>
     <p>An agent that decides what to remember, what to archive, and when to bring something back.</p>
   </div>
   <nav class="tabs" role="tablist" aria-label="Views">
     <button class="tab" role="tab" aria-selected="true" aria-controls="chat-view" id="tab-chat">Chat</button>
     <button class="tab" role="tab" aria-selected="false" aria-controls="results-view" id="tab-results">Results</button>
   </nav>
+  <a class="gh" href="https://github.com/amn-00/lethe-agent-memory" target="_blank" rel="noopener" aria-label="Source code on GitHub">
+    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+    <span>GitHub</span>
+  </a>
   <button class="ghost" id="new-chat" type="button">New chat</button>
 </header>
 
@@ -194,19 +356,21 @@ td.num, th.num { text-align: right; }
   <section class="chat" aria-label="Conversation">
     <div class="log" id="log" aria-live="polite">
       <div class="empty" id="empty">
-        <h2>Tell it a few things, chat for a while, then ask.</h2>
-        <p>Facts you share are kept at the surface of its memory. Small talk is dropped. When memory is full, the least useful facts sink to the archive, and they come back up if you ask about them.</p>
-        <div class="try" id="try">
-          <button type="button">my sister lives in pune</button>
-          <button type="button">i play football every sunday</button>
-          <button type="button">lol ok</button>
-          <button type="button">i moved to bangalore last week</button>
-          <button type="button">where does my sister live?</button>
+        <h2>A chat that decides what to remember</h2>
+        <ol class="steps">
+          <li><div><b>Tell it about yourself</b>Facts are kept in memory. Small talk is dropped.</div></li>
+          <li><div><b>Keep chatting</b>When memory fills up, the least useful facts sink to the archive.</div></li>
+          <li><div><b>Ask about something old</b>It comes back up from the archive and answers.</div></li>
+        </ol>
+        <button class="demo-btn" id="demo-btn" type="button"><svg viewBox="0 0 10 12" aria-hidden="true"><path d="M0 0l10 6-10 6z"/></svg>Watch a 30-second demo</button>
+        <div class="links">
+          <a href="https://github.com/amn-00/lethe-agent-memory" target="_blank" rel="noopener">Code on GitHub</a>
+          <button class="linkish" id="to-results" type="button">See how it scores</button>
         </div>
       </div>
     </div>
     <form class="composer" id="composer">
-      <label for="msg" class="visually-hidden" style="position:absolute;left:-9999px">Message</label>
+      <label for="msg" class="sr-only">Message</label>
       <input id="msg" autocomplete="off" maxlength="500" placeholder="Say something about yourself, or ask what it remembers" required>
       <button class="send" id="send" type="submit">Send</button>
     </form>
@@ -217,13 +381,15 @@ td.num, th.num { text-align: right; }
       <h2>Memory</h2>
       <p id="mem-summary">Loading settings…</p>
     </div>
-    <ul class="surface" id="surface"></ul>
-    <svg class="waterline" viewBox="0 0 400 28" preserveAspectRatio="none" aria-hidden="true">
-      <path d="M0 14 Q 25 4 50 14 T 100 14 T 150 14 T 200 14 T 250 14 T 300 14 T 350 14 T 400 14" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.55"/>
-      <path d="M0 20 Q 25 12 50 20 T 100 20 T 150 20 T 200 20 T 250 20 T 300 20 T 350 20 T 400 20" fill="none" stroke="currentColor" stroke-width="1" opacity="0.25"/>
-    </svg>
-    <h3 class="bed-head">Archived, out of the prompt but recoverable</h3>
-    <ul class="bed" id="bed"></ul>
+    <div class="water">
+      <ul class="surface" id="surface"></ul>
+      <div class="waterline" aria-hidden="true">
+        <svg class="w1" viewBox="0 0 800 30" preserveAspectRatio="none"><path d="M0 13 Q 25 5 50 13 T 100 13 T 150 13 T 200 13 T 250 13 T 300 13 T 350 13 T 400 13 T 450 13 T 500 13 T 550 13 T 600 13 T 650 13 T 700 13 T 750 13 T 800 13" fill="none" stroke="currentColor" stroke-width="1.6" opacity="0.6"/></svg>
+        <svg class="w2" viewBox="0 0 800 30" preserveAspectRatio="none"><path d="M0 20 Q 33 13 66.7 20 T 133.3 20 T 200 20 T 266.7 20 T 333.3 20 T 400 20 T 466.7 20 T 533.3 20 T 600 20 T 666.7 20 T 733.3 20 T 800 20" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3"/></svg>
+      </div>
+      <h3 class="bed-head">Archived, out of the prompt but recoverable</h3>
+      <ul class="bed" id="bed"></ul>
+    </div>
     <section class="events" aria-label="Recent memory events">
       <h3>What just happened</h3>
       <ol id="events"><li>Nothing yet.</li></ol>
@@ -232,10 +398,11 @@ td.num, th.num { text-align: right; }
 </main>
 
 <main class="view" id="results-view" role="tabpanel" aria-labelledby="tab-results" hidden>
-  <div class="results">
+  <div class="results" id="results">
     <h2>How it scores</h2>
-    <p class="lede">Each memory setup answers the same held-out conversations: facts are mentioned early, buried under small talk, then asked about later. Ordering memories by when they were said took questions about changed facts from 38% to 100%, and storing extracted facts instead of raw messages cut memory by 83% at the same accuracy.</p>
+    <p class="lede">Each memory setup answers the same held-out conversations: facts are mentioned early, buried under small talk, then asked about later.</p>
     <div id="results-body"><p class="note">Loading results…</p></div>
+    <div class="tip" id="tip" role="status" hidden></div>
   </div>
 </main>
 
@@ -250,14 +417,24 @@ const LABELS = {
 };
 const ORDER = ["no_memory", "full_history", "naive_rag", "naive_extract", "lethe", "lethe_extract"];
 const CATS = { multi_recall: "Several facts at once", distractor: "Lookalike facts", update_chain: "Facts that changed", long_gap: "Long gaps", single_recall: "Single fact", update: "One change" };
+const OURS = "lethe_extract";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+const SVG = "http://www.w3.org/2000/svg";
+const svgEl = (tag, attrs = {}, text) => {
+  const n = document.createElementNS(SVG, tag);
+  for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+  if (text != null) n.textContent = text;
+  return n;
+};
+const pct = (v) => `${Math.round(v * 100)}%`;
 
 let session = sessionStorage.getItem("lethe-session") || newId();
 sessionStorage.setItem("lethe-session", session);
 let known = new Map();      // memory id -> tier, to animate moves between refreshes
 let texts = new Map();      // memory id -> text, for the event log
+let scores = new Map();     // memory id -> last score, so bars animate from where they were
 let pending = 0;
 
 function newId() { return (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())).slice(0, 8); }
@@ -275,22 +452,27 @@ $("tab-chat").onclick = () => show("chat");
 $("tab-results").onclick = () => show("results");
 
 /* settings */
+let settingsText = "Loading settings…";
 fetch("/config").then(r => r.json()).then(c => {
-  $("mem-summary").textContent = `Keeps up to ${c.budget} memories in the prompt. ${c.extract ? "Stores extracted facts, not raw messages." : "Stores raw messages."}` +
+  settingsText = `Keeps up to ${c.budget} memories in the prompt. ${c.extract ? "Stores extracted facts, not raw messages." : "Stores raw messages."}` +
     (c.messages_per_chat ? ` This demo allows ${c.messages_per_chat} messages per chat.` : "");
   $("mem-summary").dataset.budget = c.budget;
-}).catch(() => { $("mem-summary").textContent = "Couldn't load settings. Is the server running?"; });
+  if (!demo) $("mem-summary").textContent = settingsText;
+}).catch(() => { settingsText = "Couldn't load settings. Is the server running?"; if (!demo) $("mem-summary").textContent = settingsText; });
 
 /* chat */
-$("try").addEventListener("click", (e) => { if (e.target.tagName === "BUTTON") { $("msg").value = e.target.textContent; $("msg").focus(); } });
+const intro = $("empty");
+$("to-results").onclick = () => show("results");
 $("composer").addEventListener("submit", async (e) => {
   e.preventDefault();
   const text = $("msg").value.trim();
   if (!text) return;
+  if (demo) exitDemo(false);
   $("empty")?.remove();
   addUser(text);
   $("msg").value = "";
   $("send").disabled = true;
+  const typing = addTyping();
   try {
     const r = await fetch(`/sessions/${session}/chat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: text }) });
     if (!r.ok) {
@@ -299,12 +481,13 @@ $("composer").addEventListener("submit", async (e) => {
       throw new Error(detail);
     }
     const out = await r.json();
+    typing.remove();
     pending = out.pending || 0;
-    addBot(out);
-    await refreshMemory();
+    const reply = addBot(out);
+    await refreshMemory(out.turn, reply);
   } catch (err) {
-    const m = el("div", "msg error", `No reply. ${err.message}`);
-    $("log").append(m);
+    typing.remove();
+    $("log").append(el("div", "msg error", `No reply. ${err.message}`));
   } finally {
     $("send").disabled = false;
     $("msg").focus();
@@ -314,6 +497,14 @@ $("composer").addEventListener("submit", async (e) => {
 function addUser(text) {
   $("log").append(el("div", "msg user", text));
   scrollLog();
+}
+function addTyping() {
+  const t = el("div", "msg bot typing");
+  t.setAttribute("role", "status");
+  t.append(el("span", "sr-only", "Replying"), el("i"), el("i"), el("i"));
+  $("log").append(t);
+  scrollLog();
+  return t;
 }
 function addBot(out) {
   const m = el("div", "msg bot");
@@ -332,15 +523,21 @@ function addBot(out) {
   }
   $("log").append(m);
   scrollLog();
+  return m;
 }
 function scrollLog() { $("log").scrollTop = $("log").scrollHeight; }
 
 /* memory river */
-async function refreshMemory() {
+async function refreshMemory(turn, replyEl) {
   const [mems, ops] = await Promise.all([
     fetch(`/sessions/${session}/memories`).then(r => r.json()),
     fetch(`/sessions/${session}/ops?limit=40`).then(r => r.json()),
   ]);
+  renderMemory(mems, ops, turn, replyEl);
+}
+
+// mems and ops have the shapes of /memories and /ops; the demo replays recorded copies of both
+function renderMemory(mems, ops, turn, replyEl) {
   const surface = $("surface"), bed = $("bed");
   surface.replaceChildren(); bed.replaceChildren();
   for (const m of mems) {
@@ -352,7 +549,9 @@ async function refreshMemory() {
     li.append(why);
     const score = el("div", "score");
     const track = el("div", "track"), fill = el("div", "fill");
-    fill.style.setProperty("--w", `${Math.round(m.score * 100)}%`);
+    fill.style.setProperty("--w", pct(m.score));
+    fill.style.setProperty("--from", scores.has(m.id) ? pct(scores.get(m.id)) : "0%");
+    scores.set(m.id, m.score);
     track.append(fill);
     score.title = `recency ${m.recency.toFixed(2)}, use frequency ${m.frequency.toFixed(2)}, used when recalled ${m.used_rate.toFixed(2)}`;
     score.append(track, el("span", "num", m.score.toFixed(2)));
@@ -364,35 +563,124 @@ async function refreshMemory() {
     known.set(m.id, m.tier);
     (m.tier === "active" ? surface : bed).append(li);
   }
-  const budget = $("mem-summary").dataset.budget;
+  const budget = demo ? demo.budget : $("mem-summary").dataset.budget;
   if (budget) {
     const active = mems.filter(m => m.tier === "active").length;
-    $("mem-summary").textContent = `${active} of ${budget} slots in use. Highest score first; the bar is how worth keeping each one is.`;
+    $("mem-summary").textContent = `${demo ? "Demo: " : ""}${active} of ${budget} slots in use. Highest score first; the bar is how worth keeping each one is.`;
   }
   renderEvents(ops);
+  if (replyEl && turn != null) noteTurn(replyEl, ops.filter(o => o.turn === turn));
+}
+
+const quote = (id) => `"${texts.get(id) || "a memory"}"`;
+function describe(o) {
+  const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+  if (o.op === "extract") {
+    const n = o.detail?.facts?.length || 0, k = o.detail?.messages || 0;
+    return n ? `kept ${plural(n, "fact")} from ${plural(k, "message")}: ${o.detail.facts.join(" ")}` : `nothing worth keeping in ${plural(k, "message")}`;
+  }
+  if (o.op === "add") return `saved ${quote(o.memory_id)}`;
+  if (o.op === "evict") return `archived ${quote(o.memory_id)} (score ${o.score.toFixed(2)})`;
+  if (o.op === "reload") return `brought back ${quote(o.memory_id)} because the question matched it`;
+  return null;
 }
 
 function renderEvents(ops) {
   const list = $("events");
   list.replaceChildren();
   if (pending > 0) list.append(el("li", "pending", `${pending} new message${pending > 1 ? "s" : ""} will be turned into facts before the next reply.`));
-  const shown = ops.filter(o => ["extract", "add", "evict", "reload"].includes(o.op)).slice(0, 12);
-  for (const o of shown) {
+  for (const o of ops.filter(o => describe(o)).slice(0, 12)) {
     const li = el("li");
-    const t = (id) => `"${texts.get(id) || "a memory"}"`;
-    if (o.op === "extract") {
-      const n = o.detail?.facts?.length || 0;
-      li.append(el("b", null, `Turn ${o.turn}: `), document.createTextNode(n ? `kept ${n} fact${n > 1 ? "s" : ""} from ${o.detail.messages} message${o.detail.messages > 1 ? "s" : ""}: ${o.detail.facts.join(" ")}` : `nothing worth keeping in ${o.detail?.messages || 0} message${o.detail?.messages > 1 ? "s" : ""}`));
-    } else if (o.op === "add") {
-      li.append(el("b", null, `Turn ${o.turn}: `), document.createTextNode(`saved ${t(o.memory_id)}`));
-    } else if (o.op === "evict") {
-      li.append(el("b", null, `Turn ${o.turn}: `), document.createTextNode(`archived ${t(o.memory_id)} (score ${o.score.toFixed(2)})`));
-    } else if (o.op === "reload") {
-      li.append(el("b", null, `Turn ${o.turn}: `), document.createTextNode(`brought back ${t(o.memory_id)} because the question matched it`));
-    }
+    li.append(el("b", null, `Turn ${o.turn}: `), document.createTextNode(describe(o)));
     list.append(li);
   }
   if (!list.children.length) list.append(el("li", null, "Nothing yet."));
+}
+
+// shown under each reply on narrow screens, where the memory panel is below the fold
+function noteTurn(replyEl, turnOps) {
+  const parts = [];
+  for (const o of [...turnOps].reverse()) {   // ops arrive newest first
+    if (o.op === "extract") parts.push(o.detail?.facts?.length ? `Kept: ${o.detail.facts.join(" ")}` : "Small talk, nothing kept.");
+    else if (o.op === "evict") parts.push(`↓ Archived ${quote(o.memory_id)}`);
+    else if (o.op === "reload") parts.push(`↑ Brought back ${quote(o.memory_id)}`);
+  }
+  if (!parts.length) return;
+  const moved = turnOps.some(o => o.op === "evict" || o.op === "reload");
+  replyEl.append(el("div", `memnote${moved ? " moved" : ""}`, `Memory: ${parts.join(" · ")}`));
+}
+
+/* demo: replays a conversation recorded from the real memory pipeline (static/demo.json), no API calls */
+let demo = null;   // {budget, timers} while the replay is on screen
+$("demo-btn").onclick = startDemo;
+$("msg").addEventListener("input", () => { if (demo) exitDemo(false); });   // typing takes over
+
+async function startDemo() {
+  let data;
+  try {
+    const r = await fetch("/static/demo.json");
+    if (!r.ok) throw new Error();
+    data = await r.json();
+  } catch {
+    if (!intro.querySelector(".demo-error")) intro.append(el("p", "note demo-error", "Couldn't load the demo. Try chatting instead."));
+    return;
+  }
+  if (demo) exitDemo(false);
+  demo = { budget: data.budget, timers: [] };
+  clearMemoryView();
+  $("mem-summary").textContent = `Demo: keeps up to ${data.budget} facts in the prompt, so things move quickly.`;
+  const banner = el("div", "banner");
+  const stop = el("button", null, "Stop");
+  stop.type = "button";
+  stop.onclick = () => exitDemo(true);
+  banner.append(el("span", null, "Replaying a recorded demo, no model calls. Type a message any time to start your own chat."), stop);
+  $("log").replaceChildren(banner);
+
+  // pacing is content, not motion, so it stays under reduced motion; CSS stops the animations themselves
+  const at = (ms, fn) => demo.timers.push(setTimeout(fn, ms));
+  const STEP = 3900, THINK = 700, REPLY = 1700;
+  let t = 300, typing = null;
+  for (const step of data.steps) {
+    at(t, () => addUser(step.user));
+    at(t + THINK, () => { typing = addTyping(); });
+    at(t + REPLY, () => {
+      typing?.remove();
+      pending = step.reply.pending || 0;
+      renderMemory(step.memories, step.ops, step.reply.turn, addBot(step.reply));
+      scrollLog();
+    });
+    t += STEP;
+  }
+  at(t - STEP + REPLY + 900, () => finishDemo(banner));
+}
+
+function finishDemo(banner) {
+  pending = 0;
+  $("events").querySelector(".pending")?.remove();   // there is no next reply in a finished replay
+  const again = el("button", null, "Replay");
+  again.type = "button";
+  again.onclick = startDemo;
+  banner.replaceChildren(el("span", null, "That's the loop: kept, archived, brought back. Now try it with your own facts."), again);
+}
+
+function exitDemo(restoreIntro) {
+  for (const id of demo.timers) clearTimeout(id);
+  demo = null;
+  pending = 0;
+  clearMemoryView();
+  $("mem-summary").textContent = settingsText;
+  $("log").replaceChildren(...(restoreIntro ? [intro] : []));
+  // show this session's real memory, if it has any
+  Promise.all([
+    fetch(`/sessions/${session}/memories`).then(r => r.json()),
+    fetch(`/sessions/${session}/ops?limit=40`).then(r => r.json()),
+  ]).then(([mems, ops]) => { if (!demo && mems.length) renderMemory(mems, ops); }).catch(() => {});
+}
+
+function clearMemoryView() {
+  known = new Map(); texts = new Map(); scores = new Map();
+  $("surface").replaceChildren(); $("bed").replaceChildren();
+  $("events").replaceChildren(el("li", null, "Nothing yet."));
 }
 
 $("new-chat").onclick = () => {
@@ -402,30 +690,219 @@ $("new-chat").onclick = () => {
 };
 
 /* results */
-let resultsLoaded = false;
+let resultsData = null;
 async function loadResults() {
-  if (resultsLoaded) return;
+  if (resultsData) return;
   const body = $("results-body");
   try {
     let data = await fetch("/eval/heldout2").then(r => r.json());   // the fresh set, written after all tuning
     if (!Object.keys(data.conditions).length) data = await fetch("/eval/heldout").then(r => r.json());
     const conds = ORDER.filter(c => data.conditions[c]);
     if (!conds.length) { body.replaceChildren(el("p", "note", "No saved held-out results yet. Run: python -m evals.run --split heldout --judge")); return; }
-    body.replaceChildren(overview(data, conds), el("h3", null, "By kind of question"), categories(data, conds), footnote(data, conds));
-    resultsLoaded = true;
+    resultsData = { data, conds };
+    renderResults();
   } catch { body.replaceChildren(el("p", "note", "Couldn't load results from the server.")); }
 }
+function renderResults() {
+  const { data, conds } = resultsData;
+  const barsFig = figure("Accuracy, prompt size and memory kept", "Same setups in the same order in each chart. lethe + facts is highlighted.");
+  const heatFig = figure("Accuracy by kind of question", "Deeper teal means more questions answered correctly.");
+  $("results-body").replaceChildren(milestones(), el("h3", null, "Where it stands"), barsFig, heatFig, el("h3", null, "Details"), overview(data, conds), footnote(data, conds));
+  barsFig.append(bars(data, conds, barsFig.clientWidth - 36));
+  heatFig.append(...heatmap(data, conds, heatFig.clientWidth - 36));
+}
+
+/* how it got here: the changes that moved the numbers, from saved runs in evals/results */
+const MILESTONES = [
+  { set: "held-out", metric: "Questions about facts that changed (naive RAG)", before: "38%", after: "100%",
+    what: "Memories are shown in the order they were said, tagged with their turn, instead of ranked by similarity." },
+  { set: "dev", metric: "lethe accuracy", before: "62%", after: "100%",
+    what: "The threshold for pulling archived memories back was tuned on the dev set." },
+  { set: "dev", metric: "One-off facts stored, 16 conversations", before: "20", after: "1",
+    what: "The extractor skips one-off activities like making coffee, and same-day plans." },
+  { set: "held-out", metric: "Memories kept", before: "27.5", after: "4.4",
+    what: "Fact extraction instead of raw messages: naive RAG over every message, against lethe + facts." },
+];
+function milestones() {
+  const sec = el("section", "milestones");
+  const h = el("h3", null, "How it got here");
+  h.id = "how-head";
+  sec.setAttribute("aria-labelledby", "how-head");
+  const list = el("ol", "ms-grid");
+  for (const m of MILESTONES) {
+    const li = el("li", "ms");
+    const nums = el("p", "ms-nums");
+    nums.append(el("span", "before", m.before), el("span", "arrow", "→"), el("span", "after", m.after));
+    nums.setAttribute("aria-label", `from ${m.before} to ${m.after}`);
+    li.append(el("span", `ms-set ${m.set === "dev" ? "dev" : "held"}`, m.set === "dev" ? "Dev set" : "Held-out set"),
+      el("p", "ms-metric", m.metric), nums, el("p", "ms-what", m.what));
+    list.append(li);
+  }
+  sec.append(h, list, el("p", "note ms-note", "Dev is the set used for tuning. Held-out conversations were kept aside for scoring."));
+  return sec;
+}
+let resizeTimer;
+addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { if (resultsData && !$("results-view").hidden) renderResults(); }, 150); });
+
+function figure(title, sub) {
+  const f = el("figure", "figure");
+  f.append(el("h3", null, title), el("p", "sub", sub));
+  return f;
+}
+
+/* tooltip shared by both charts: hover or keyboard focus */
+function attachTip(target, text) {
+  target.setAttribute("tabindex", "0");
+  target.setAttribute("aria-label", text);
+  const showTip = () => {
+    const tip = $("tip"), box = target.getBoundingClientRect(), host = $("results").getBoundingClientRect();
+    tip.textContent = text;
+    tip.hidden = false;
+    tip.style.left = `${box.left + box.width / 2 - host.left}px`;
+    tip.style.top = `${box.top - host.top}px`;
+  };
+  const hideTip = () => { $("tip").hidden = true; };
+  target.addEventListener("pointerenter", showTip);
+  target.addEventListener("pointerleave", hideTip);
+  target.addEventListener("focus", showTip);
+  target.addEventListener("blur", hideTip);
+}
+
+const textWidth = (s, px = 12) => s.length * px * 0.56;   // close enough for IBM Plex Sans at these sizes
+
+/* three bar charts, one per measure, same setups in the same order; stacked on narrow screens */
+const METRICS = [
+  { key: "accuracy", title: "Accuracy", fmt: pct, max: 1 },
+  { key: "avg_prompt_tokens", title: "Prompt tokens per answer", fmt: (v) => Math.round(v).toLocaleString() },
+  { key: "avg_active_memories", title: "Memories kept", fmt: (v) => String(Math.round(v * 10) / 10),
+    missing: (c) => (c === "no_memory" ? ["none", "keeps no memory"] : ["whole chat", "sends the whole conversation instead"]) },
+];
+function barPath(x, y, w, h, r = 4) {   // rounded data end, square at the baseline
+  r = Math.min(r, w, h / 2);
+  return `M${x},${y}h${w - r}a${r},${r} 0 0 1 ${r},${r}v${h - 2 * r}a${r},${r} 0 0 1 ${-r},${r}h${-(w - r)}z`;
+}
+function bars(data, conds, width) {
+  const W = Math.max(300, width);
+  const names = conds.map(c => LABELS[c]?.[0] || c);
+  const labelW = Math.max(...names.map(n => textWidth(n))) + 14;
+  const stacked = W < 640;
+  const gapX = 24, gapY = 20, rowH = 28, barH = 16;
+  const panelW = stacked ? W - labelW : (W - labelW - gapX * (METRICS.length - 1)) / METRICS.length;
+  const titles = METRICS.map(M => wrap(M.title, panelW, 12));
+  const headH = Math.max(...titles.map(t => t.length)) * 15 + 8;
+  const blockH = headH + conds.length * rowH;
+  const H = stacked ? METRICS.length * blockH + (METRICS.length - 1) * gapY : blockH;
+  const s = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, role: "img",
+    "aria-label": `Bar charts of accuracy, prompt tokens per answer and memories kept for ${conds.length} setups. The table below has the same values.` });
+  const ours = conds.indexOf(OURS);
+
+  METRICS.forEach((M, k) => {
+    const ox = stacked ? labelW : labelW + k * (panelW + gapX), oy = stacked ? k * (blockH + gapY) : 0;
+    if (stacked || k === 0) {
+      if (ours >= 0) s.append(svgEl("rect", { x: -6, y: oy + headH + ours * rowH, width: W + 12, height: rowH, rx: 4, class: "row-band" }));
+      conds.forEach((c, i) => s.append(svgEl("text", { x: 0, y: oy + headH + i * rowH + rowH / 2 + 4, class: `chart-label${c === OURS ? " ours" : ""}` }, names[i])));
+    }
+    titles[k].forEach((line, j) => s.append(svgEl("text", { x: ox, y: oy + 13 + j * 15, class: "chart-title" }, line)));
+    s.append(svgEl("line", { x1: ox, x2: ox, y1: oy + headH - 2, y2: oy + blockH, class: "chart-base" }));
+
+    const vals = conds.map(c => data.conditions[c][M.key]);
+    const max = M.max || Math.max(...vals.filter(v => v != null), 1e-9);
+    const valueW = Math.max(...vals.filter(v => v != null).map(v => textWidth(M.fmt(v)))) + 10;
+    const span = Math.max(20, panelW - valueW - 4);
+    conds.forEach((c, i) => {
+      const v = vals[i], yc = oy + headH + i * rowH + rowH / 2, cls = c === OURS ? " ours" : "";
+      let tipText;
+      if (v == null) {
+        const [short, long] = M.missing ? M.missing(c) : ["n/a", "not measured"];
+        s.append(svgEl("text", { x: ox + 6, y: yc + 4, class: "chart-axis" }, short));
+        tipText = `${names[i]}: ${long}`;
+      } else {
+        const len = (v / max) * span;
+        if (len > 0.5) s.append(svgEl("path", { d: barPath(ox, yc - barH / 2, len, barH), class: `bar${cls}` }));
+        let end = ox + len;
+        const ci = M.key === "accuracy" ? data.conditions[c].ci95 : null;
+        if (ci) {
+          const [x1, x2] = ci.map(b => ox + (b / max) * span);
+          s.append(svgEl("line", { x1, x2, y1: yc, y2: yc, class: "whisker" }));
+          for (const x of [x1, x2]) s.append(svgEl("line", { x1: x, x2: x, y1: yc - 4, y2: yc + 4, class: "whisker" }));
+          end = Math.max(end, x2);
+        }
+        s.append(svgEl("text", { x: end + 6, y: yc + 4, class: `chart-label${cls}` }, M.fmt(v)));
+        tipText = `${names[i]}, ${M.title.toLowerCase()}: ${M.fmt(v)}` + (ci ? ` (95% interval ${pct(ci[0])}–${pct(ci[1])})` : "");
+      }
+      const hit = svgEl("rect", { x: ox, y: yc - rowH / 2, width: panelW, height: rowH, class: "hit" });
+      attachTip(hit, tipText);
+      s.append(hit);
+    });
+  });
+  return s;
+}
+
+function heatmap(data, conds, width) {
+  const cats = [...new Set(conds.flatMap(c => Object.keys(data.conditions[c].by_category)))];
+  const names = conds.map(c => LABELS[c]?.[0] || c);
+  const labelW = Math.min(132, Math.max(...names.map(n => textWidth(n))) + 14);
+  const W = Math.max(300, width);
+  const cellW = Math.max(52, Math.min(96, (W - labelW) / cats.length)), cellH = 34, gap = 2;
+  const headLines = cats.map(c => wrap(CATS[c] || c, cellW - 6, 11));
+  const headH = Math.max(...headLines.map(l => l.length)) * 13 + 8;
+  const Wt = labelW + cats.length * cellW, H = headH + conds.length * cellH;
+  const s = svgEl("svg", { viewBox: `0 0 ${Wt} ${H}`, role: "img", "aria-label": `Heatmap of accuracy for ${conds.length} setups across ${cats.length} kinds of question. The table below has the same values.` });
+  if (Wt < W) s.style.maxWidth = `${Wt}px`;
+  cats.forEach((c, j) => {
+    const lines = headLines[j];
+    const t = svgEl("text", { x: labelW + j * cellW + cellW / 2, y: headH - 6 - (lines.length - 1) * 13, "text-anchor": "middle", class: "chart-axis" });
+    lines.forEach((ln, k) => t.append(svgEl("tspan", { x: labelW + j * cellW + cellW / 2, dy: k ? 13 : 0 }, ln)));
+    s.append(t);
+  });
+  conds.forEach((c, i) => {
+    const y = headH + i * cellH;
+    s.append(svgEl("text", { x: 0, y: y + cellH / 2 + 4, class: `chart-label${c === OURS ? " ours" : ""}` }, names[i]));
+    cats.forEach((cat, j) => {
+      const v = data.conditions[c].by_category[cat];
+      const x = labelW + j * cellW;
+      if (v == null) {
+        s.append(svgEl("text", { x: x + cellW / 2, y: y + cellH / 2 + 4, "text-anchor": "middle", class: "chart-axis" }, "–"));
+        return;
+      }
+      const bin = Math.min(4, Math.floor(v * 5));
+      const rect = svgEl("rect", { x: x + gap / 2, y: y + gap / 2, width: cellW - gap, height: cellH - gap, rx: 3, style: `fill: var(--heat-${bin})` });
+      attachTip(rect, `${names[i]}, ${CATS[cat] || cat}: ${pct(v)}`);
+      s.append(rect);
+      s.append(svgEl("text", { x: x + cellW / 2, y: y + cellH / 2 + 4, "text-anchor": "middle", class: "cell-text", style: `fill: var(--heat-t${bin})` }, pct(v)));
+    });
+  });
+  const legend = el("div", "legend");
+  ["0–19%", "20–39%", "40–59%", "60–79%", "80–100%"].forEach((label, b) => {
+    const span = el("span"), sw = el("i");
+    sw.style.background = `var(--heat-${b})`;
+    sw.style.boxShadow = "inset 0 0 0 1px var(--line)";
+    span.append(sw, document.createTextNode(label));
+    legend.append(span);
+  });
+  return [s, legend];
+}
+function wrap(text, maxPx, px) {
+  const lines = [];
+  for (const word of text.split(" ")) {
+    const last = lines[lines.length - 1];
+    if (last && textWidth(`${last} ${word}`, px) <= maxPx) lines[lines.length - 1] = `${last} ${word}`;
+    else lines.push(word);
+  }
+  return lines;
+}
+
 function overview(data, conds) {
   const wrap = el("div", "table-wrap"), t = el("table");
   t.innerHTML = `<thead><tr><th>Setup</th><th>Accuracy</th><th class="num">Prompt tokens per answer</th><th class="num">Memories kept</th><th class="num">Extraction tokens per conversation</th></tr></thead>`;
   const tb = el("tbody");
   for (const c of conds) {
     const s = data.conditions[c], [name, desc] = LABELS[c] || [c, ""];
-    const tr = el("tr"); if (c === "lethe_extract") tr.className = "ours";
+    const tr = el("tr"); if (c === OURS) tr.className = "ours";
     const n = el("td"); n.append(el("span", null, name), el("span", "desc", desc));
     const a = el("td"), acc = el("div", "acc"), track = el("div", "track"), fill = el("div", "fill");
-    fill.style.setProperty("--w", `${Math.round(s.accuracy * 100)}%`); track.append(fill);
-    acc.append(track, el("span", null, `${Math.round(s.accuracy * 100)}%`)); a.append(acc);
+    fill.style.setProperty("--w", pct(s.accuracy)); track.append(fill);
+    acc.append(track, el("span", null, pct(s.accuracy))); a.append(acc);
     if (s.ci95) {
       let range = `likely ${Math.round(s.ci95[0] * 100)}–${Math.round(s.ci95[1] * 100)}%`;
       if (s.runs > 1) range += `, varied ±${(s.accuracy_std * 100).toFixed(1)} over ${s.runs} runs`;
@@ -439,28 +916,37 @@ function overview(data, conds) {
   }
   t.append(tb); wrap.append(t); return wrap;
 }
-function categories(data, conds) {
-  const cats = [...new Set(conds.flatMap(c => Object.keys(data.conditions[c].by_category)))];
-  const wrap = el("div", "table-wrap"), t = el("table", "cat");
-  const head = el("tr"); head.append(el("th", null, "Question type"));
-  for (const c of conds) head.append(el("th", "num", (LABELS[c] || [c])[0]));
-  const th = el("thead"); th.append(head); t.append(th);
-  const tb = el("tbody");
-  for (const cat of cats) {
-    const tr = el("tr"); tr.append(el("td", null, CATS[cat] || cat));
-    for (const c of conds) { const v = data.conditions[c].by_category[cat]; tr.append(el("td", "cell", v == null ? "–" : `${Math.round(v * 100)}%`)); }
-    tb.append(tr);
-  }
-  t.append(tb); wrap.append(t); return wrap;
+// run files are named run-<split>-YYYYMMDD-HHMMSS[...].json
+function runDate(file) {
+  const m = file.match(/(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})/);
+  if (!m) return null;
+  return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5])
+    .toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 function footnote(data, conds) {
   const m = data.meta || {}, judged = conds.every(c => data.conditions[c].judged);
-  return el("p", "note",
+  const hasCi = conds.some(c => data.conditions[c].ci95);
+  const p = el("p", "note");
+  p.append(
     `${m.probes_per_condition || "?"} ${data.split === "heldout2" ? "fresh held-out" : "held-out"} questions per setup across ${m.tasks || "?"} conversations` +
     `${m.repeats > 1 ? `, each run ${m.repeats} times` : ""}, answered by ${m.model || "the model"}` +
     `${judged ? ` and graded by ${m.scoring?.judge_model || "an LLM judge"} against reference answers` : ""}. ` +
-    `Memory budget ${m.budget}. The range under each score is a 95% interval from resampling the conversations: ` +
-    `with this many conversations, gaps smaller than that range aren't meaningful.`);
+    `Memory budget ${m.budget}. ` +
+    (hasCi ? "Whiskers on the accuracy bars, and the range under each score in the table, are 95% intervals from resampling the conversations: " +
+      "with this many conversations, gaps smaller than that aren't meaningful. " : "") +
+    "Numbers from ");
+  // setups can come from different runs (the endpoint takes the newest result per setup)
+  const byRun = new Map();
+  for (const c of conds) {
+    const file = data.conditions[c].run || "an unnamed run";
+    byRun.set(file, [...(byRun.get(file) || []), LABELS[c]?.[0] || c]);
+  }
+  [...byRun].forEach(([file, setups], i) => {
+    if (i) p.append(i === byRun.size - 1 ? " and " : ", ");
+    p.append(el("code", null, file), ` (${runDate(file) || "date unknown"}: ${setups.join(", ")})`);
+  });
+  p.append(".");
+  return p;
 }
 </script>
 </body>
