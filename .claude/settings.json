@@ -1,1 +1,5 @@
-   { "permissions": { "deny": ["Read(./.env)"] } }
+{
+  "permissions": {
+    "deny": ["Read(./.env)", "Bash(rm:*)", "Bash(del:*)", "Bash(Remove-Item:*)"]
+  }
+}
