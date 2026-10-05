@@ -1,3 +1,14 @@
+---
+title: lethe
+emoji: 🌊
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 7860
+pinned: false
+short_description: Agent memory that decides what to keep, archive and recall
+---
+
 # lethe
 
 Long-horizon memory for LLM agents. Decides what to **retain**, **evict**, and **reload** across a conversation, and tracks which retrieved memories the answer actually **used**.
@@ -57,7 +68,9 @@ curl localhost:8000/sessions/demo/ops        # add / retrieve / used / ignored /
 
 ## Deploy
 
-`render.yaml` deploys the UI and API as one free Render web service: New > Blueprint, pick the repo, paste `GROQ_API_KEY` when asked. The embedding model is downloaded at build time so cold starts stay fast. Because one API key serves every visitor, the demo caps messages per chat (`LETHE_DEMO_PER_CHAT`) and per day (`LETHE_DEMO_PER_DAY`), and visitors see a plain explanation when a cap or the model's quota is hit. Memories live on the instance's disk and reset when it restarts, which is fine for a demo.
+**Hugging Face Spaces** (the live demo): the `Dockerfile` and the block at the top of this README are all a Docker Space needs. Add `GROQ_API_KEY` as a secret in the Space settings. Free Spaces sleep only after 48 hours without visitors.
+
+**Render**: `render.yaml` deploys the UI and API as one free Render web service: New > Blueprint, pick the repo, paste `GROQ_API_KEY` when asked. The embedding model is downloaded at build time so cold starts stay fast. Because one API key serves every visitor, the demo caps messages per chat (`LETHE_DEMO_PER_CHAT`) and per day (`LETHE_DEMO_PER_DAY`), and visitors see a plain explanation when a cap or the model's quota is hit. Memories live on the instance's disk and reset when it restarts, which is fine for a demo.
 
 ## Eval
 
@@ -105,5 +118,5 @@ Tests run offline with a fake embedder and fake LLM.
 ## Known limits
 
 - Lexical overlap misses paraphrased usage.
-- Fact extraction costs an extra LLM call per batch of 8 messages (~2.6K tokens per eval conversation), and with `LETHE_EXTRACT=0` raw user messages are stored as-is, chatter included.
+- Raw user messages are stored as memories; fact extraction is a planned upgrade.
 - If every active memory is inside the grace window, the budget can temporarily overflow.

@@ -1,0 +1,11 @@
+.venv/
+.git/
+.env
+data/
+.fastembed/
+**/__pycache__/
+*.egg-info/
+.pytest_cache/
+tests/
+evals/results/checkpoint-*
+evals/results/*dry*
