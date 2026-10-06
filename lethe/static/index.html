@@ -254,7 +254,13 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 600; letter-spacing: -0.01e
 .results h2 { font-size: 2rem; line-height: 1.15; margin: 0 0 0.6rem; }
 .results .lede { max-width: 44rem; color: var(--ink-soft); margin: 0 0 2rem; }
 .results h3 { font-size: var(--step-1); margin: 2.25rem 0 0.75rem; }
-.milestones h3 { margin-top: 0; }
+.takeaways { margin: 0 0 1.5rem; padding: 1.1rem 1.25rem 1.2rem; background: var(--accent-wash); border-radius: var(--radius-m); }
+.takeaways h3 { margin: 0 0 0.5rem; }
+.takeaways ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.45rem; max-width: 46rem; }
+.setups { margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14.5rem), 1fr)); gap: 0.4rem 1.25rem; }
+.setups div { margin: 0; }
+.setups dt { font-weight: 500; }
+.setups dd { margin: 0.1rem 0 0; font-size: var(--step--1); color: var(--ink-soft); }
 .ms-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14.5rem), 1fr)); gap: 0.9rem; }
 .ms { padding: 0.9rem 1rem 1rem; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-m); display: flex; flex-direction: column; gap: 0.3rem; }
 .ms-set { align-self: flex-start; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.02em; padding: 0.05rem 0.55rem; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-soft); }
@@ -400,7 +406,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 <main class="view" id="results-view" role="tabpanel" aria-labelledby="tab-results" hidden>
   <div class="results" id="results">
     <h2>How it scores</h2>
-    <p class="lede">Each memory setup answers the same held-out conversations: facts are mentioned early, buried under small talk, then asked about later.</p>
+    <p class="lede">Each setup answers questions about the same test chats, which it had never seen before. In each chat a fact is mentioned early, buried under small talk, and then asked about later.</p>
     <div id="results-body"><p class="note">Loading results…</p></div>
     <div class="tip" id="tip" role="status" hidden></div>
   </div>
@@ -410,9 +416,9 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 const LABELS = {
   no_memory: ["No memory", "Only the last 4 messages"],
   full_history: ["Full history", "The whole conversation, every time"],
-  naive_rag: ["Naive RAG", "Searches every message, never forgets"],
+  naive_rag: ["Search everything", "Searches every message, never forgets"],   // "naive RAG" in the evals
   lethe: ["lethe", "Budgeted memory that archives and reloads"],
-  naive_extract: ["Naive RAG + facts", "Stores extracted facts, never forgets"],
+  naive_extract: ["Search everything + facts", "Stores extracted facts, never forgets"],
   lethe_extract: ["lethe + facts", "Extracted facts, budgeted, archives and reloads"],
 };
 const ORDER = ["no_memory", "full_history", "naive_rag", "naive_extract", "lethe", "lethe_extract"];
@@ -705,23 +711,94 @@ async function loadResults() {
 }
 function renderResults() {
   const { data, conds } = resultsData;
-  const barsFig = figure("Accuracy, prompt size and memory kept", "Same setups in the same order in each chart. lethe + facts is highlighted.");
+  const barsFig = figure("Accuracy, text sent and memories kept",
+    "Same setups in the same order in each chart. lethe + facts is highlighted. The thin line on each accuracy bar shows the likely range.");
   const heatFig = figure("Accuracy by kind of question", "Deeper teal means more questions answered correctly.");
-  $("results-body").replaceChildren(milestones(), el("h3", null, "Where it stands"), barsFig, heatFig, el("h3", null, "Details"), overview(data, conds), footnote(data, conds));
+  $("results-body").replaceChildren(...takeaways(data, conds), setupLegend(), el("h3", null, "Where it stands"), barsFig, heatFig,
+    milestones(), el("h3", null, "Details"), overview(data, conds), footnote(data, conds));
   barsFig.append(bars(data, conds, barsFig.clientWidth - 36));
   heatFig.append(...heatmap(data, conds, heatFig.clientWidth - 36));
 }
 
+/* "What this shows": three plain takeaways, every number computed from the loaded results */
+const nameOf = (c) => LABELS[c]?.[0] || c;
+function takeaways(data, conds) {
+  const C = data.conditions, ours = C[OURS];
+  if (!ours) return [];
+  const items = [];
+
+  const others = conds.filter(c => c !== OURS);
+  if (C.no_memory || others.length) {
+    let line = C.no_memory
+      ? `With no memory, the assistant answered ${pct(C.no_memory.accuracy)} of the questions correctly. With lethe + facts, it answered ${pct(ours.accuracy)}`
+      : `lethe + facts answered ${pct(ours.accuracy)} of the questions correctly`;
+    const best = others.reduce((b, c) => (!b || C[c].accuracy > C[b].accuracy ? c : b), null);
+    if (best && C[best].accuracy > ours.accuracy) {
+      // "nearly as accurate" only when the gap is within lethe's likely range (or 5 points without one); otherwise say it plainly
+      const close = ours.ci95 ? C[best].accuracy <= ours.ci95[1] : C[best].accuracy - ours.accuracy <= 0.05;
+      line += close ? `, nearly as accurate as ${nameOf(best)} (${pct(C[best].accuracy)}).`
+        : `, less than ${nameOf(best)} (${pct(C[best].accuracy)}).`;
+    } else if (best && C[best].accuracy === ours.accuracy) {
+      line += `, the same as ${nameOf(best)}.`;
+    } else {
+      line += best ? ", the highest of the setups tested, though small gaps between setups may be down to chance." : ".";
+    }
+    items.push(line);
+  }
+
+  const full = C.full_history;
+  if (full && full.avg_prompt_tokens && ours.avg_prompt_tokens) {
+    const ratio = full.avg_prompt_tokens / ours.avg_prompt_tokens;
+    items.push(ratio >= 1.1
+      ? `For each answer, lethe + facts sends the AI about ${ratio >= 2 ? `${Math.round(ratio)} times` : `${Math.round((1 - 1 / ratio) * 100)}%`} less text than resending the whole chat (Full history).`
+      : ratio > 1 / 1.1 ? "For each answer, lethe + facts sends the AI about as much text as resending the whole chat (Full history)."
+      : "For each answer, lethe + facts sends the AI more text than resending the whole chat (Full history).");
+  }
+
+  if (ours.avg_active_memories != null) {
+    const all = C.naive_rag?.avg_active_memories;
+    items.push(`When a question came in, lethe + facts was holding about ${ours.avg_active_memories} memories for the conversation` +
+      (all != null ? `. Search everything, which never forgets, was holding about ${all}.` : "."));
+  }
+
+  if (!items.length) return [];
+  const box = el("section", "takeaways"), h = el("h3", null, "What this shows"), ul = el("ul");
+  h.id = "takeaways-head";
+  box.setAttribute("aria-labelledby", "takeaways-head");
+  for (const t of items) ul.append(el("li", null, t));
+  box.append(h, ul);
+  return [box];
+}
+
+const SETUPS = [
+  ["No memory", "Sees only the last 4 messages."],
+  ["Full history", "Resends the whole conversation with every question."],
+  ["Search everything", "Saves every message and looks up the closest matches. Never forgets anything."],
+  ["lethe", "Keeps a small set of memories, puts unused ones away, and brings them back when they matter again. “+ facts” means it saves short facts taken from the messages instead of the messages themselves."],
+];
+function setupLegend() {
+  const sec = el("section"), h = el("h3", null, "The setups"), dl = el("dl", "setups");
+  h.id = "setups-head";
+  sec.setAttribute("aria-labelledby", "setups-head");
+  for (const [name, desc] of SETUPS) {
+    const d = el("div");
+    d.append(el("dt", null, name), el("dd", null, desc));
+    dl.append(d);
+  }
+  sec.append(h, dl);
+  return sec;
+}
+
 /* how it got here: the changes that moved the numbers, from saved runs in evals/results */
 const MILESTONES = [
-  { set: "held-out", metric: "Questions about facts that changed (naive RAG)", before: "38%", after: "100%",
-    what: "Memories are shown in the order they were said, tagged with their turn, instead of ranked by similarity." },
-  { set: "dev", metric: "lethe accuracy", before: "62%", after: "100%",
-    what: "The threshold for pulling archived memories back was tuned on the dev set." },
-  { set: "dev", metric: "One-off facts stored, 16 conversations", before: "20", after: "1",
-    what: "The extractor skips one-off activities like making coffee, and same-day plans." },
-  { set: "held-out", metric: "Memories kept", before: "27.5", after: "4.4",
-    what: "Fact extraction instead of raw messages: naive RAG over every message, against lethe + facts." },
+  { set: "held-out", metric: "Questions about facts that changed (Search everything)", before: "38%", after: "100%",
+    what: "Memories are now shown in the order they were said, so the latest version of a fact comes last, instead of sorted by how closely they match the question." },
+  { set: "dev", metric: "lethe's accuracy", before: "62%", after: "100%",
+    what: "Adjusted how closely a put-away memory must match a question before it's brought back." },
+  { set: "dev", metric: "Throwaway details saved, across 16 chats", before: "20", after: "1",
+    what: "It now skips passing moments, like making coffee, and plans for later the same day." },
+  { set: "held-out", metric: "Memories held per conversation", before: "27.5", after: "4.4",
+    what: "Search everything keeps every message. lethe + facts keeps short facts and puts old ones away." },
 ];
 function milestones() {
   const sec = el("section", "milestones");
@@ -734,11 +811,11 @@ function milestones() {
     const nums = el("p", "ms-nums");
     nums.append(el("span", "before", m.before), el("span", "arrow", "→"), el("span", "after", m.after));
     nums.setAttribute("aria-label", `from ${m.before} to ${m.after}`);
-    li.append(el("span", `ms-set ${m.set === "dev" ? "dev" : "held"}`, m.set === "dev" ? "Dev set" : "Held-out set"),
+    li.append(el("span", `ms-set ${m.set === "dev" ? "dev" : "held"}`, m.set === "dev" ? "Tested on practice chats" : "Tested on unseen chats"),
       el("p", "ms-metric", m.metric), nums, el("p", "ms-what", m.what));
     list.append(li);
   }
-  sec.append(h, list, el("p", "note ms-note", "Dev is the set used for tuning. Held-out conversations were kept aside for scoring."));
+  sec.append(h, list, el("p", "note ms-note", "Practice chats were used while building and adjusting lethe. Unseen chats were kept aside and used only for scoring."));
   return sec;
 }
 let resizeTimer;
@@ -773,7 +850,7 @@ const textWidth = (s, px = 12) => s.length * px * 0.56;   // close enough for IB
 /* three bar charts, one per measure, same setups in the same order; stacked on narrow screens */
 const METRICS = [
   { key: "accuracy", title: "Accuracy", fmt: pct, max: 1 },
-  { key: "avg_prompt_tokens", title: "Prompt tokens per answer", fmt: (v) => Math.round(v).toLocaleString() },
+  { key: "avg_prompt_tokens", title: "Text sent to the AI per answer", fmt: (v) => Math.round(v).toLocaleString() },
   { key: "avg_active_memories", title: "Memories kept", fmt: (v) => String(Math.round(v * 10) / 10),
     missing: (c) => (c === "no_memory" ? ["none", "keeps no memory"] : ["whole chat", "sends the whole conversation instead"]) },
 ];
@@ -793,7 +870,7 @@ function bars(data, conds, width) {
   const blockH = headH + conds.length * rowH;
   const H = stacked ? METRICS.length * blockH + (METRICS.length - 1) * gapY : blockH;
   const s = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, role: "img",
-    "aria-label": `Bar charts of accuracy, prompt tokens per answer and memories kept for ${conds.length} setups. The table below has the same values.` });
+    "aria-label": `Bar charts of accuracy, text sent to the AI per answer and memories kept for ${conds.length} setups. The table below has the same values.` });
   const ours = conds.indexOf(OURS);
 
   METRICS.forEach((M, k) => {
@@ -828,7 +905,7 @@ function bars(data, conds, width) {
           end = Math.max(end, x2);
         }
         s.append(svgEl("text", { x: end + 6, y: yc + 4, class: `chart-label${cls}` }, M.fmt(v)));
-        tipText = `${names[i]}, ${M.title.toLowerCase()}: ${M.fmt(v)}` + (ci ? ` (95% interval ${pct(ci[0])}–${pct(ci[1])})` : "");
+        tipText = `${names[i]}, ${M.title.toLowerCase()}: ${M.fmt(v)}` + (ci ? ` (likely range ${pct(ci[0])}–${pct(ci[1])})` : "");
       }
       const hit = svgEl("rect", { x: ox, y: yc - rowH / 2, width: panelW, height: rowH, class: "hit" });
       attachTip(hit, tipText);
@@ -931,7 +1008,7 @@ function footnote(data, conds) {
     `${m.probes_per_condition || "?"} ${data.split === "heldout2" ? "fresh held-out" : "held-out"} questions per setup across ${m.tasks || "?"} conversations` +
     `${m.repeats > 1 ? `, each run ${m.repeats} times` : ""}, answered by ${m.model || "the model"}` +
     `${judged ? ` and graded by ${m.scoring?.judge_model || "an LLM judge"} against reference answers` : ""}. ` +
-    `Memory budget ${m.budget}. ` +
+    `Memory budget ${m.budget}. "Search everything" is naive RAG; "text sent to the AI" is prompt tokens per answer. ` +
     (hasCi ? "Whiskers on the accuracy bars, and the range under each score in the table, are 95% intervals from resampling the conversations: " +
       "with this many conversations, gaps smaller than that aren't meaningful. " : "") +
     "Numbers from ");
