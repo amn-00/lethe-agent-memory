@@ -163,6 +163,18 @@ def test_interrupted_run_resumes_without_redoing_finished_tasks(tmp_path):
     assert [r["task"] for r in rows] == ["t01", "t02", "t03", "t04"]
 
 
+def test_quota_stop_message_counts_repeats(tmp_path):
+    """Regression: with --repeats 3 the stop message could say e.g. 10/4 task runs, because the total ignored repeats."""
+    import argparse
+
+    from evals.run import quota_stop_message
+
+    ckpt = tmp_path / "ckpt.jsonl"
+    ckpt.write_text("{}\n" * 5)  # 5 finished (condition, task, repeat) runs
+    args = argparse.Namespace(conditions=["no_memory", "lethe_extract"], repeats=3)
+    assert "Progress saved (5/12 task runs)" in quota_stop_message("quota", ckpt, args, [{}, {}])  # 2 conditions x 2 tasks x 3
+
+
 def test_daily_limit_is_not_retried():
     import httpx
 

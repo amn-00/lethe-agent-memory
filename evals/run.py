@@ -326,6 +326,16 @@ async def run_all(
     return rows
 
 
+def quota_stop_message(err, ckpt: Path, args, tasks) -> str:
+    # one checkpoint line per (condition, task, repeat), so the total has to count repeats too
+    saved = len(ckpt.read_text(encoding="utf-8").splitlines()) if ckpt.exists() else 0
+    total = len(args.conditions) * len(tasks) * getattr(args, "repeats", 1)
+    return (
+        f"\nStopped: {err}\nProgress saved ({saved}/{total} task runs). "
+        f"After the quota resets, rerun the same command with --resume."
+    )
+
+
 async def main(args):
     data = json.loads((HERE / SPLITS[args.split]).read_text(encoding="utf-8"))
     tasks = data["tasks"][: args.limit] if args.limit else data["tasks"]
@@ -358,12 +368,7 @@ async def main(args):
             args.conditions, tasks, data["filler"], llm, embedder, args, overrides, ckpt, args.resume, answer_stats
         )
     except DailyLimitError as e:
-        saved = len(ckpt.read_text(encoding="utf-8").splitlines()) if ckpt.exists() else 0
-        total = len(args.conditions) * len(tasks)
-        raise SystemExit(
-            f"\nStopped: {e}\nProgress saved ({saved}/{total} task runs). "
-            f"After the quota resets, rerun the same command with --resume."
-        ) from e
+        raise SystemExit(quota_stop_message(e, ckpt, args, tasks)) from e
 
     judge_llm, judge_model = None, None
     if args.judge and not args.dry_run:
