@@ -174,17 +174,12 @@ def test_daily_limit_is_not_retried():
         calls.append(1)
         return httpx.Response(429, text='{"error":{"message":"Rate limit reached ... tokens per day (TPD): Limit 200000"}}')
 
-    llm = GroqLLM(api_key="x", min_interval=0)
-    transport = httpx.MockTransport(handler)
-    orig = httpx.AsyncClient
-    httpx.AsyncClient = lambda **kw: orig(transport=transport, **kw)
+    llm = GroqLLM(api_key="x", min_interval=0, transport=httpx.MockTransport(handler))
     try:
         asyncio.run(llm.chat([{"role": "user", "content": "hi"}]))
         raise AssertionError("should have raised")
     except DailyLimitError:
         pass
-    finally:
-        httpx.AsyncClient = orig
     assert len(calls) == 1  # failed fast instead of sleeping through retries
 
 
@@ -220,6 +215,44 @@ def test_repeats_run_everything_n_times_and_resume_per_repeat(tmp_path):
 
     again = asyncio.run(run_all(["lethe"], tasks, DATA["filler"], CountingLLM(), FakeEmbedder(), args, FAKE_THRESHOLDS, ckpt, True))
     assert not calls and len(again) == 4  # every (task, repeat) pair came from the checkpoint
+
+
+def test_llm_glitch_counts_survive_resume_and_reach_the_report(tmp_path):
+    """heldout2 spans two days of quota, so counts from the first day must come back from the checkpoint."""
+    import argparse
+
+    from evals.run import new_llm_stats, run_all, to_markdown
+
+    class GlitchyLLM(MemoryEchoLLM):  # every call needed one tool_use_failed retry
+        def __init__(self):
+            self.stats = {"tool_use_retries": 0, "fallback_recoveries": 0}
+
+        async def chat(self, messages):
+            self.stats["tool_use_retries"] += 1
+            return await super().chat(messages)
+
+    args = argparse.Namespace(budget=6, grace=2, llm_every_turn=False, memory_format="ordered")
+    ckpt = tmp_path / "ckpt.jsonl"
+    first = new_llm_stats()
+    asyncio.run(run_all(["lethe"], DATA["tasks"][:2], DATA["filler"], GlitchyLLM(), FakeEmbedder(), args, FAKE_THRESHOLDS, ckpt, False, first))
+    assert first == {"tool_use_retries": 2, "fallback_recoveries": 0, "task_runs_uncounted": 0}
+
+    # pretend the second task run was checkpointed by the old code, before the counters existed
+    lines = ckpt.read_text().splitlines()
+    old = json.loads(lines[1])
+    del old["llm_stats"]
+    ckpt.write_text(lines[0] + "\n" + json.dumps(old) + "\n")
+
+    stats = new_llm_stats()
+    rows = asyncio.run(run_all(["lethe"], DATA["tasks"][:3], DATA["filler"], GlitchyLLM(), FakeEmbedder(), args, FAKE_THRESHOLDS, ckpt, True, stats))
+    assert stats == {"tool_use_retries": 2, "fallback_recoveries": 0, "task_runs_uncounted": 1}  # 1 loaded + 1 new
+
+    meta = {
+        "split": "dev", "timestamp": "now", "model": "fake", "budget": 6, "grace": 2, "tasks": 3, "probes_per_condition": 3,
+        "overrides": {}, "dry_run": True, "llm_glitches": {"answering": stats, "judging": None},
+    }
+    md = to_markdown(summarize(rows), meta)
+    assert "2 retries and 0 answers recovered" in md and "not counted for 1 task runs" in md
 
 
 def test_bootstrap_ci_is_deterministic_and_brackets_accuracy():

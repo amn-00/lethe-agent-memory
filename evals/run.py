@@ -236,6 +236,19 @@ def to_markdown(summary: dict, meta: dict) -> str:
     for cat in cats:
         vals = [f"{summary[c]['by_category'].get(cat, 0):.0%}" for c in conds]
         lines.append(f"| {cat} | " + " | ".join(vals) + " |")
+    glitches = meta.get("llm_glitches")  # absent in runs saved before the counters existed
+    if glitches:
+        a = glitches["answering"]
+        note = (
+            f"Groq `tool_use_failed` glitch (gpt-oss): answering + extraction hit {a['tool_use_retries']} retries and "
+            f"{a['fallback_recoveries']} answers recovered from `failed_generation` after every retry failed"
+        )
+        if a.get("task_runs_uncounted"):
+            note += f" (not counted for {a['task_runs_uncounted']} task runs checkpointed before the counter existed)"
+        if glitches.get("judging"):
+            j = glitches["judging"]
+            note += f"; judging hit {j['tool_use_retries']} retries and {j['fallback_recoveries']} recoveries"
+        lines += ["", f"Note: {note}."]
     return "\n".join(lines) + "\n"
 
 
@@ -248,15 +261,37 @@ def checkpoint_path(args, model: str, overrides: dict) -> Path:
     return HERE / "results" / f"checkpoint-{args.split}-{hashlib.sha1(sig.encode()).hexdigest()[:10]}.jsonl"
 
 
-async def run_all(conditions, tasks, filler, llm, embedder, args, overrides, ckpt: Path, resume: bool) -> list[dict]:
+LLM_STAT_KEYS = ("tool_use_retries", "fallback_recoveries")
+
+
+def new_llm_stats() -> dict:
+    return {**dict.fromkeys(LLM_STAT_KEYS, 0), "task_runs_uncounted": 0}
+
+
+def llm_stats_snapshot(llm) -> dict:
+    stats = getattr(llm, "stats", None) or {}  # fakes have no counters
+    return {k: stats.get(k, 0) for k in LLM_STAT_KEYS}
+
+
+async def run_all(
+    conditions, tasks, filler, llm, embedder, args, overrides, ckpt: Path, resume: bool, llm_stats: dict | None = None
+) -> list[dict]:
     """Runs every (condition, task) pair, appending each finished pair to a checkpoint file.
-    With resume=True, pairs already in the checkpoint are skipped."""
+    With resume=True, pairs already in the checkpoint are skipped.
+    If llm_stats is given, the LLM's glitch counters are added into it, including those saved in the checkpoint by
+    earlier runs, so a run resumed across days still reports its totals."""
     repeats = getattr(args, "repeats", 1)
+    stats = llm_stats if llm_stats is not None else new_llm_stats()
     done: dict[tuple[str, str, int], list[dict]] = {}
     if resume and ckpt.exists():
         for line in ckpt.read_text(encoding="utf-8").splitlines():
             rec = json.loads(line)
             done[(rec["condition"], rec["task"], rec.get("repeat", 0))] = rec["rows"]
+            if "llm_stats" in rec:
+                for k in LLM_STAT_KEYS:
+                    stats[k] += rec["llm_stats"].get(k, 0)
+            else:  # written before the counters existed
+                stats["task_runs_uncounted"] += 1
         print(f"resuming: {len(done)} finished task runs loaded from {ckpt.name}")
     elif ckpt.exists():
         ckpt.unlink()
@@ -270,14 +305,20 @@ async def run_all(conditions, tasks, filler, llm, embedder, args, overrides, ckp
                     rows += done[(cond, task["id"], rep)]
                     continue
                 t0 = time.time()
+                before = llm_stats_snapshot(llm)
                 res = await run_task(
                     cond, task, filler, llm, embedder, args.budget, args.grace, args.llm_every_turn, overrides,
                     ordered=args.memory_format == "ordered",
                 )
+                after = llm_stats_snapshot(llm)
+                delta = {k: after[k] - before[k] for k in LLM_STAT_KEYS}
+                for k in LLM_STAT_KEYS:
+                    stats[k] += delta[k]
                 for r in res:
                     r["repeat"] = rep
                 with ckpt.open("a", encoding="utf-8") as f:
-                    f.write(json.dumps({"condition": cond, "task": task["id"], "repeat": rep, "rows": res}) + "\n")
+                    rec = {"condition": cond, "task": task["id"], "repeat": rep, "rows": res, "llm_stats": delta}
+                    f.write(json.dumps(rec) + "\n")
                 rows += res
                 ok = sum(r["correct"] for r in res)
                 tag = f" run {rep + 1}/{repeats}" if repeats > 1 else ""
@@ -311,8 +352,11 @@ async def main(args):
     from lethe.llm import DailyLimitError
 
     ckpt = checkpoint_path(args, model, overrides)
+    answer_stats = new_llm_stats()
     try:
-        rows = await run_all(args.conditions, tasks, data["filler"], llm, embedder, args, overrides, ckpt, args.resume)
+        rows = await run_all(
+            args.conditions, tasks, data["filler"], llm, embedder, args, overrides, ckpt, args.resume, answer_stats
+        )
     except DailyLimitError as e:
         saved = len(ckpt.read_text(encoding="utf-8").splitlines()) if ckpt.exists() else 0
         total = len(args.conditions) * len(tasks)
@@ -344,6 +388,8 @@ async def main(args):
         "probes_per_condition": len(rows) // max(len(args.conditions) * args.repeats, 1),
         "dry_run": args.dry_run, "llm_every_turn": args.llm_every_turn, "overrides": overrides,
         "scoring": scoring, "memory_format": args.memory_format,
+        # answering covers chat + extraction calls; judging is redone in full each run, so in-process counts suffice
+        "llm_glitches": {"answering": answer_stats, "judging": llm_stats_snapshot(judge_llm) if judge_llm else None},
     }
     out_dir = HERE / "results"
     out_dir.mkdir(exist_ok=True)
