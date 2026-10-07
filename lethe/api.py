@@ -111,7 +111,7 @@ def create_app(memory: AgentMemory, llm: LLM, extractor=None, limits: DemoLimits
     def ops(session_id: str, limit: int = 200):
         return memory.store.ops(session_id, limit)
 
-    @app.get("/health")
+    @app.api_route("/health", methods=["GET", "HEAD"])  # uptime monitors ping with HEAD
     def health():
         return {"ok": True}
 

@@ -174,6 +174,13 @@ def test_ui_and_config_are_served():
     assert r["pending"] == 0
 
 
+def test_health_accepts_head_for_uptime_monitors():
+    """Regression: UptimeRobot pings /health with HEAD and got 405 when the route was GET-only."""
+    client = TestClient(create_app(make_memory(), EchoLLM()))
+    assert client.head("/health").status_code == 200
+    assert client.get("/health").json() == {"ok": True}
+
+
 def test_demo_script_is_served_and_tells_the_whole_story():
     client = TestClient(create_app(make_memory(), EchoLLM()))
     assert "/static/demo.json" in client.get("/").text
