@@ -196,7 +196,7 @@ def test_daily_limit_is_not_retried():
 
 
 def test_all_three_sets_are_mutually_fresh():
-    """heldout2 was written after all tuning; it must share no filler or fact sentence with the other sets."""
+    """heldout2 was never used for tuning; it must share no filler or fact sentence with the other sets."""
     import itertools
 
     def says(d):

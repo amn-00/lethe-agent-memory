@@ -417,9 +417,9 @@ const LABELS = {
   no_memory: ["No memory", "Only the last 4 messages"],
   full_history: ["Full history", "The whole conversation, every time"],
   naive_rag: ["Search everything", "Searches every message, never forgets"],   // "naive RAG" in the evals
-  lethe: ["lethe", "Budgeted memory that archives and reloads"],
+  lethe: ["lethe (raw messages)", "Budgeted memory that archives and reloads"],
   naive_extract: ["Search everything + facts", "Stores extracted facts, never forgets"],
-  lethe_extract: ["lethe + facts", "Extracted facts, budgeted, archives and reloads"],
+  lethe_extract: ["lethe", "Extracted facts, budgeted, archives and reloads"],
 };
 const ORDER = ["no_memory", "full_history", "naive_rag", "naive_extract", "lethe", "lethe_extract"];
 const CATS = { multi_recall: "Several facts at once", distractor: "Lookalike facts", update_chain: "Facts that changed", long_gap: "Long gaps", single_recall: "Single fact", update: "One change" };
@@ -460,7 +460,7 @@ $("tab-results").onclick = () => show("results");
 /* settings */
 let settingsText = "Loading settings…";
 fetch("/config").then(r => r.json()).then(c => {
-  settingsText = `Keeps up to ${c.budget} memories in the prompt. ${c.extract ? "Stores extracted facts, not raw messages." : "Stores raw messages."}` +
+  settingsText = `Keeps up to ${c.budget} active memories. ${c.extract ? "Stores extracted facts, not raw messages." : "Stores raw messages."}` +
     (c.messages_per_chat ? ` This demo allows ${c.messages_per_chat} messages per chat.` : "");
   $("mem-summary").dataset.budget = c.budget;
   if (!demo) $("mem-summary").textContent = settingsText;
@@ -634,7 +634,7 @@ async function startDemo() {
   if (demo) exitDemo(false);
   demo = { budget: data.budget, timers: [] };
   clearMemoryView();
-  $("mem-summary").textContent = `Demo: keeps up to ${data.budget} facts in the prompt, so things move quickly.`;
+  $("mem-summary").textContent = `Demo: keeps up to ${data.budget} active facts, so things move quickly.`;
   const banner = el("div", "banner");
   const stop = el("button", null, "Stop");
   stop.type = "button";
@@ -701,7 +701,7 @@ async function loadResults() {
   if (resultsData) return;
   const body = $("results-body");
   try {
-    let data = await fetch("/eval/heldout2").then(r => r.json());   // the fresh set, written after all tuning
+    let data = await fetch("/eval/heldout2").then(r => r.json());   // the fresh set, never used for tuning
     if (!Object.keys(data.conditions).length) data = await fetch("/eval/heldout").then(r => r.json());
     const conds = ORDER.filter(c => data.conditions[c]);
     if (!conds.length) { body.replaceChildren(el("p", "note", "No saved held-out results yet. Run: python -m evals.run --split heldout --judge")); return; }
@@ -712,7 +712,7 @@ async function loadResults() {
 function renderResults() {
   const { data, conds } = resultsData;
   const barsFig = figure("Accuracy, text sent and memories kept",
-    "Same setups in the same order in each chart. lethe + facts is highlighted. The thin line on each accuracy bar shows the likely range.");
+    "Same setups in the same order in each chart. lethe is highlighted. The thin line on each accuracy bar shows the likely range.");
   const heatFig = figure("Accuracy by kind of question", "Deeper teal means more questions answered correctly.");
   $("results-body").replaceChildren(...takeaways(data, conds), setupLegend(), el("h3", null, "Where it stands"), barsFig, heatFig,
     milestones(), el("h3", null, "Details"), overview(data, conds), footnote(data, conds));
@@ -730,8 +730,8 @@ function takeaways(data, conds) {
   const others = conds.filter(c => c !== OURS);
   if (C.no_memory || others.length) {
     let line = C.no_memory
-      ? `With no memory, the assistant answered ${pct(C.no_memory.accuracy)} of the questions correctly. With lethe + facts, it answered ${pct(ours.accuracy)}`
-      : `lethe + facts answered ${pct(ours.accuracy)} of the questions correctly`;
+      ? `With no memory, the assistant answered ${pct(C.no_memory.accuracy)} of the questions correctly. With lethe, it answered ${pct(ours.accuracy)}`
+      : `lethe answered ${pct(ours.accuracy)} of the questions correctly`;
     const best = others.reduce((b, c) => (!b || C[c].accuracy > C[b].accuracy ? c : b), null);
     if (best && C[best].accuracy > ours.accuracy) {
       // "nearly as accurate" only when the gap is within lethe's likely range (or 5 points without one); otherwise say it plainly
@@ -750,14 +750,14 @@ function takeaways(data, conds) {
   if (full && full.avg_prompt_tokens && ours.avg_prompt_tokens) {
     const ratio = full.avg_prompt_tokens / ours.avg_prompt_tokens;
     items.push(ratio >= 1.1
-      ? `For each answer, lethe + facts sends the AI about ${ratio >= 2 ? `${Math.round(ratio)} times` : `${Math.round((1 - 1 / ratio) * 100)}%`} less text than resending the whole chat (Full history).`
-      : ratio > 1 / 1.1 ? "For each answer, lethe + facts sends the AI about as much text as resending the whole chat (Full history)."
-      : "For each answer, lethe + facts sends the AI more text than resending the whole chat (Full history).");
+      ? `For each answer, lethe sends the AI about ${ratio >= 2 ? `${Math.round(ratio)} times` : `${Math.round((1 - 1 / ratio) * 100)}%`} less text than resending the whole chat (Full history).`
+      : ratio > 1 / 1.1 ? "For each answer, lethe sends the AI about as much text as resending the whole chat (Full history)."
+      : "For each answer, lethe sends the AI more text than resending the whole chat (Full history).");
   }
 
   if (ours.avg_active_memories != null) {
     const all = C.naive_rag?.avg_active_memories;
-    items.push(`When a question came in, lethe + facts was holding about ${ours.avg_active_memories} memories for the conversation` +
+    items.push(`When a question came in, lethe was holding about ${ours.avg_active_memories} memories for the conversation` +
       (all != null ? `. Search everything, which never forgets, was holding about ${all}.` : "."));
   }
 
@@ -774,7 +774,7 @@ const SETUPS = [
   ["No memory", "Sees only the last 4 messages."],
   ["Full history", "Resends the whole conversation with every question."],
   ["Search everything", "Saves every message and looks up the closest matches. Never forgets anything."],
-  ["lethe", "Keeps a small set of memories, puts unused ones away, and brings them back when they matter again. “+ facts” means it saves short facts taken from the messages instead of the messages themselves."],
+  ["lethe", "Keeps a small set of short facts it pulls from the chat, archives the least useful ones, and brings them back when needed."],
 ];
 function setupLegend() {
   const sec = el("section"), h = el("h3", null, "The setups"), dl = el("dl", "setups");
@@ -793,12 +793,12 @@ function setupLegend() {
 const MILESTONES = [
   { set: "held-out", metric: "Questions about facts that changed (Search everything)", before: "38%", after: "100%",
     what: "Memories are now shown in the order they were said, so the latest version of a fact comes last, instead of sorted by how closely they match the question." },
-  { set: "dev", metric: "lethe's accuracy", before: "62%", after: "100%",
+  { set: "dev", metric: "lethe (raw messages)", before: "62%", after: "100%",
     what: "Adjusted how closely a put-away memory must match a question before it's brought back." },
-  { set: "dev", metric: "Throwaway details saved, across 16 chats", before: "20", after: "1",
-    what: "It now skips passing moments, like making coffee, and plans for later the same day." },
-  { set: "held-out", metric: "Memories held per conversation", before: "27.5", after: "4.4",
-    what: "Search everything keeps every message. lethe + facts keeps short facts and puts old ones away." },
+  { set: "dev", metric: "Throwaway details saved, across 16 chats", before: "20", via: "7", after: "1",
+    what: "Showing the extractor what it already knew cut junk from 20 to 7; teaching it to skip one-off activities and same-day plans cut it to 1." },
+  { set: "held-out", metric: "Memories held per conversation", before: "27.5", after: "4.8",
+    what: "Search everything stored every message. Storing extracted facts instead cut it to 4.8; accuracy went from 100% to 97%." },
 ];
 function milestones() {
   const sec = el("section", "milestones");
@@ -809,13 +809,15 @@ function milestones() {
   for (const m of MILESTONES) {
     const li = el("li", "ms");
     const nums = el("p", "ms-nums");
-    nums.append(el("span", "before", m.before), el("span", "arrow", "→"), el("span", "after", m.after));
-    nums.setAttribute("aria-label", `from ${m.before} to ${m.after}`);
+    nums.append(el("span", "before", m.before), el("span", "arrow", "→"));
+    if (m.via) nums.append(el("span", "before", m.via), el("span", "arrow", "→"));   // optional middle step
+    nums.append(el("span", "after", m.after));
+    nums.setAttribute("aria-label", `from ${m.before}${m.via ? ` to ${m.via}` : ""} to ${m.after}`);
     li.append(el("span", `ms-set ${m.set === "dev" ? "dev" : "held"}`, m.set === "dev" ? "Tested on practice chats" : "Tested on unseen chats"),
       el("p", "ms-metric", m.metric), nums, el("p", "ms-what", m.what));
     list.append(li);
   }
-  sec.append(h, list, el("p", "note ms-note", "Practice chats were used while building and adjusting lethe. Unseen chats were kept aside and used only for scoring."));
+  sec.append(h, list, el("p", "note ms-note", "Practice chats were used while building and adjusting lethe. Unseen chats were kept aside for testing."));
   return sec;
 }
 let resizeTimer;
@@ -1010,7 +1012,7 @@ function footnote(data, conds) {
     `${judged ? ` and graded by ${m.scoring?.judge_model || "an LLM judge"} against reference answers` : ""}. ` +
     `Memory budget ${m.budget}. "Search everything" is naive RAG; "text sent to the AI" is prompt tokens per answer. ` +
     (hasCi ? "Whiskers on the accuracy bars, and the range under each score in the table, are 95% intervals from resampling the conversations: " +
-      "with this many conversations, gaps smaller than that aren't meaningful. " : "") +
+      "gaps smaller than that range may be down to chance." : "") +
     "Numbers from ");
   // setups can come from different runs (the endpoint takes the newest result per setup)
   const byRun = new Map();

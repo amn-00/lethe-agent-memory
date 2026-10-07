@@ -1,155 +1,259 @@
-[![tests](https://github.com/amn-00/lethe-agent-memory/actions/workflows/tests.yml/badge.svg)](https://github.com/amn-00/lethe-agent-memory/actions/workflows/tests.yml)
-
 # lethe
 
-**Live demo: https://lethe-agent-memory.onrender.com** (it may take a minute to wake up; each chat allows 30 messages)
+![tests](https://github.com/amn-00/lethe-agent-memory/actions/workflows/tests.yml/badge.svg)
 
-Long-horizon memory for LLM agents. Decides what to **retain**, **evict**, and **reload** across a conversation, and tracks which retrieved memories the answer actually **used**.
+**Long-term memory for LLM agents.** lethe decides what an agent should remember from a conversation, what to set aside, and when to bring something back, and it measures whether that actually helps.
 
-> Status: core library, API, and eval harness built. Benchmark numbers in `evals/results/latest.md`.
+**Live demo:** https://lethe-agent-memory.onrender.com (free hosting, so the first visit can take a minute to wake up). Click **Watch a 30-second demo** to see memory being kept, archived and brought back without typing anything.
+
+---
+
+## The idea in 30 seconds
+
+Chat assistants forget things said early in a long conversation, or they resend the entire conversation with every message, which gets slow and expensive and eventually stops fitting in the model at all.
+
+lethe sits between the user and the model and works like a small, well-kept notebook:
+
+1. **Keep what matters.** An LLM turns messages into short facts ("I now live in Bangalore (moved from Noida)") and drops small talk ("lol ok", "traffic was crazy").
+2. **Set aside what isn't being used.** Only a small set of facts is kept active. When that set is full, the least useful fact is moved to an archive.
+3. **Bring it back when it matters again.** If a new question matches an archived fact, it comes back into the prompt automatically.
+
+The name comes from Lethe, the river of forgetting in Greek myth. The UI shows memory as a river: kept facts float at the surface, archived ones sink below the waterline, and they rise again when needed.
+
+---
+
+## Results
+
+Tested on **20 conversations kept aside and never used for tuning**. Each one mentions facts early, buries them under small talk, then asks about them later: 39 questions per setup, every setup run **3 times**, every answer graded by a separate, larger model against a reference answer.
+
+| Setup | What it does | Accuracy | Likely range (95%) | Text sent to the model per answer | Memories held |
+|---|---|---|---|---|---|
+| No memory | Sees only the last 4 messages | 2% | 0–4% | 141 tokens | none |
+| Full history | Resends the whole conversation every time | 92% | 79–100% | 515 tokens | whole chat |
+| Search everything | Saves every message, searches them (standard RAG) | 97% | 92–100% | 255 tokens | 25.0 |
+| **lethe** | Keeps a small set of extracted facts, archives and reloads | **97%** | **93–100%** | **245 tokens** | **3.0** |
+
+**What this shows**
+- lethe is **as accurate as the best setup tested** while holding **3 memories instead of 25** (88% fewer) and sending **about half the text per answer** of full history.
+- **Full history gets confused by lookalike facts** (70% on questions like "work laptop password vs personal laptop password"). It also scored 50% on these in an early practice-set run, and 67% in one of two runs on the earlier unseen chats (the other run scored 100%).
+- The judge and a keyword check agreed on 99% of answers.
+
+**What this doesn't show** (see [Limitations](#limitations))
+- That lethe beats full history: 97% vs 92% looks like a win, but the likely ranges overlap, so it isn't proven.
+- That lethe is cheaper overall *in this test*: turning messages into facts costs about 3,150 tokens per conversation. Here only the questions get answers, so in these short chats lethe uses more tokens in total. We expect the savings to appear in real chats where every message gets a reply and full history keeps resending a growing conversation. This hasn't been tested yet; it's the next experiment.
+
+| By kind of question | No memory | Full history | Search everything | lethe |
+|---|---|---|---|---|
+| Several facts at once | 2% | 100% | 100% | 100% |
+| Lookalike facts | 0% | 70% | 100% | 93% |
+| Facts that changed over time | 4% | 100% | 88% | 96% |
+| Long gaps (20+ messages) | 0% | 100% | 100% | 100% |
+
+Model: `openai/gpt-oss-20b` on Groq for answers and fact extraction, `openai/gpt-oss-120b` as the judge. Memory budget: 6. Raw results: `evals/results/`.
+
+---
 
 ## How it works
 
-Every chat turn:
+### Architecture
 
-1. **Recall**: embed the query, search active memories in Chroma. Also check the archive; evicted memories scoring above `reload_threshold` get pulled back to active.
-2. **Answer**: the LLM (Groq) gets the recalled memories plus a short window of recent messages.
-3. **Used vs ignored**: each recalled memory is scored by lexical overlap with the answer, excluding words that came from the question (an answer echoing the query isn't evidence of use).
-4. **Store**: the user message becomes a new memory.
-5. **Evict**: if active memories exceed the budget, the lowest retention scores move to the archive.
+```mermaid
+flowchart LR
+    UI["Browser UI<br/>chat, memory river, results"] --> API["FastAPI<br/>api.py"]
+    Evals["Eval harness<br/>evals/run.py"] --> Agent
+    API --> Agent["MemoryAgent<br/>agent.py<br/>one chat turn"]
 
-Retention score = weighted mix of:
+    Agent -->|"queued messages"| Extract["FactExtractor<br/>extract.py"]
+    Extract -->|"rewrite into facts"| LLM(["Groq LLM<br/>gpt-oss-20b"])
+    Agent -->|"prompt with memories"| LLM
 
-| Signal | Meaning |
-|---|---|
-| recency | halves every `half_life_turns` without access |
-| frequency | how often it gets retrieved |
-| used_rate | how often it's used *when* retrieved (Laplace-smoothed) |
+    Agent -->|"recall, mark used,<br/>add, evict"| Mem["AgentMemory<br/>memory.py"]
+    Mem --> Policy["Retention policy<br/>policy.py"]
+    Mem --> Embed["FastEmbed<br/>bge-small-en-v1.5 (ONNX)"]
+    Mem -->|"text, tier, counters,<br/>decision log"| SQL[("SQLite")]
+    Mem -->|"vectors + tier"| Chroma[("ChromaDB")]
+```
 
-**Fact extraction** (on by default in the API). Instead of storing every raw message, an LLM rewrites durable facts as standalone first-person sentences and drops chatter and questions: "started a new book, the three body problem" becomes "I'm currently reading The Three-Body Problem." That fixes two problems the eval exposed: cold start (at save time a fact and "lol ok" looked identical) and phrasing mismatch (the newest fact didn't match how the question was asked). Messages are batched, one extraction call per 8 messages or right before an answer is needed, and each fact keeps the turn it was said. Before extracting a batch, related facts already in memory are looked up (a local embedding search with no side effects) and shown to the extractor, so an update that spans batches ("now reading project hail mary" in one, "started a new book" in the next) is written as an update rather than an unrelated new fact. If the extractor returns unparseable output, the raw messages are stored instead so nothing is lost.
+The API and the eval harness call the **same** `MemoryAgent`, so the benchmark measures exactly the pipeline the demo runs.
 
-Recalled memories are shown to the model oldest first, tagged with the turn they were said, so when a fact changes ("moved to indore" at turn 7, "now in hyderabad" at turn 13) the model can tell which one is current. The held-out eval showed similarity-ranked lists made RAG answer update chains backwards.
+| Part | File | Job |
+|---|---|---|
+| Chat turn | `lethe/agent.py` | Runs one turn end to end (below). |
+| Memory | `lethe/memory.py` | Recall, archive, reload, usage tracking. Every move between active and archive updates SQLite and Chroma together. |
+| Fact extraction | `lethe/extract.py` | Turns batches of messages into short standalone facts. |
+| Retention policy | `lethe/policy.py` | Scores how worth keeping each memory is; checks whether an answer used a memory. |
+| Storage | `lethe/store.py` | SQLite: memory text, active/archive tier, counters, recent messages, and a log of every decision. |
+| Vector search | `lethe/index.py` | ChromaDB with FastEmbed embeddings, filtered by conversation and tier. |
+| LLM client | `lethe/llm.py` | Groq API with rate-limit pacing, retries, and a fail-fast stop when the daily quota runs out. |
+| Settings | `lethe/models.py` | Every threshold and weight, in one place. |
+| Web app | `lethe/api.py`, `lethe/static/` | API endpoints and the single-file UI. |
 
-Memories retrieved often but never used sink fastest. Anything accessed in the last `grace_turns` is protected. Every decision is logged with its score breakdown in `ops`.
+### One chat turn
+
+```mermaid
+flowchart TD
+    A["User message arrives"] --> B["Turn queued messages into facts<br/>(an LLM call, batched)"]
+    B --> C["Recall: search active memories,<br/>and the archive for anything worth reloading"]
+    C --> D["Build the prompt: memories oldest first,<br/>tagged with the turn they were said,<br/>plus the last 4 messages"]
+    D --> E["LLM answers"]
+    E --> F["Check which recalled memories<br/>the answer actually used"]
+    F --> G["Queue this message for fact extraction"]
+    G --> H{"More memories than<br/>the budget allows?"}
+    H -->|yes| I["Archive the lowest-scoring ones"]
+    H -->|no| J["Done"]
+    I --> J
+```
+
+**1. Fact extraction.** Messages are queued and turned into facts in batches (every 8 messages, or right before an answer is needed), so it costs about one extra LLM call per several messages. The extractor:
+- drops small talk, one-off activities ("I made coffee") and same-day plans ("watching a show tonight");
+- writes standalone first-person facts and keeps names, numbers and codes exactly;
+- writes changes as changes, restating what changed in the words someone would ask about it: "I now live in Bangalore (moved from Noida)";
+- is shown related facts already in memory, so an update that arrives in a later batch is still recognised as an update;
+- keeps the turn each fact came from;
+- falls back to storing the raw messages if its output can't be parsed, so nothing is silently lost.
+
+**2. Recall and reload.** The question is embedded and matched against active memories (cosine similarity ≥ 0.6). The archive is searched too; an archived memory scoring ≥ 0.65 moves back to active. The reload threshold was tuned on the practice set only.
+
+**3. Ordered memories.** Recalled memories are shown to the model **oldest first, each tagged with the turn it was said**, with a note that the latest one is the current truth. Ranked by similarity instead, the model answered questions about changed facts backwards ("before Farah, my lead was Omkar"). This one change fixed most of those errors.
+
+**4. Did the answer use it?** After each answer, lethe checks which recalled memories actually show up in it (word overlap, ignoring words that came from the question itself, since an answer echoing the question isn't evidence a memory was used).
+
+**5. Archiving.** When active memories exceed the budget, the lowest scorers move to the archive. Anything touched in the last few turns is protected.
+
+### The retention score
+
+```
+score = 0.4 × recency + 0.2 × use frequency + 0.4 × used rate
+
+recency        halves every 20 turns since the memory was last used
+use frequency  1 − 1/(1 + times used)
+used rate      (times used + 1) / (times recalled + 2)
+```
+
+Memories that keep getting recalled but never used sink fastest. Being recalled alone never raises a score; only being used does. (Both rules came from bugs found in live testing; see below.) Every decision is logged with its score breakdown, so any archive decision can be explained.
+
+### Memory lifecycle
 
 ```mermaid
 stateDiagram-v2
     direction LR
-    [*] --> Queued: user message (extraction on)
-    [*] --> Active: user message (LETHE_EXTRACT=0)
-    Queued --> Active: extracted as a fact, or kept raw if the extractor's output can't be parsed
-    Queued --> [*]: chatter and questions dropped
-    Active --> Active: recalled (retrieved +1), used in the answer (used +1)
-    Active --> Archive: over budget, lowest retention score, outside grace_turns
-    Archive --> Active: recalled with similarity ≥ reload_threshold
+    [*] --> Queued: user message
+    Queued --> Active: extracted as a fact
+    Queued --> [*]: small talk and questions dropped
+    Active --> Active: recalled / used in an answer
+    Active --> Archive: over budget, lowest score
+    Archive --> Active: a question matches it again
 ```
 
 Nothing is ever deleted: archived memories stay searchable and come back when a question needs them.
 
-## Stack
+---
 
-FastAPI · Groq (gpt-oss-20b) · ChromaDB · FastEmbed (ONNX, no torch) · SQLite
+## How it got here
 
-SQLite is the source of truth for text, tier, and stats; Chroma holds vectors with tier/session metadata for filtered search.
+The interesting part of this project is what the measurements changed.
 
-```mermaid
-flowchart LR
-    UI["Browser UI<br/>static/index.html"] -->|JSON API| API["FastAPI<br/>api.py"]
-    API --> Agent
-    Evals["Eval harness<br/>evals/run.py"] --> Agent
+| Change | Before → after | Measured on |
+|---|---|---|
+| Lowered the archive-reload threshold (0.75 → 0.65) | lethe accuracy (raw-message version) **62% → 100%** | practice chats |
+| Showed memories in time order with turn tags | Questions about changed facts **38% → 100%** (search everything) | earlier unseen chats |
+| Stored extracted facts instead of raw messages | Memories held **27.5 → 4.8** (search everything), accuracy 100% → 97% | earlier unseen chats |
+| Showed the extractor what it already knew, then taught it to skip one-off activities | Junk facts stored **20 → 7 → 1** (16 chats) | practice chats |
 
-    Agent["MemoryAgent.chat<br/>agent.py<br/>one turn"] -->|"recall, mark_used,<br/>add, maintain"| Mem["AgentMemory<br/>memory.py"]
-    Agent -->|"queued messages"| Extract["FactExtractor<br/>extract.py"]
-    Agent -->|"prompt with memories"| Groq(["Groq LLM"])
-    Extract -->|"rewrite as facts"| Groq
+The junk counts include "My neighbours are noisy", which is a judgment call: counted as a lasting fact instead, they would be 19 → 7 → 0.
 
-    Mem --> Policy["policy.py<br/>retention score,<br/>answer overlap"]
-    Mem --> Embed["FastEmbed<br/>bge-small-en-v1.5"]
-    Mem -->|"text, tier, counters, ops log"| SQLite[("SQLite")]
-    Mem -->|"vectors + tier/session"| Chroma[("Chroma")]
-```
+**Bugs found by testing, each now covered by a regression test:**
+- An answer repeating the question's words counted as "using" a memory. Fix: ignore words that came from the question.
+- Being recalled refreshed a memory's recency, so noise kept itself alive. Fix: only being *used* refreshes it.
+- The frequency term rewarded memories that were recalled but ignored, so chatter outscored real facts. Fix: count uses, not recalls.
+- The keyword grader passed reversed answers ("before Farah, it was Omkar" contains "Farah"). Fix: an LLM judge, checked against a manual review of the answers where the two scorers disagreed; it flagged exactly the three reversed answers found by hand.
+- The grader missed answers using a Unicode hyphen (`P2‑117`). Fix: normalise text before matching.
+- The model (gpt-oss) sometimes returns its answer in a malformed tool-call format, which Groq rejects. Fix: retry, and as a last resort recover the text from the error. Counted in every run; in the final run it caused 3 retries and **0** recovered answers (21 of its 240 conversation runs finished before the counter existed and aren't included).
+- A daily-quota error once retried for 35 minutes and then lost the whole run. Fix: stop immediately on daily limits, and save progress after every conversation so `--resume` continues.
 
-The API and the eval harness both go through `MemoryAgent.chat`, so the benchmark measures the same pipeline the UI runs. Moving a memory between active and archive updates SQLite and Chroma together.
+**A lesson about evaluating honestly:** the practice-set score once dropped from 96% to 86% after cleaning up the extraction prompt. The old prompt's examples were near-copies of practice-set answers, which was the likely cause of the inflated score. All prompt examples were then checked to share no words or sentence patterns with any test set, and the score recovered to 96% with a general rule instead.
 
-## Run
+---
+
+## Evaluation method
+
+- **Three sets of conversations.** A practice set (16 chats) for tuning, and two held-out sets. The first held-out set's failures exposed the reversed answers and led to the time-ordering change and the LLM judge, so it's no longer fully independent. The second was never used for tuning and gives the final numbers. Tests check that no fact sentence or filler line is shared between any two sets.
+- **Setups compared:** no memory, full history, search everything (standard RAG), and lethe, all on identical conversations.
+- **Scoring:** an LLM judge compares each answer with a reference answer; a keyword check runs alongside and the agreement rate is reported.
+- **Uncertainty:** every setup runs 3 times, and each score gets a 95% range by resampling whole conversations. Differences inside that range aren't treated as real.
+- **Cost-aware:** only question turns call the model (small talk gets a canned reply), to stay within the Groq free tier. Runs checkpoint after every conversation and resume after quota stops.
 
 ```bash
+python -m evals.run --dry-run                       # offline check, no API calls
+python -m evals.run                                 # practice set
+python -m evals.run --split heldout2 --conditions no_memory full_history naive_rag lethe_extract --repeats 3 --judge
+python -m evals.run ... --resume                    # continue after a quota stop
+python -m evals.rescore --split heldout --judge     # re-grade a saved run
+```
+
+---
+
+## Limitations
+
+- **Short test conversations.** 20–50 messages. Most setups score 92–100%, so the benchmark has little room to separate them, and it doesn't stress the situation lethe is built for: long chats where memory keeps growing.
+- **Extraction isn't free.** About 3,150 tokens and 4.7 extra calls per test conversation.
+- **Some updates are still missed.** When a change is phrased very differently from the old fact ("started a new book" vs "I'm reading X"), the new fact can fail to match the question.
+- **One model family.** All results use gpt-oss on Groq.
+- **Usage detection is lexical.** An answer that paraphrases a memory may not count as using it.
+
+## What's next
+
+- **Scale test:** conversations of 200–400 messages where every message gets a reply, measuring accuracy, total tokens and memory size as conversations grow.
+- **Learned retention:** train the score weights from logged used/ignored outcomes instead of setting them by hand.
+
+---
+
+## Run it locally
+
+```bash
+python -m venv .venv
+.venv\Scripts\Activate.ps1          # Windows PowerShell; on macOS/Linux: source .venv/bin/activate
 pip install -e ".[dev]"
-cp .env.example .env   # add your GROQ_API_KEY; it's loaded automatically
+cp .env.example .env                # add your GROQ_API_KEY (free at console.groq.com)
 uvicorn lethe.api:build_default_app --factory --reload
 ```
 
-Config via env vars or `.env`: `LETHE_EXTRACT` (1 = store extracted facts, 0 = raw messages), `LETHE_BUDGET` (active memory cap, default 40), `LETHE_GRACE` (default 3), `GROQ_MODEL` (default `openai/gpt-oss-20b`), `GROQ_MIN_INTERVAL` (seconds between calls, default 2.2 for the free tier).
+Open http://127.0.0.1:8000. Set `LETHE_BUDGET=6` in `.env` to see archiving within a short chat.
 
-Then open http://127.0.0.1:8000 for the UI: chat on the left, and on the right the memory itself. Kept facts sit above the waterline with a score bar showing how worth keeping each one is; archived facts sink below it and rise back up (highlighted) when a question brings them back. A Results tab shows the latest held-out eval. Set `LETHE_BUDGET=6` to see archiving happen within a short chat.
+| Setting | Default | Meaning |
+|---|---|---|
+| `GROQ_API_KEY` | (required) | Groq API key |
+| `GROQ_MODEL` | `openai/gpt-oss-20b` | Model for answers and extraction |
+| `LETHE_BUDGET` | 40 | Max active memories per chat; beyond this the lowest scorers are archived |
+| `LETHE_EXTRACT` | 1 | 1 = store extracted facts, 0 = raw messages |
+| `LETHE_DEMO_PER_CHAT` / `LETHE_DEMO_PER_DAY` | 0 (off) | Message caps for a public demo |
 
-The JSON API is also available:
+**Tests:** `pytest -q` runs fully offline (fake embedder and fake LLM). CI runs the tests and `ruff` on every push.
 
-```bash
-curl -X POST localhost:8000/sessions/demo/chat -H "Content-Type: application/json" \
-  -d '{"message": "my sister lives in pune"}'
-curl localhost:8000/sessions/demo/memories   # tiers + score breakdowns
-curl localhost:8000/sessions/demo/ops        # add / retrieve / used / ignored / evict / reload log
-```
+**API:** `POST /sessions/{id}/chat`, `GET /sessions/{id}/memories`, `GET /sessions/{id}/ops` (decision log), `GET /eval/{split}`, `GET /health`.
+
+**Demo recording:** `python scripts/make_demo.py` regenerates `lethe/static/demo.json` by running lethe's real memory code with a scripted model (no API key needed).
 
 ## Deploy
 
-**Render** (the live demo): `render.yaml` deploys the UI and API as one free Render web service: New > Blueprint, pick the repo, paste `GROQ_API_KEY` when asked. The embedding model is downloaded at build time so cold starts stay fast. Free instances sleep when idle, so the first request after a quiet spell takes about a minute. Because one API key serves every visitor, the demo caps messages per chat (`LETHE_DEMO_PER_CHAT`, 30) and per day (`LETHE_DEMO_PER_DAY`, 150), and visitors see a plain explanation when a cap or the model's quota is hit. Memories live on the instance's disk and reset when it restarts, which is fine for a demo.
+- **Render** (the live demo): `render.yaml` sets up a free web service; add `GROQ_API_KEY` when asked. The embedding model downloads at build time. Memories reset when the instance restarts.
+- **Docker:** `docker build -t lethe . && docker run -p 7860:7860 -e GROQ_API_KEY=... lethe`
 
-**Docker** (any Docker host): the `Dockerfile` builds a self-contained image with the embedding model baked in and the same demo defaults as Render.
+## Project layout
 
-```bash
-docker build -t lethe .
-docker run -p 7860:7860 -e GROQ_API_KEY=... lethe
 ```
-
-Then open http://localhost:7860. Override any `LETHE_*` setting with `-e`, for example `-e LETHE_DEMO_PER_CHAT=0` to lift the caps. Memories are stored in `/app/data` inside the container; mount a volume there to keep them across restarts.
-
-## Eval
-
-Scripted multi-turn conversations: facts planted early, buried under filler chatter, then asked about later. Four conditions on the same conversations:
-
-| condition | what the model sees |
-|---|---|
-| `no_memory` | last 4 messages only |
-| `full_history` | the entire conversation (accuracy ceiling, most tokens) |
-| `naive_rag` | similarity retrieval over every message, nothing ever evicted |
-| `lethe` | same retrieval, but active memory capped by the retain/evict/reload policy |
-
-Task categories: single recall, multi-fact recall, distractors (similar but wrong facts), updates (a fact changes), long gaps. Scoring is deterministic regex matching against expected answers.
-
-Three task sets:
-
-- **dev** (`evals/tasks.json`, 12 conversations, 16 questions): where settings get tuned.
-- **heldout** (`evals/heldout.json`, 16 conversations, 34 questions): harder, with unguessable answers, lookalike distractors, 3-step update chains and gaps up to 45 turns. Its failures motivated the ordering and extraction fixes, so it is no longer fully independent.
-- **heldout2** (`evals/heldout2.json`, 20 conversations, 39 questions): written after all tuning, for the final numbers. Tests check that no filler line or fact sentence is shared between any two sets.
-
-**Uncertainty.** `--repeats N` runs everything N times and reports the spread between runs (the model isn't deterministic). Every score also gets a 95% interval from bootstrapping over conversations, which shows how much a benchmark this size can actually tell apart: differences inside that range aren't meaningful.
-
-```bash
-python -m evals.run --dry-run                  # offline pipeline check
-python -m evals.run                            # dev set, ~64 Groq calls
-python -m evals.run --split heldout            # held-out set, ~136 Groq calls
-python -m evals.run --reload-threshold 0.55    # try other settings (dev only)
-python -m evals.run --conditions lethe lethe_extract --judge   # raw messages vs extracted facts
+lethe/          memory system, API and UI
+  agent.py      one chat turn (shared by API and evals)
+  memory.py     recall, archive, reload, usage tracking
+  extract.py    fact extraction
+  policy.py     retention score, usage check
+  store.py      SQLite storage and decision log
+  index.py      ChromaDB + FastEmbed
+  llm.py        Groq client
+  models.py     all settings
+  api.py        FastAPI app
+  static/       UI and recorded demo
+evals/          benchmark: task sets, runner, judge, results
+scripts/        demo recorder
+tests/          offline test suite
 ```
-
-**Scoring.** Every question has a reference answer. Two scorers run side by side: a deterministic regex match (free, but it can't grade ordering: "before Farah it was Omkar" contains "farah" and passes) and an LLM judge (`--judge`, `openai/gpt-oss-120b` by default) that compares each answer with the reference. When the judge runs it is the primary score, and the report shows how often the two agree. `python -m evals.rescore --split heldout --judge` re-grades a saved run without regenerating answers.
-
-Long runs checkpoint after every finished conversation. If the provider's daily quota runs out, the run stops immediately (no pointless retries) and keeps its progress; rerun the same command with `--resume` after the reset. Per-minute limits are still waited out automatically.
-
-Only question turns call the LLM; filler turns get a canned reply so a full run fits Groq's free tier (`--llm-every-turn` for full fidelity).
-
-## Tests
-
-```bash
-pytest -q
-```
-
-Tests run offline with a fake embedder and fake LLM.
-
-## Known limits
-
-- Lexical overlap misses paraphrased usage.
-- Raw user messages are stored as memories; fact extraction is a planned upgrade.
-- If every active memory is inside the grace window, the budget can temporarily overflow.
