@@ -39,18 +39,21 @@ class WindowAgent:
     def __init__(self, llm, window: int | None):
         self.llm, self.window, self.history = llm, window, []
 
-    async def chat(self, message: str, respond: bool = True) -> dict:
+    async def chat(self, message: str, respond: bool = True, reply: str | None = None) -> dict:
         context = self.history if self.window is None else self.history[-self.window:]
         messages = [{"role": "system", "content": BASE_SYSTEM}, *context, {"role": "user", "content": message}]
-        prompt_tokens = None
+        estimate = estimate_tokens(messages)  # every turn, like MemoryAgent.chat, for the scale eval
+        prompt_tokens = reported = None
         if respond:
             answer = await self.llm.chat(messages)
             usage = getattr(self.llm, "last_usage", None) or {}
-            prompt_tokens = usage.get("prompt_tokens") or estimate_tokens(messages)
+            reported = usage.get("prompt_tokens")
+            prompt_tokens = reported or estimate
         else:
-            answer = CANNED_REPLY
+            answer = reply or CANNED_REPLY
         self.history += [{"role": "user", "content": message}, {"role": "assistant", "content": answer}]
-        return {"answer": answer, "prompt_tokens": prompt_tokens, "recalled": []}
+        return {"answer": answer, "prompt_tokens": prompt_tokens, "prompt_tokens_est": estimate,
+                "prompt_messages": len(messages), "prompt_tokens_reported": reported, "recalled": []}
 
 
 def expand(task: dict, filler_pool: list[str]) -> list[dict]:

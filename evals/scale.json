@@ -1,0 +1,619 @@
+{
+ "about": "Scale test: 2 chats of 400 messages, 4 questions each at messages 100, 200, 300 and 400. Test set like heldout2: never tune on it.",
+ "filler": [
+  "just made some toast for no reason",
+  "finally sat down",
+  "my back hurts from that chair",
+  "the sky looks orange right now",
+  "can't decide what to watch",
+  "it's way too quiet in here",
+  "someone is drilling next door",
+  "lost my train of thought",
+  "my phone keeps buzzing",
+  "haha classic",
+  "oh well",
+  "fair point",
+  "not sure honestly",
+  "yeah yeah",
+  "no way",
+  "the lift is out again",
+  "spilled water on the desk",
+  "my hands are freezing",
+  "it smells like rain",
+  "the dog downstairs won't stop barking",
+  "i keep yawning",
+  "hungry again already",
+  "the light in the hallway flickered",
+  "what a long afternoon",
+  "just closed like twenty tabs",
+  "my laptop fan is screaming",
+  "the bus was packed",
+  "forgot to drink water today",
+  "the pigeons are back on the balcony",
+  "someone is cooking something spicy",
+  "i should stretch more",
+  "my coffee went cold",
+  "the window won't stay open",
+  "my playlist keeps skipping",
+  "the neighbours are having a party",
+  "it's so bright outside",
+  "i almost tripped on the stairs",
+  "the printer jammed again",
+  "just answered a bunch of emails",
+  "my eyes need a break",
+  "the clouds are moving fast",
+  "i hear thunder somewhere",
+  "my desk is a mess",
+  "need to sort out my drawers someday",
+  "stuck in a meeting that could be an email",
+  "the tap is dripping",
+  "the room feels stuffy",
+  "just watched a cat video",
+  "the traffic noise is unreal",
+  "such a slow day",
+  "time is crawling",
+  "can't focus at all",
+  "my shoulders are tense",
+  "got a random spam call",
+  "the milk smells fine i think",
+  "everything is so loud today",
+  "just wiped down the counter",
+  "the rice cooker beeped",
+  "my notebook is almost full",
+  "kind of bored",
+  "mildly annoyed for no reason",
+  "pretty chill evening",
+  "just saw a rainbow",
+  "the breeze is nice",
+  "tiny spider on the wall",
+  "i keep checking the time",
+  "the wifi dropped for a second",
+  "just got a delivery notification",
+  "my battery is at like nothing",
+  "need a nap",
+  "it's oddly warm",
+  "the street lights just came on",
+  "someone left the gate open",
+  "the cooker whistle went off",
+  "my tea is too sweet",
+  "the curtains are swaying",
+  "a bird keeps chirping outside",
+  "i dozed off for a bit",
+  "my screen is so dusty",
+  "the keyboard feels sticky",
+  "i hear kids playing outside",
+  "just refilled my bottle",
+  "the clock in the kitchen stopped",
+  "can't find the remote",
+  "the sun is setting",
+  "my feet are sore",
+  "i need new earphones eventually",
+  "the auto driver took a weird route",
+  "had a weird dream last night",
+  "it's drizzling a little",
+  "my hair is a mess today",
+  "the room is finally clean",
+  "i keep sneezing",
+  "there's a fly in here",
+  "just remembered something funny",
+  "nothing much happening",
+  "the sofa is too comfy",
+  "my neck cracked loudly",
+  "the guy upstairs is moving furniture",
+  "i hear a scooter honking nonstop",
+  "the soup is too hot",
+  "just put on a hoodie",
+  "the evening is cooling down",
+  "my mug has a chip in it",
+  "the doorbell rang but no one was there",
+  "honestly no idea",
+  "i guess so",
+  "sounds about right",
+  "makes sense",
+  "right right",
+  "eh whatever",
+  "nice one",
+  "oh nice",
+  "sure",
+  "haha okay",
+  "that's funny",
+  "oops",
+  "yikes",
+  "oh boy",
+  "same here",
+  "for real",
+  "moving on",
+  "where was i",
+  "back now",
+  "one sec",
+  "hold on",
+  "ok i'm here",
+  "lol same",
+  "that tracks",
+  "fair enough honestly",
+  "hmm not bad",
+  "huh weird",
+  "wow okay",
+  "no idea tbh",
+  "good question",
+  "kinda",
+  "sort of",
+  "not today",
+  "we'll see",
+  "let's see",
+  "i think so",
+  "probably",
+  "nah",
+  "yep",
+  "mhm",
+  "ahh",
+  "ooh",
+  "heh",
+  "meh",
+  "blah",
+  "the chai stall was crowded",
+  "my umbrella flipped inside out",
+  "the road is flooded again",
+  "the power cut lasted ages",
+  "my plant looks droopy",
+  "the mosquito coil smell is strong",
+  "the generator next door is loud",
+  "ate way too many biscuits",
+  "the dosa was a bit soggy",
+  "this mango is so sweet",
+  "the samosa was cold",
+  "the pani puri guy wasn't there",
+  "just had some buttermilk",
+  "the curd turned out sour",
+  "the biryani smell from downstairs is unreal",
+  "my stomach is growling",
+  "just finished a bowl of maggi",
+  "the watermelon was bland",
+  "had a glass of nimbu pani",
+  "the toast got burnt",
+  "my rotis came out uneven",
+  "the dal needs more salt",
+  "the chutney is too spicy",
+  "had a banana on the go",
+  "just chewing on some peanuts",
+  "the sugarcane juice was nice",
+  "the vada was super crispy",
+  "the idli was fluffy today",
+  "the lassi was too thick",
+  "had a cup of filter coffee",
+  "the coconut water was warm",
+  "the kulfi melted too fast",
+  "i'm craving something sweet",
+  "the pakoras were oily",
+  "the bread went stale",
+  "just snacked on some chakli",
+  "the halwa was too rich",
+  "had leftover pulao",
+  "the poha was a bit dry",
+  "just made a quick sandwich",
+  "the jalebi was too syrupy",
+  "my water bottle leaked in my bag",
+  "my shoelace snapped",
+  "the zip on my bag is stuck",
+  "my glasses keep slipping",
+  "the ink pen ran out",
+  "i dropped my keys twice today",
+  "my charger cable is fraying",
+  "the doormat is soaked",
+  "the clothesline snapped",
+  "my slippers squeak",
+  "my shirt got a stain",
+  "the button fell off my sleeve",
+  "the mirror is foggy",
+  "the bucket has a crack",
+  "the broom is shedding",
+  "my sunglasses got scratched",
+  "the alarm went off late",
+  "the calendar is still on last month",
+  "the fridge is humming loudly",
+  "the geyser takes forever",
+  "the switchboard sparked a little",
+  "the bulb in the bathroom died",
+  "the remote needs new cells",
+  "the door hinge creaks",
+  "the tiles are so cold",
+  "the mattress feels lumpy",
+  "the pillow went flat",
+  "the blanket is too thin",
+  "the window grill is rusty",
+  "the fan regulator is loose",
+  "the drain smells weird",
+  "the paint is peeling a bit",
+  "my phone screen has a crack",
+  "the app keeps crashing",
+  "my laptop restarted for updates",
+  "the cursor is lagging",
+  "the video call kept freezing",
+  "my email is full of newsletters",
+  "the website won't load",
+  "the password reset email never came",
+  "autocorrect is driving me nuts",
+  "my notifications are out of control",
+  "the group chat is blowing up",
+  "someone sent a long voice note",
+  "the meme was hilarious",
+  "i keep getting ads for shoes",
+  "my screen time is embarrassing",
+  "the game update is huge",
+  "my headphones disconnected again",
+  "the download is stuck at the end",
+  "the captcha is impossible",
+  "the cab app showed surge pricing",
+  "my phone fell face down",
+  "the bluetooth won't pair",
+  "the tv remote is missing again",
+  "the streaming app logged me out",
+  "my keyboard is missing a key cap",
+  "the mouse scroll is jumpy",
+  "i hit reply all by mistake",
+  "the slides won't open",
+  "the zoom link expired",
+  "the meeting ran over again",
+  "my to-do list is endless",
+  "inbox zero is a myth",
+  "i need a vacation from emails",
+  "the presentation went okay i guess",
+  "the deadline crept up on me",
+  "my calendar is double booked",
+  "the report took forever",
+  "just finished a boring call",
+  "the coffee machine at work broke",
+  "the office ac is too cold",
+  "someone microwaved fish again",
+  "the elevator music is cheesy",
+  "the parking lot was full",
+  "my desk chair squeaks",
+  "the whiteboard marker is dry",
+  "the stapler jammed",
+  "the queue at the bank was long",
+  "the atm was out of cash",
+  "the courier came at the wrong time",
+  "the shop closed early",
+  "the line at the pharmacy was long",
+  "the vegetable vendor raised prices",
+  "the market was so crowded",
+  "the parcel box was crushed",
+  "the security guard waved hi",
+  "the street dog followed me for a bit",
+  "saw a really old car today",
+  "a monkey ran across the wall",
+  "the kids next door are practising drums",
+  "there's a wedding band passing by",
+  "firecrackers going off somewhere",
+  "the temple bells are ringing",
+  "someone is playing old songs loudly",
+  "the ice cream cart jingle is stuck in my head",
+  "the moon looks huge tonight",
+  "the stars are barely visible",
+  "fog everywhere this morning",
+  "the air feels heavy",
+  "the heat is unbearable",
+  "it's pouring outside",
+  "a cool breeze finally",
+  "the dust is everywhere",
+  "my sunscreen ran out",
+  "the humidity is killing me",
+  "the thunderstorm knocked out the signal",
+  "there's a rainbow over the buildings",
+  "the leaves are all over the porch",
+  "the puddles are everywhere",
+  "the morning was so peaceful",
+  "i love the smell of wet soil",
+  "the evening sky is purple"
+ ],
+ "replies": [
+  "Ha, fair enough.",
+  "Hope it gets better soon.",
+  "Sounds like a long day.",
+  "That's annoying.",
+  "Oh no, that's rough.",
+  "Nice, enjoy it.",
+  "Classic.",
+  "Makes sense.",
+  "Totally get that.",
+  "That sounds relaxing.",
+  "Ugh, I feel you.",
+  "Haha, that's funny.",
+  "Take it easy.",
+  "Fingers crossed.",
+  "Hang in there.",
+  "That's a good one.",
+  "Oh, interesting.",
+  "Sounds cozy.",
+  "That happens.",
+  "Sounds about right.",
+  "Good to know.",
+  "Oof.",
+  "Yikes.",
+  "Same here, honestly.",
+  "Fair point.",
+  "That's a mood.",
+  "Love that.",
+  "Ah, the usual.",
+  "Hope you get a break soon.",
+  "That sounds tiring.",
+  "Good call.",
+  "Oh, nice!",
+  "Totally.",
+  "That's so relatable.",
+  "Haha, been there.",
+  "Sounds frustrating.",
+  "That's a small win.",
+  "Little things, right?",
+  "Hope it clears up.",
+  "Enjoy the quiet.",
+  "That's oddly specific.",
+  "Ha, love it.",
+  "Sounds hectic.",
+  "Take a breather.",
+  "Could be worse.",
+  "That's the spirit.",
+  "Hope tomorrow is calmer.",
+  "That must be fun.",
+  "That's unlucky.",
+  "Sounds like a plan.",
+  "Oh, I see.",
+  "Got it.",
+  "Right.",
+  "Fair.",
+  "Noted.",
+  "Okay!",
+  "Sure thing.",
+  "No worries.",
+  "Alright.",
+  "Haha, okay.",
+  "Ooh, nice.",
+  "That's a vibe.",
+  "Sounds lovely.",
+  "Sounds messy.",
+  "Ah, that's a shame.",
+  "That's wild.",
+  "No way!",
+  "Wow.",
+  "Hmm, true.",
+  "That's a lot.",
+  "I hear you.",
+  "Makes total sense.",
+  "Glad you're back.",
+  "Welcome back.",
+  "Take your time.",
+  "No rush.",
+  "Ha, typical.",
+  "That's life.",
+  "Oh well.",
+  "Moving on, then.",
+  "Sounds peaceful.",
+  "Hope you feel better.",
+  "Drink some water.",
+  "Maybe take a short walk.",
+  "That's a nice moment.",
+  "That's cute.",
+  "Lol, same.",
+  "Tell me about it.",
+  "What a day.",
+  "Ah, good times.",
+  "Just one of those days.",
+  "That's quite a story.",
+  "Oh dear.",
+  "Bit of a pain.",
+  "Sounds noisy.",
+  "Sounds delicious.",
+  "Hope it was worth it.",
+  "That's a treat.",
+  "Good for you.",
+  "That's so random."
+ ],
+ "tasks": [
+  {
+   "id": "s01",
+   "category": "long_chat",
+   "script": [
+    {
+     "say": "my physiotherapist is dr kulkarni"
+    },
+    {
+     "filler": 12
+    },
+    {
+     "say": "i'm allergic to cashews"
+    },
+    {
+     "filler": 17
+    },
+    {
+     "say": "the padlock on my cycle opens with 3826"
+    },
+    {
+     "filler": 22
+    },
+    {
+     "say": "i drive a grey wagon r"
+    },
+    {
+     "filler": 22
+    },
+    {
+     "say": "my blood group is b positive"
+    },
+    {
+     "filler": 21
+    },
+    {
+     "ask": "what's my physiotherapist's name?",
+     "expect": [
+      "kulkarni"
+     ],
+     "gold": "dr kulkarni"
+    },
+    {
+     "filler": 20
+    },
+    {
+     "say": "my work badge number is 6130"
+    },
+    {
+     "filler": 5
+    },
+    {
+     "say": "my gym membership number is 2284"
+    },
+    {
+     "filler": 24
+    },
+    {
+     "say": "my favourite bakery is called crumb theory"
+    },
+    {
+     "filler": 25
+    },
+    {
+     "say": "sold the wagon r last week, i'm driving a white baleno now"
+    },
+    {
+     "filler": 21
+    },
+    {
+     "ask": "what car do i drive now?",
+     "expect": [
+      "baleno"
+     ],
+     "gold": "a white baleno (sold the grey wagon r)"
+    },
+    {
+     "filler": 39
+    },
+    {
+     "say": "my colleague's parrot is called kiwi"
+    },
+    {
+     "filler": 59
+    },
+    {
+     "ask": "what's the code for the padlock on my cycle?",
+     "expect": [
+      "3826"
+     ],
+     "gold": "3826"
+    },
+    {
+     "filler": 99
+    },
+    {
+     "ask": "what's my gym membership number?",
+     "expect": [
+      "2284"
+     ],
+     "gold": "2284 (6130 is the work badge)"
+    }
+   ]
+  },
+  {
+   "id": "s02",
+   "category": "long_chat",
+   "script": [
+    {
+     "say": "my piano teacher is mr fernandes"
+    },
+    {
+     "filler": 14
+    },
+    {
+     "say": "my favourite snack is roasted makhana"
+    },
+    {
+     "filler": 18
+    },
+    {
+     "say": "my go-to pizza order is a margherita"
+    },
+    {
+     "filler": 22
+    },
+    {
+     "say": "my tailor's shop is called stitch lane"
+    },
+    {
+     "filler": 22
+    },
+    {
+     "say": "i'm saving up for a trip to iceland"
+    },
+    {
+     "filler": 18
+    },
+    {
+     "ask": "who is my piano teacher?",
+     "expect": [
+      "fernandes"
+     ],
+     "gold": "mr fernandes"
+    },
+    {
+     "filler": 17
+    },
+    {
+     "say": "my mum's favourite flower is jasmine"
+    },
+    {
+     "filler": 5
+    },
+    {
+     "say": "my own favourite flower is marigold"
+    },
+    {
+     "filler": 35
+    },
+    {
+     "say": "lately my go-to pizza order is pepperoni"
+    },
+    {
+     "filler": 39
+    },
+    {
+     "ask": "what's my favourite flower?",
+     "expect": [
+      "marigold"
+     ],
+     "gold": "marigold (jasmine is my mum's)"
+    },
+    {
+     "filler": 54
+    },
+    {
+     "say": "switched my go-to pizza order to paneer tikka"
+    },
+    {
+     "filler": 44
+    },
+    {
+     "ask": "what's my tailor's shop called?",
+     "expect": [
+      "stitch\\s*lane"
+     ],
+     "gold": "stitch lane"
+    },
+    {
+     "filler": 39
+    },
+    {
+     "say": "my best friend is from shillong"
+    },
+    {
+     "filler": 59
+    },
+    {
+     "ask": "what's my go-to pizza order now?",
+     "expect": [
+      "paneer"
+     ],
+     "gold": "paneer tikka (margherita, then pepperoni, then paneer tikka)"
+    }
+   ]
+  }
+ ]
+}

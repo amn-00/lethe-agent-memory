@@ -22,6 +22,20 @@ The name comes from Lethe, the river of forgetting in Greek myth. The UI shows m
 
 ---
 
+## Why it matters
+
+Assistants that stay in one long conversation, such as support chats, personal assistants and coding agents, run into the same problem. Either they forget what the user said early on, or they resend the whole conversation with every message, so each answer costs more than the last.
+
+lethe keeps a small, scored set of facts instead:
+
+- **As accurate as the best setup tested, with about half the text per answer of resending the whole chat:** 97% vs 92% for full history (the likely ranges overlap), and 245 vs 515 tokens per answer.
+- **A fraction of the memory:** 3 memories held per conversation, against 25 for searching every message.
+- **Every decision can be explained:** each keep, archive and bring-back is logged with the scores behind it.
+- **Measured, not assumed:** tested on conversations never used for tuning, graded by a separate model, run 3 times with 95% ranges.
+- **Flat cost per answer as the chat grows:** in two 400-message test chats, lethe's prompt per answer stayed at about 215–265 tokens from message 100 to message 400, while full history's grew from about 1,970 to 7,680 (Groq's reported counts). Both answered all 8 questions correctly, in one run. Fact extraction is a separate cost; see Limitations.
+
+---
+
 ## Results
 
 Tested on **20 conversations kept aside and never used for tuning**. Each one mentions facts early, buries them under small talk, then asks about them later: 39 questions per setup, every setup run **3 times**, every answer graded by a separate, larger model against a reference answer.
@@ -92,7 +106,7 @@ The API and the eval harness call the **same** `MemoryAgent`, so the benchmark m
 
 ```mermaid
 flowchart TD
-    A["User message arrives"] --> B["Turn queued messages into facts<br/>(an LLM call, batched)"]
+    A["User message arrives"] --> B["Turn queued messages into facts<br/>(an LLM call)"]
     B --> C["Recall: search active memories,<br/>and the archive for anything worth reloading"]
     C --> D["Build the prompt: memories oldest first,<br/>tagged with the turn they were said,<br/>plus the last 4 messages"]
     D --> E["LLM answers"]
@@ -104,7 +118,7 @@ flowchart TD
     I --> J
 ```
 
-**1. Fact extraction.** Messages are queued and turned into facts in batches (every 8 messages, or right before an answer is needed), so it costs about one extra LLM call per several messages. The extractor:
+**1. Fact extraction.** Messages are queued and turned into facts by an LLM call, every 8 messages or right before an answer, whichever comes first. In the eval, where small talk isn't answered, that batches about 8 messages per call. In a live chat every message gets an answer, so extraction runs once per message, with a prompt of roughly 500 tokens each time. The extractor:
 - drops small talk, one-off activities ("I made coffee") and same-day plans ("watching a show tonight");
 - writes standalone first-person facts and keeps names, numbers and codes exactly;
 - writes changes as changes, restating what changed in the words someone would ask about it: "I now live in Bangalore (moved from Noida)";
@@ -196,7 +210,7 @@ python -m evals.rescore --split heldout --judge     # re-grade a saved run
 ## Limitations
 
 - **Short test conversations.** 20–50 messages. Most setups score 92–100%, so the benchmark has little room to separate them, and it doesn't stress the situation lethe is built for: long chats where memory keeps growing.
-- **Extraction isn't free.** About 3,150 tokens and 4.7 extra calls per test conversation.
+- **Extraction isn't free.** About 3,150 tokens and 4.7 extra calls per test conversation, where only the questions are answered. A live chat makes one extraction call per message.
 - **Some updates are still missed.** When a change is phrased very differently from the old fact ("started a new book" vs "I'm reading X"), the new fact can fail to match the question.
 - **One model family.** All results use gpt-oss on Groq.
 - **Usage detection is lexical.** An answer that paraphrases a memory may not count as using it.

@@ -69,16 +69,19 @@ class FactExtractor:
         self.tokens = 0
         self.failures = 0
 
-    async def extract(self, batch: list[tuple[int, str]], known: list[str] | None = None) -> list[tuple[int, str]]:
-        """batch: [(turn, message)] -> [(turn, fact)]. `known`: related facts already in memory, so updates
-        that span batches ("finished dune" in one batch, "started a new book" in the next) are recognised.
-        On unparseable output, falls back to the raw messages so nothing is silently lost."""
+    def build_prompt(self, batch: list[tuple[int, str]], known: list[str] | None = None) -> str:
+        """The exact prompt extract() sends; the scale eval also uses it to size prompts without calling the LLM."""
         lines = "\n".join(f"[t{turn}] {text}" for turn, text in batch)
         known_block = ""
         if known:
             known_block = "Facts already in memory (context only):\n" + "\n".join(f"- {k}" for k in known) + "\n\n"
-        prompt = EXTRACT_PROMPT.format(messages=lines, known=known_block)
-        messages = [{"role": "user", "content": prompt}]
+        return EXTRACT_PROMPT.format(messages=lines, known=known_block)
+
+    async def extract(self, batch: list[tuple[int, str]], known: list[str] | None = None) -> list[tuple[int, str]]:
+        """batch: [(turn, message)] -> [(turn, fact)]. `known`: related facts already in memory, so updates
+        that span batches ("finished dune" in one batch, "started a new book" in the next) are recognised.
+        On unparseable output, falls back to the raw messages so nothing is silently lost."""
+        messages = [{"role": "user", "content": self.build_prompt(batch, known)}]
         reply = await self.llm.chat(messages)
         usage = getattr(self.llm, "last_usage", None) or {}
         self.calls += 1

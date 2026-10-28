@@ -49,6 +49,21 @@ def test_persistent_tool_use_failed_falls_back_to_failed_generation():
     assert llm.stats == {"tool_use_retries": 2, "fallback_recoveries": 1}
 
 
+@pytest.mark.parametrize("response", [
+    httpx.Response(413, json={"error": {"message": "Request too large for model on tokens per minute (TPM): Limit 8000, Requested 8211"}}),
+    httpx.Response(429, json={"error": {"message": "Request too large for model on tokens per minute (TPM): Limit 8000, Requested 8211"}}),
+])
+def test_request_over_the_per_minute_limit_fails_fast(response):
+    """Regression for the scale test: a prompt bigger than the per-minute limit can never succeed, so it must
+    not sit through per-minute retries."""
+    from lethe.llm import RequestTooLargeError
+
+    llm, calls = make_llm([response])
+    with pytest.raises(RequestTooLargeError):
+        asyncio.run(llm.chat([{"role": "user", "content": "hi"}]))
+    assert len(calls) == 1
+
+
 def test_other_400_fails_immediately():
     llm, calls = make_llm([httpx.Response(400, json={"error": {"message": "bad model", "code": "model_not_found"}})])
     with pytest.raises(RuntimeError, match="rejected the request"):

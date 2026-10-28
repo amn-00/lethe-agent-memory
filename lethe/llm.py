@@ -18,6 +18,11 @@ class DailyLimitError(RuntimeError):
     """The provider's per-day quota is exhausted. Retrying won't help until it resets."""
 
 
+class RequestTooLargeError(RuntimeError):
+    """One request is bigger than the provider accepts at all (Groq free tier: a prompt over the per-minute token
+    limit, 8,000 for gpt-oss-20b). Waiting or retrying won't help."""
+
+
 class LLM(Protocol):
     async def chat(self, messages: list[dict]) -> str: ...
 
@@ -97,6 +102,8 @@ class GroqLLM:
                     r = await client.post(self.URL, json=self._payload(messages), headers=headers)
                     if r.status_code == 429 and re.search(r"per day|\bTPD\b|\bRPD\b", r.text):
                         raise DailyLimitError(f"daily quota exhausted for {self.model}: {r.text[:240]}")
+                    if r.status_code == 413 or (r.status_code == 429 and "request too large" in r.text.lower()):
+                        raise RequestTooLargeError(f"request too large for {self.model}: {r.text[:240]}")
                     if r.status_code == 429:  # per-minute limit: honour retry-after, then try again
                         delay = float(r.headers.get("retry-after", 2 ** attempt * 5))
                         await asyncio.sleep(min(delay, 90))

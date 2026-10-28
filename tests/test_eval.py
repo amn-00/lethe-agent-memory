@@ -12,8 +12,9 @@ EVALS = Path(__file__).parent.parent / "evals"
 DATA = json.loads((EVALS / "tasks.json").read_text(encoding="utf-8"))
 HELDOUT = json.loads((EVALS / "heldout.json").read_text(encoding="utf-8"))
 HELDOUT2 = json.loads((EVALS / "heldout2.json").read_text(encoding="utf-8"))
-ALL_SETS = [DATA, HELDOUT, HELDOUT2]
-SET_IDS = ["dev", "heldout", "heldout2"]
+SCALE = json.loads((EVALS / "scale.json").read_text(encoding="utf-8"))
+ALL_SETS = [DATA, HELDOUT, HELDOUT2, SCALE]
+SET_IDS = ["dev", "heldout", "heldout2", "scale"]
 
 
 FAKE_THRESHOLDS = {"min_similarity": 0.3, "reload_threshold": 0.3}  # fake embedder scores lower than bge
