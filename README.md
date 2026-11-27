@@ -54,7 +54,7 @@ Tested on **20 conversations kept aside and never used for tuning**. Each one me
 
 **What this doesn't show** (see [Limitations](#limitations))
 - That lethe beats full history: 97% vs 92% looks like a win, but the likely ranges overlap, so it isn't proven.
-- That lethe is cheaper overall *in this test*: turning messages into facts costs about 3,150 tokens per conversation. Here only the questions get answers, so in these short chats lethe uses more tokens in total. We expect the savings to appear in real chats where every message gets a reply and full history keeps resending a growing conversation. This hasn't been tested yet; it's the next experiment.
+- That lethe is cheaper overall *in this test*: turning messages into facts costs about 3,150 tokens per conversation. Here only the questions get answers, so in these short chats lethe uses more tokens in total. The savings show up in long chats where every message gets a reply; see [Long chats](#long-chats-400-messages).
 
 | By kind of question | No memory | Full history | Search everything | lethe |
 |---|---|---|---|---|
@@ -64,6 +64,21 @@ Tested on **20 conversations kept aside and never used for tuning**. Each one me
 | Long gaps (20+ messages) | 0% | 100% | 100% | 100% |
 
 Model: `openai/gpt-oss-20b` on Groq for answers and fact extraction, `openai/gpt-oss-120b` as the judge. Memory budget: 6. Raw results: `evals/results/`.
+
+### Long chats (400 messages)
+
+Two 400-message chats, 4 questions each, one run. Prompt sizes are counted as if every message got a reply (offline estimates calibrated against Groq's reported counts; completions not counted).
+
+| Setup | Correct | Prompt tokens per answer at msg 100 → 400 | Answer prompts over the whole chat | Extraction (live chat) | Total | Memories held at msg 400 |
+|---|---|---|---|---|---|---|
+| No memory | 0/8 | 118 → 122 | 47,246 | none | 47,246 | none |
+| Full history | 8/8 | 1,968 → 7,655 | 1,551,224 | none | 1,551,224 | whole chat |
+| Search everything | 8/8 | 224 → 275 | 99,994 | none | 99,994 | 400 |
+| **lethe** | **8/8** | **224 → 257** | **80,260** | **~215,600** | **~295,900** | **6.5** |
+
+- lethe's cost per answer stays flat while full history's grows about 4x; over a whole 400-message chat lethe uses **about 5x fewer tokens than full history**, extraction included.
+- Search everything is cheaper in total (no extraction calls) but holds every message, 400 memories against lethe's 6.5.
+- With one run and 8 questions per setup, accuracy here is a sanity check, not a comparison. Full report: `evals/results/latest-scale.md`.
 
 ---
 
@@ -209,7 +224,7 @@ python -m evals.rescore --split heldout --judge     # re-grade a saved run
 
 ## Limitations
 
-- **Short test conversations.** 20–50 messages. Most setups score 92–100%, so the benchmark has little room to separate them, and it doesn't stress the situation lethe is built for: long chats where memory keeps growing.
+- **Short test conversations for accuracy.** The graded benchmark uses 20–50 messages, where most setups score 92–100%, so it has little room to separate them. The 400-message scale test covers long chats, but with 2 chats, 8 questions and one run it measures cost, not accuracy.
 - **Extraction isn't free.** About 3,150 tokens and 4.7 extra calls per test conversation, where only the questions are answered. A live chat makes one extraction call per message.
 - **Some updates are still missed.** When a change is phrased very differently from the old fact ("started a new book" vs "I'm reading X"), the new fact can fail to match the question.
 - **One model family.** All results use gpt-oss on Groq.
@@ -217,7 +232,6 @@ python -m evals.rescore --split heldout --judge     # re-grade a saved run
 
 ## What's next
 
-- **Scale test:** conversations of 200–400 messages where every message gets a reply, measuring accuracy, total tokens and memory size as conversations grow.
 - **Learned retention:** train the score weights from logged used/ignored outcomes instead of setting them by hand.
 
 ---
